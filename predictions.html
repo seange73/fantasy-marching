@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Drum Corps: Predictions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 3rem;
+            align-items: start;
+            margin-bottom: 3rem;
+        }
+
+        .predictions-section {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        .score-predictions {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #4ecdc4;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .corps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .corps-score-input {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .corps-score-input:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .corps-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .score-input-container {
+            position: relative;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .caption-awards {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .caption-award-group {
+            margin-bottom: 2rem;
+        }
+
+        .caption-award-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .caption-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #45b7d1;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .caption-icon {
+            font-size: 1.5rem;
+        }
+
+        .corps-select {
+            width: 100%;
+            padding: 0.875rem;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg fill='white' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><path d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 0.7rem top 50%;
+            background-size: 1.5rem;
+            padding-right: 2.5rem;
+        }
+
+        .corps-select:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+            background-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .corps-select option {
+            background: #1a1a2e;
+            color: white;
+        }
+
+        .leaderboard-section {
+            position: sticky;
+            top: 20px;
+        }
+
+        .leaderboard {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 1.5rem;
+            min-height: 400px;
+        }
+
+        .leaderboard-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem 1rem 60px;
+            margin-bottom: 0.75rem;
+            border-radius: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            font-weight: 600;
+        }
+
+        .leaderboard-entry::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .rank-number {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            font-weight: 800;
+            opacity: 0.8;
+            width: 30px;
+            text-align: center;
+        }
+
+        .corps-total {
+            font-size: 1.2rem;
+            font-weight: 800;
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .gold {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #000;
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+        }
+
+        .gold::before {
+            background: #ffd700;
+            width: 6px;
+        }
+
+        .silver {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+            color: #000;
+            box-shadow: 0 8px 25px rgba(192, 192, 192, 0.3);
+        }
+
+        .silver::before {
+            background: #c0c0c0;
+            width: 5px;
+        }
+
+        .bronze {
+            background: linear-gradient(135deg, #cd7f32 0%, #e8a857 100%);
+            color: #000;
+            box-shadow: 0 8px 25px rgba(205, 127, 50, 0.3);
+        }
+
+        .bronze::before {
+            background: #cd7f32;
+            width: 4px;
+        }
+
+        .default {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .default::before {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .submit-section {
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(78, 205, 196, 0.4);
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-msg {
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4ecdc4;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .submit-msg.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .leaderboard-section {
+                position: static;
+            }
+
+            .corps-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+
+        .animate-in {
+            animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .leaderboard-entry {
+            animation: fadeInScale 0.4s ease forwards;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header animate-in">
+            <h1>Innovations In Brass</h1>
+            <p class="subtitle">August 5, 2024</p>
+            <p class="subtitle">Canton, OH</p>
+        </div>
+
+        <div class="main-content">
+            <div class="predictions-section">
+                <!-- Score Predictions -->
+                <div class="score-predictions">
+                    <h2 class="section-title">Score Predictions</h2>
+                    <div class="corps-grid" id="corpsGrid">
+                        <!-- Corps inputs will be generated here -->
+                    </div>
+                </div>
+
+                <!-- Caption Awards -->
+                <div class="caption-awards">
+                    <h2 class="section-title">Caption Awards</h2>
+                    
+                    <div class="caption-award-group">
+                        <div class="caption-title">
+                            <span class="caption-icon">🎨</span>
+                            <span>Best Color Guard</span>
+                        </div>
+                        <select class="corps-select" id="guardWinner">
+                            <option value="">Select a corps...</option>
+                        </select>
+                    </div>
+
+                    <div class="caption-award-group">
+                        <div class="caption-title">
+                            <span class="caption-icon">🥁</span>
+                            <span>Best Percussion</span>
+                        </div>
+                        <select class="corps-select" id="percussionWinner">
+                            <option value="">Select a corps...</option>
+                        </select>
+                    </div>
+
+                    <div class="caption-award-group">
+                        <div class="caption-title">
+                            <span class="caption-icon">🎺</span>
+                            <span>Best Brass</span>
+                        </div>
+                        <select class="corps-select" id="brassWinner">
+                            <option value="">Select a corps...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leaderboard-section">
+                <div class="leaderboard">
+                    <h2 class="leaderboard-title">Predicted Rankings</h2>
+                    <div id="leaderboard">
+                        <div style="text-align: center; color: #666; margin-top: 2rem;">
+                            Enter predictions to see rankings
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="submit-section">
+            <button class="submit-btn" onclick="submitPredictions()">Submit Predictions</button>
+            <div id="submitMsg" class="submit-msg"></div>
+        </div>
+    </div>
+
+    <script>
+        const corpsList = ["Blue Devils", "Carolina Crown", "Bluecoats", "Boston Crusaders", "The Cavaliers", "Phantom Regiment", "Santa Clara Vanguard", "The Cadets"];
+        const predictions = {};
+        const captionPredictions = {
+            guard: '',
+            percussion: '',
+            brass: ''
+        };
+
+        function initializePage() {
+            createScoreInputs();
+            populateCaptionDropdowns();
+        }
+
+        function createScoreInputs() {
+            const container = document.getElementById('corpsGrid');
+            container.innerHTML = '';
+            
+            corpsList.forEach((corps, index) => {
+                const div = document.createElement('div');
+                div.className = 'corps-score-input animate-in';
+                div.style.animationDelay = `${index * 0.05}s`;
+                
+                div.innerHTML = `
+                    <div class="corps-name">${corps}</div>
+                    <div class="score-input-container">
+                        <input type="number" 
+                               min="0" 
+                               max="100" 
+                               step="0.001" 
+                               placeholder="0.000" 
+                               oninput="handleScoreInput('${corps}', this.value)"
+                               onblur="formatScore(this)">
+                    </div>
+                `;
+                
+                container.appendChild(div);
+            });
+        }
+
+        function populateCaptionDropdowns() {
+            const dropdowns = ['guardWinner', 'percussionWinner', 'brassWinner'];
+            
+            dropdowns.forEach(dropdownId => {
+                const select = document.getElementById(dropdownId);
+                select.innerHTML = '<option value="">Select a corps...</option>';
+                
+                corpsList.forEach(corps => {
+                    const option = document.createElement('option');
+                    option.value = corps;
+                    option.textContent = corps;
+                    select.appendChild(option);
+                });
+                
+                // Add event listener
+                select.addEventListener('change', (e) => {
+                    const captionType = dropdownId.replace('Winner', '');
+                    captionPredictions[captionType] = e.target.value;
+                });
+            });
+        }
+
+        function handleScoreInput(corps, value) {
+            let numValue = parseFloat(value);
+            
+            // Validate input
+            if (isNaN(numValue)) {
+                predictions[corps] = 0;
+            } else if (numValue > 100) {
+                event.target.value = 100;
+                predictions[corps] = 100;
+            } else if (numValue < 0) {
+                event.target.value = 0;
+                predictions[corps] = 0;
+            } else {
+                predictions[corps] = numValue;
+            }
+            
+            updateLeaderboard();
+        }
+
+        function formatScore(input) {
+            const value = parseFloat(input.value);
+            if (!isNaN(value)) {
+                input.value = value.toFixed(3);
+            }
+        }
+
+        function updateLeaderboard() {
+            const leaderboard = document.getElementById('leaderboard');
+            
+            // Get all corps with scores
+            const ranked = corpsList
+                .map(corps => ({
+                    corps,
+                    score: predictions[corps] || 0
+                }))
+                .filter(entry => entry.score > 0)
+                .sort((a, b) => b.score - a.score);
+
+            if (ranked.length === 0) {
+                leaderboard.innerHTML = '<div style="text-align: center; color: #666; margin-top: 2rem;">Enter predictions to see rankings</div>';
+                return;
+            }
+
+            leaderboard.innerHTML = '';
+            
+            ranked.forEach((entry, index) => {
+                const div = document.createElement('div');
+                let cls = 'default';
+                if (index === 0) cls = 'gold';
+                else if (index === 1) cls = 'silver'; 
+                else if (index === 2) cls = 'bronze';
+                
+                div.className = `leaderboard-entry ${cls}`;
+                div.innerHTML = `
+                    <div class="rank-number">${index + 1}</div>
+                    <strong>${entry.corps}</strong>
+                    <div class="corps-total">${entry.score.toFixed(3)}</div>
+                `;
+                
+                leaderboard.appendChild(div);
+            });
+        }
+
+        function submitPredictions() {
+            // Validate that at least one score is entered
+            const hasScores = Object.values(predictions).some(score => score > 0);
+            
+            if (!hasScores) {
+                showMessage('Please enter at least one score prediction!', 'error');
+                return;
+            }
+
+            // Collect all predictions
+            const submissionData = {
+                scores: predictions,
+                captions: captionPredictions,
+                event: 'Innovations In Brass',
+                date: '2024-08-05'
+            };
+
+            console.log('Submitting predictions:', submissionData);
+            
+            // Show success message
+            showMessage('Predictions submitted successfully! 🎺', 'success');
+            
+            // Here you would normally send to Supabase
+            // savePredictionsToSupabase(submissionData);
+        }
+
+        function showMessage(text, type = 'success') {
+            const msg = document.getElementById('submitMsg');
+            msg.textContent = text;
+            msg.style.color = type === 'error' ? '#ff6b6b' : '#4ecdc4';
+            msg.classList.add('show');
+            
+            setTimeout(() => {
+                msg.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize the page when loaded
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>
