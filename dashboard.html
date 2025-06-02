@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Marching - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(15, 15, 35, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-tab {
+            color: #a0a0a0;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            color: #4ecdc4;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            border-radius: 2px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Reminder Cards */
+        .reminders-section {
+            grid-column: 1 / -1;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .reminders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .reminder-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .reminder-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(78, 205, 196, 0.3);
+        }
+
+        .reminder-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .reminder-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .reminder-text {
+            color: #a0a0a0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .reminder-action {
+            color: #4ecdc4;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Leaderboard Styles */
+        .leaderboard-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            height: fit-content;
+        }
+
+        .leaderboard-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #4ecdc4;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .title-icon {
+            font-size: 1.6rem;
+            filter: saturate(0.8) hue-rotate(180deg) brightness(1.2);
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem;
+            margin-bottom: 0.5rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .leaderboard-entry:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
+        }
+
+        .rank {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            margin-right: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .rank-1 {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #000;
+        }
+
+        .rank-2 {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+            color: #000;
+        }
+
+        .rank-3 {
+            background: linear-gradient(135deg, #cd7f32 0%, #e8a857 100%);
+            color: #000;
+        }
+
+        .rank-default {
+            background: rgba(255, 255, 255, 0.1);
+            color: #a0a0a0;
+        }
+
+        .player-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .player-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .player-name {
+            font-weight: 600;
+            color: #e0e0e0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .player-score {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .view-more {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .view-more-btn {
+            color: #4ecdc4;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .view-more-btn:hover {
+            color: #45b7d1;
+        }
+
+        /* League Section */
+        .leagues-section {
+            grid-column: 1 / -1;
+            margin-top: 2rem;
+        }
+
+        .leagues-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .leagues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .no-leagues {
+            text-align: center;
+            color: #666;
+            font-size: 1.1rem;
+            padding: 3rem;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .no-leagues a {
+            color: #4ecdc4;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .no-leagues a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+
+            .nav-tabs {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .header-content {
+                padding: 1rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 2rem;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 8px;
+            height: 60px;
+            margin-bottom: 0.5rem;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">Fantasy Marching</div>
+            
+            <nav class="nav-tabs">
+                <a href="/dashboard.html" class="nav-tab active">Dashboard</a>
+                <a href="/predictions.html" class="nav-tab">Predictions</a>
+                <a href="/fantasy.html" class="nav-tab">Fantasy</a>
+                <a href="/contact.html" class="nav-tab">Contact Us</a>
+            </nav>
+            
+            <div class="user-profile" onclick="toggleUserMenu()">
+                <div class="user-avatar" id="userAvatar">
+                    <!-- Will be populated with user initial or image -->
+                </div>
+                <span class="user-name" id="userName">Loading...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Reminders Section -->
+        <section class="reminders-section">
+            <h2 class="section-title">Your Action Items</h2>
+            <div class="reminders-grid" id="remindersGrid">
+                <!-- Reminders will be populated here -->
+            </div>
+        </section>
+
+        <!-- Global Predictions Leaderboard -->
+        <div class="leaderboard-card">
+            <h3 class="leaderboard-title">Top Predictors</h3>
+            <div id="predictionsLeaderboard">
+                <div class="loading">Loading leaderboard...</div>
+            </div>
+            <div class="view-more">
+                <a href="/predictions-leaderboard.html" class="view-more-btn">View Full Leaderboard →</a>
+            </div>
+        </div>
+
+        <!-- Global Fantasy Leaderboard -->
+        <div class="leaderboard-card">
+            <h3 class="leaderboard-title">Top Fantasy Players</h3>
+            <div id="fantasyLeaderboard">
+                <div class="loading">Loading leaderboard...</div>
+            </div>
+            <div class="view-more">
+                <a href="/fantasy-leaderboard.html" class="view-more-btn">View Full Leaderboard →</a>
+            </div>
+        </div>
+
+        <!-- User's Leagues -->
+        <section class="leagues-section">
+            <h2 class="section-title">Your Leagues</h2>
+            <div class="leagues-container">
+                <div class="leagues-grid" id="leaguesGrid">
+                    <!-- User's leagues will be populated here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script>
+        let currentUser = null;
+
+        // Initialize dashboard
+        async function initDashboard() {
+            // Check authentication
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            if (!user) {
+                window.location.href = '/';
+                return;
+            }
+            
+            currentUser = user;
+            
+            // Load user profile
+            await loadUserProfile();
+            
+            // Load all dashboard data
+            loadReminders();
+            loadPredictionsLeaderboard();
+            loadFantasyLeaderboard();
+            loadUserLeagues();
+        }
+
+        // Load user profile
+        async function loadUserProfile() {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('username, avatar_url')
+                .eq('id', currentUser.id)
+                .single();
+            
+            if (profile) {
+                document.getElementById('userName').textContent = profile.username || currentUser.email.split('@')[0];
+                
+                // Set avatar (initial letter for now)
+                const initial = (profile.username || currentUser.email)[0].toUpperCase();
+                document.getElementById('userAvatar').textContent = initial;
+            }
+        }
+
+        // Function to get all user predictions (for stats)
+        async function getAllUserPredictions() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('predictions')
+                    .select(`
+                        *,
+                        events!inner(
+                            name,
+                            date,
+                            location,
+                            is_completed,
+                            final_scores
+                        )
+                    `)
+                    .eq('user_id', currentUser.id)
+                    .order('event_date', { ascending: false });
+
+                if (error) {
+                    console.error('Error loading all predictions:', error);
+                    return [];
+                }
+
+                return data;
+            } catch (error) {
+                console.error('Unexpected error:', error);
+                return [];
+            }
+        }
+
+        // Load reminders based on real data
+        async function loadReminders() {
+            const reminders = [];
+            
+            // Check for upcoming events without predictions
+            const { data: upcomingEvents } = await supabaseClient
+                .from('events')
+                .select('*')
+                .gte('date', new Date().toISOString())
+                .order('date', { ascending: true })
+                .limit(3);
+            
+            if (upcomingEvents && upcomingEvents.length > 0) {
+                // Check which events user hasn't predicted on
+                for (const event of upcomingEvents) {
+                    const { data: prediction } = await supabaseClient
+                        .from('predictions')
+                        .select('id')
+                        .eq('user_id', currentUser.id)
+                        .eq('event_name', event.name)
+                        .eq('event_date', event.date)
+                        .single();
+                    
+                    if (!prediction) {
+                        const daysUntil = Math.ceil((new Date(event.date) - new Date()) / (1000 * 60 * 60 * 24));
+                        reminders.push({
+                            icon: '🎯',
+                            title: 'Predictions Due Soon',
+                            text: `${event.name} predictions close in ${daysUntil} days`,
+                            action: 'Make Predictions',
+                            link: `/predictions.html?event=${event.name.toLowerCase().replace(/\s+/g, '-')}`
+                        });
+                    }
+                }
+            }
+            
+            // Add fantasy draft reminder (placeholder for now)
+            reminders.push({
+                icon: '⚡',
+                title: 'Your Turn to Draft',
+                text: "It's your turn in the 'Brass Believers' fantasy league",
+                action: 'Make Your Pick',
+                link: '/fantasy.html?league=brass-believers'
+            });
+            
+            // Check for completed events with results
+            const { data: completedEvents } = await supabaseClient
+                .from('events')
+                .select('*')
+                .eq('is_completed', true)
+                .order('date', { ascending: false })
+                .limit(1);
+            
+            if (completedEvents && completedEvents.length > 0) {
+                reminders.push({
+                    icon: '📊',
+                    title: 'Results Available',
+                    text: `Check how your predictions did for ${completedEvents[0].name}`,
+                    action: 'View Results',
+                    link: `/results.html?event=${completedEvents[0].name.toLowerCase().replace(/\s+/g, '-')}`
+                });
+            }
+            
+            const grid = document.getElementById('remindersGrid');
+            grid.innerHTML = reminders.map(reminder => `
+                <div class="reminder-card" onclick="window.location.href='${reminder.link}'">
+                    <div class="reminder-icon">${reminder.icon}</div>
+                    <h3 class="reminder-title">${reminder.title}</h3>
+                    <p class="reminder-text">${reminder.text}</p>
+                    <div class="reminder-action">${reminder.action} →</div>
+                </div>
+            `).join('');
+        }
+
+        // Load predictions leaderboard
+        async function loadPredictionsLeaderboard() {
+            try {
+                // Get user prediction stats
+                const { data: stats } = await supabaseClient
+                    .from('user_prediction_stats')
+                    .select('*')
+                    .order('total_predictions', { ascending: false })
+                    .limit(5);
+                
+                if (stats && stats.length > 0) {
+                    const container = document.getElementById('predictionsLeaderboard');
+                    container.innerHTML = stats.map((player, index) => `
+                        <div class="leaderboard-entry">
+                            <div class="rank ${index < 3 ? `rank-${index + 1}` : 'rank-default'}">${index + 1}</div>
+                            <div class="player-info">
+                                <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
+                                <span class="player-name">${player.username || 'User'}</span>
+                            </div>
+                            <span class="player-score">${player.total_predictions} predictions</span>
+                        </div>
+                    `).join('');
+                } else {
+                    // Use mock data if no real data
+                    loadMockPredictionsLeaderboard();
+                }
+            } catch (error) {
+                console.error('Error loading predictions leaderboard:', error);
+                loadMockPredictionsLeaderboard();
+            }
+        }
+
+        // Fallback mock data for predictions
+        function loadMockPredictionsLeaderboard() {
+            const mockData = [
+                { rank: 1, username: 'BlueDev1lsFan', score: 98.5, initial: 'B' },
+                { rank: 2, username: 'CrownJewel', score: 97.2, initial: 'C' },
+                { rank: 3, username: 'PhantomPhan', score: 96.8, initial: 'P' },
+                { rank: 4, username: 'BrassKing', score: 95.1, initial: 'B' },
+                { rank: 5, username: 'GuardGuru', score: 94.7, initial: 'G' }
+            ];
+            
+            const container = document.getElementById('predictionsLeaderboard');
+            container.innerHTML = mockData.map(player => `
+                <div class="leaderboard-entry">
+                    <div class="rank ${player.rank <= 3 ? `rank-${player.rank}` : 'rank-default'}">${player.rank}</div>
+                    <div class="player-info">
+                        <div class="player-avatar">${player.initial}</div>
+                        <span class="player-name">${player.username}</span>
+                    </div>
+                    <span class="player-score">${player.score}%</span>
+                </div>
+            `).join('');
+        }
+
+        // Load fantasy leaderboard
+        async function loadFantasyLeaderboard() {
+            // Mock data - replace with actual query when fantasy tables are created
+            const mockData = [
+                { rank: 1, username: 'FantasyMaster', score: 1247, initial: 'F' },
+                { rank: 2, username: 'DrumlineKing', score: 1198, initial: 'D' },
+                { rank: 3, username: 'BrassChamp', score: 1156, initial: 'B' },
+                { rank: 4, username: 'ColorGuardPro', score: 1089, initial: 'C' },
+                { rank: 5, username: 'MarchingAce', score: 1034, initial: 'M' }
+            ];
+            
+            const container = document.getElementById('fantasyLeaderboard');
+            container.innerHTML = mockData.map(player => `
+                <div class="leaderboard-entry">
+                    <div class="rank ${player.rank <= 3 ? `rank-${player.rank}` : 'rank-default'}">${player.rank}</div>
+                    <div class="player-info">
+                        <div class="player-avatar">${player.initial}</div>
+                        <span class="player-name">${player.username}</span>
+                    </div>
+                    <span class="player-score">${player.score.toLocaleString()}</span>
+                </div>
+            `).join('');
+        }
+
+        // Load user's leagues
+        function loadUserLeagues() {
+            // Mock data - replace with actual query
+            // Temporarily set to empty array to test the no leagues message
+            const leagues = []; // Change this back to the array below when you want to show leagues
+            
+            const grid = document.getElementById('leaguesGrid');
+            
+            // Check if user has no leagues
+            if (leagues.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-leagues">
+                        You are currently in no leagues. <a href="/fantasy.html">Join a league in the fantasy tab!</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = leagues.map(league => `
+                <div class="leaderboard-card">
+                    <h3 class="leaderboard-title">${league.name}</h3>
+                    <div class="leaderboard-entry" style="background: rgba(78, 205, 196, 0.1);">
+                        <div class="rank ${league.rank <= 3 ? `rank-${league.rank}` : 'rank-default'}">${league.rank}</div>
+                        <div class="player-info">
+                            <span class="player-name">Your Position</span>
+                        </div>
+                        <span class="player-score">${league.rank}/${league.total}</span>
+                    </div>
+                    <div style="margin: 1rem 0; text-align: center; color: #666; font-size: 0.9rem;">
+                        Leader: ${league.topPlayer} (${league.topScore} pts)
+                    </div>
+                    <div class="view-more">
+                        <a href="/league.html?id=${league.name.toLowerCase().replace(/\s+/g, '-')}" class="view-more-btn">View League →</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Toggle user menu (placeholder for now)
+        function toggleUserMenu() {
+            // Future: Show dropdown with profile, settings, logout options
+            console.log('User menu clicked');
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

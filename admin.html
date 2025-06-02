@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Event Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .warning {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            color: #ff6b6b;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4ecdc4;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 0.875rem;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .event-list {
+            margin-top: 2rem;
+        }
+
+        .event-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .event-info {
+            flex: 1;
+        }
+
+        .event-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .event-details {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .event-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-upcoming {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+        }
+
+        .status-completed {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+        }
+
+        .message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background: rgba(52, 199, 89, 0.1);
+            border: 1px solid rgba(52, 199, 89, 0.3);
+            color: #4ecdc4;
+        }
+
+        .message.error {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Event Management</h1>
+        
+        <div class="warning">
+            ⚠️ Admin Only - This page requires special permissions
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Add New Event</h2>
+            <form id="eventForm">
+                <div class="form-group">
+                    <label for="eventName">Event Name</label>
+                    <input type="text" id="eventName" placeholder="e.g., DCI Finals" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventDate">Event Date</label>
+                    <input type="date" id="eventDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventLocation">Location</label>
+                    <input type="text" id="eventLocation" placeholder="e.g., Indianapolis, IN" required>
+                </div>
+                
+                <button type="submit" class="btn">Add Event</button>
+            </form>
+            
+            <div id="message" class="message"></div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Existing Events</h2>
+            <div id="eventList" class="event-list">
+                Loading events...
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script>
+        // Check if user is admin (you'll need to implement this)
+        async function checkAdminAccess() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            if (!user) {
+                window.location.href = '/';
+                return false;
+            }
+            
+            // For now, you can check by email
+            // Later, you might want to add an 'is_admin' field to profiles
+            const adminEmails = ['your-email@example.com']; // Replace with your email
+            
+            if (!adminEmails.includes(user.email)) {
+                alert('Access denied. Admin only.');
+                window.location.href = '/dashboard.html';
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Load and display events
+        async function loadEvents() {
+            const { data: events, error } = await supabaseClient
+                .from('events')
+                .select('*')
+                .order('date', { ascending: false });
+            
+            if (error) {
+                console.error('Error loading events:', error);
+                return;
+            }
+            
+            const eventList = document.getElementById('eventList');
+            
+            if (events.length === 0) {
+                eventList.innerHTML = '<p style="text-align: center; color: #666;">No events found</p>';
+                return;
+            }
+            
+            eventList.innerHTML = events.map(event => `
+                <div class="event-item">
+                    <div class="event-info">
+                        <div class="event-name">${event.name}</div>
+                        <div class="event-details">${new Date(event.date).toLocaleDateString()} • ${event.location || 'Location TBD'}</div>
+                    </div>
+                    <div class="event-status ${event.is_completed ? 'status-completed' : 'status-upcoming'}">
+                        ${event.is_completed ? 'Completed' : 'Upcoming'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Add new event
+        async function addEvent(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('eventName').value;
+            const date = document.getElementById('eventDate').value;
+            const location = document.getElementById('eventLocation').value;
+            
+            const { data, error } = await supabaseClient
+                .from('events')
+                .insert({
+                    name: name,
+                    date: date,
+                    location: location
+                })
+                .select()
+                .single();
+            
+            if (error) {
+                showMessage('Error adding event: ' + error.message, 'error');
+                return;
+            }
+            
+            showMessage('Event added successfully!', 'success');
+            document.getElementById('eventForm').reset();
+            loadEvents();
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+            
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            const isAdmin = await checkAdminAccess();
+            if (isAdmin) {
+                loadEvents();
+                document.getElementById('eventForm').addEventListener('submit', addEvent);
+            }
+        });
+    </script>
+</body>
+</html>

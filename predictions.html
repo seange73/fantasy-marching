@@ -21,7 +21,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
             position: relative;
         }
@@ -53,17 +53,10 @@
         }
 
         .main-content {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 3rem;
-            align-items: start;
-            margin-bottom: 3rem;
-        }
-
-        .predictions-section {
             display: flex;
             flex-direction: column;
-            gap: 3rem;
+            gap: 2rem;
+            margin-bottom: 3rem;
         }
 
         .score-predictions {
@@ -86,7 +79,7 @@
 
         .corps-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1rem;
         }
 
@@ -125,6 +118,7 @@
             border-radius: 12px;
             font-size: 1.2rem;
             font-weight: 600;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             text-align: center;
             transition: all 0.2s ease;
         }
@@ -181,6 +175,7 @@
             border-radius: 12px;
             font-size: 1rem;
             font-weight: 500;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             cursor: pointer;
             transition: all 0.2s ease;
             appearance: none;
@@ -204,8 +199,7 @@
         }
 
         .leaderboard-section {
-            position: sticky;
-            top: 20px;
+            width: 100%;
         }
 
         .leaderboard {
@@ -213,16 +207,18 @@
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
-            padding: 1.5rem;
-            min-height: 400px;
+            padding: 2rem;
+            min-height: 300px;
         }
 
         .leaderboard-title {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 700;
             margin-bottom: 1.5rem;
             text-align: center;
-            color: #ffffff;
+            color: #4ecdc4;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .leaderboard-entry {
@@ -236,6 +232,7 @@
             position: relative;
             overflow: hidden;
             font-weight: 600;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         .leaderboard-entry::before {
@@ -258,6 +255,7 @@
             opacity: 0.8;
             width: 30px;
             text-align: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         .corps-total {
@@ -266,6 +264,7 @@
             padding: 0.3rem 0.8rem;
             border-radius: 8px;
             background: rgba(255, 255, 255, 0.1);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         .gold {
@@ -324,6 +323,7 @@
             padding: 1rem 3rem;
             font-size: 1.1rem;
             font-weight: 700;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-transform: uppercase;
@@ -360,6 +360,7 @@
             opacity: 0;
             transform: translateY(10px);
             transition: all 0.3s ease;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         .submit-msg.show {
@@ -367,16 +368,7 @@
             transform: translateY(0);
         }
 
-        @media (max-width: 968px) {
-            .main-content {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-
-            .leaderboard-section {
-                position: static;
-            }
-
+        @media (max-width: 768px) {
             .corps-grid {
                 grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             }
@@ -422,51 +414,6 @@
         </div>
 
         <div class="main-content">
-            <div class="predictions-section">
-                <!-- Score Predictions -->
-                <div class="score-predictions">
-                    <h2 class="section-title">Score Predictions</h2>
-                    <div class="corps-grid" id="corpsGrid">
-                        <!-- Corps inputs will be generated here -->
-                    </div>
-                </div>
-
-                <!-- Caption Awards -->
-                <div class="caption-awards">
-                    <h2 class="section-title">Caption Awards</h2>
-                    
-                    <div class="caption-award-group">
-                        <div class="caption-title">
-                            <span class="caption-icon">🎨</span>
-                            <span>Best Color Guard</span>
-                        </div>
-                        <select class="corps-select" id="guardWinner">
-                            <option value="">Select a corps...</option>
-                        </select>
-                    </div>
-
-                    <div class="caption-award-group">
-                        <div class="caption-title">
-                            <span class="caption-icon">🥁</span>
-                            <span>Best Percussion</span>
-                        </div>
-                        <select class="corps-select" id="percussionWinner">
-                            <option value="">Select a corps...</option>
-                        </select>
-                    </div>
-
-                    <div class="caption-award-group">
-                        <div class="caption-title">
-                            <span class="caption-icon">🎺</span>
-                            <span>Best Brass</span>
-                        </div>
-                        <select class="corps-select" id="brassWinner">
-                            <option value="">Select a corps...</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
             <div class="leaderboard-section">
                 <div class="leaderboard">
                     <h2 class="leaderboard-title">Predicted Rankings</h2>
@@ -475,6 +422,46 @@
                             Enter predictions to see rankings
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Score Predictions -->
+            <div class="score-predictions">
+                <h2 class="section-title">Score Predictions</h2>
+                <div class="corps-grid" id="corpsGrid">
+                    <!-- Corps inputs will be generated here -->
+                </div>
+            </div>
+
+            <!-- Caption Awards -->
+            <div class="caption-awards">
+                <h2 class="section-title">Caption Awards</h2>
+                
+                <div class="caption-award-group">
+                    <div class="caption-title">
+                        <span>Best Color Guard</span>
+                    </div>
+                    <select class="corps-select" id="guardWinner">
+                        <option value="">Select a corps...</option>
+                    </select>
+                </div>
+
+                <div class="caption-award-group">
+                    <div class="caption-title">
+                        <span>Best Percussion</span>
+                    </div>
+                    <select class="corps-select" id="percussionWinner">
+                        <option value="">Select a corps...</option>
+                    </select>
+                </div>
+
+                <div class="caption-award-group">
+                    <div class="caption-title">
+                        <span>Best Brass</span>
+                    </div>
+                    <select class="corps-select" id="brassWinner">
+                        <option value="">Select a corps...</option>
+                    </select>
                 </div>
             </div>
         </div>
