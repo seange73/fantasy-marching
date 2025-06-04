@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Marching - League Mode</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(15, 15, 35, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            height: 120px;
+            width: auto;
+            display: block;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-tab {
+            color: #a0a0a0;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            color: #4ecdc4;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            border-radius: 2px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-header h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .page-header p {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            font-weight: 400;
+        }
+
+        .league-info {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .league-info h2 {
+            color: #4ecdc4;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .league-info p {
+            color: #a0a0a0;
+        }
+
+        .league-stats {
+            display: flex;
+            gap: 3rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            margin-top: 0.25rem;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            color: #a0a0a0;
+            border-radius: 16px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+        }
+
+        .content {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            min-height: 600px;
+        }
+
+        .lineup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .caption-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .caption-section:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .caption-section.brass {
+            border-left: 4px solid #45b7d1;
+        }
+
+        .caption-section.percussion {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .caption-section.guard {
+            border-left: 4px solid #f39c12;
+        }
+
+        .caption-section.ge {
+            border-left: 4px solid #27ae60;
+        }
+
+        .caption-section.visual {
+            border-left: 4px solid #e91e63;
+        }
+
+        .caption-section.music {
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .caption-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #4ecdc4;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .caption-subtitle {
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        .corps-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .corps-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+            border-color: rgba(78, 205, 196, 0.3);
+        }
+
+        .corps-card.competed {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .corps-card.competed::after {
+            content: "COMPETED";
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: rgba(108, 117, 125, 0.8);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .corps-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .corps-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #a0a0a0;
+        }
+
+        .improvement {
+            font-weight: 700;
+        }
+
+        .improvement.positive {
+            color: #4ecdc4;
+        }
+
+        .improvement.negative {
+            color: #ff6b6b;
+        }
+
+        .bench-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #4ecdc4;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .matchup-container {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 2rem;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .team-column {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .team-column:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .team-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #4ecdc4;
+        }
+
+        .vs-section {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score {
+            font-size: 3rem;
+            font-weight: 800;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .score.winning {
+            background: linear-gradient(135deg, #4ecdc4 0%, #27ae60 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score.losing {
+            color: #ff6b6b;
+        }
+
+        .recruitment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .free-agent-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .free-agent-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+            border-color: rgba(78, 205, 196, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .recruit-btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            width: 100%;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .recruit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #4ecdc4;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select, .filter-group input {
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .filter-group select option {
+            background: #1a1a2e;
+            color: white;
+        }
+
+        .filter-group select:focus, .filter-group input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .personal-stats {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-card .stat-label {
+            color: #a0a0a0;
+            margin-top: 0.5rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .success-banner {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .success-banner h3 {
+            color: #4ecdc4;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .other-matchups {
+            margin-top: 3rem;
+        }
+
+        .matchup-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .matchup-item strong {
+            color: #4ecdc4;
+        }
+
+        @media (max-width: 968px) {
+            .header-content {
+                padding: 1rem;
+            }
+
+            .logo {
+                height: 80px;
+            }
+
+            .nav-tabs {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .league-info {
+                flex-direction: column;
+                gap: 2rem;
+                text-align: center;
+            }
+
+            .matchup-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .lineup-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="dashboard.html" class="logo-link">
+                <img src="images/logo.png" alt="Fantasy Marching" class="logo">
+            </a>
+            
+            <nav class="nav-tabs">
+                <a href="dashboard.html" class="nav-tab">Dashboard</a>
+                <a href="predictions.html" class="nav-tab">Predictions</a>
+                <a href="fantasy.html" class="nav-tab active">Fantasy</a>
+                <a href="contact.html" class="nav-tab">Contact Us</a>
+            </nav>
+            
+            <div class="user-profile" onclick="toggleUserMenu()">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span class="user-name" id="userName">Username</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Fantasy Drum Corps</h1>
+            <p>League Mode - 2024 Season</p>
+        </div>
+
+        <div class="league-info">
+            <div>
+                <h2>Thunder Valley League</h2>
+                <p>Week 8 of 12 • Next Competition: Saturday 8:00 PM</p>
+            </div>
+            <div class="league-stats">
+                <div class="stat">
+                    <div class="stat-value">3rd</div>
+                    <div class="stat-label">League Rank</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">5-3</div>
+                    <div class="stat-label">Record</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">847.2</div>
+                    <div class="stat-label">Avg Score</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('lineup')">My Lineup</button>
+            <button class="tab" onclick="switchTab('matchup')">Weekly Matchup</button>
+            <button class="tab" onclick="switchTab('recruitment')">Recruitment</button>
+        </div>
+
+        <div class="content">
+            <!-- My Lineup Tab -->
+            <div id="lineup-content" class="tab-content">
+                <h2 class="section-title">Starting Lineup</h2>
+                <div class="lineup-grid">
+                    <div class="caption-section brass">
+                        <div class="caption-title">Brass</div>
+                        <div class="caption-subtitle">Avg Improvement: +0.4 per week</div>
+                        <div class="corps-card competed" data-caption="brass" data-position="0">
+                            <div class="corps-name">Blue Devils</div>
+                            <div class="corps-stats">
+                                <span>Rank: #1 • Score: 19.85</span>
+                                <span class="improvement positive">+0.3</span>
+                            </div>
+                        </div>
+                        <div class="corps-card" data-caption="brass" data-position="1">
+                            <div class="corps-name">Carolina Crown</div>
+                            <div class="corps-stats">
+                                <span>Rank: #3 • Score: 19.12</span>
+                                <span class="improvement positive">+0.5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="caption-section percussion">
+                        <div class="caption-title">Percussion</div>
+                        <div class="caption-subtitle">Avg Improvement: +0.05 per week</div>
+                        <div class="corps-card" data-caption="percussion" data-position="0">
+                            <div class="corps-name">Santa Clara Vanguard</div>
+                            <div class="corps-stats">
+                                <span>Rank: #2 • Score: 19.45</span>
+                                <span class="improvement positive">+0.2</span>
+                            </div>
+                        </div>
+                        <div class="corps-card competed" data-caption="percussion" data-position="1">
+                            <div class="corps-name">Bluecoats</div>
+                            <div class="corps-stats">
+                                <span>Rank: #4 • Score: 18.89</span>
+                                <span class="improvement negative">-0.1</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="caption-section guard">
+                        <div class="caption-title">Color Guard</div>
+                        <div class="caption-subtitle">Avg Improvement: +0.5 per week</div>
+                        <div class="corps-card" data-caption="guard" data-position="0">
+                            <div class="corps-name">Phantom Regiment</div>
+                            <div class="corps-stats">
+                                <span>Rank: #5 • Score: 18.65</span>
+                                <span class="improvement positive">+0.4</span>
+                            </div>
+                        </div>
+                        <div class="corps-card" data-caption="guard" data-position="1">
+                            <div class="corps-name">The Cavaliers</div>
+                            <div class="corps-stats">
+                                <span>Rank: #7 • Score: 18.23</span>
+                                <span class="improvement positive">+0.6</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="caption-section ge">
+                        <div class="caption-title">General Effect</div>
+                        <div class="caption-subtitle">Avg Improvement: +0.3 per week</div>
+                        <div class="corps-card" data-caption="ge" data-position="0">
+                            <div class="corps-name">Boston Crusaders</div>
+                            <div class="corps-stats">
+                                <span>Rank: #6 • Score: 18.45</span>
+                                <span class="improvement positive">+0.3</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="caption-section visual">
+                        <div class="caption-title">Visual</div>
+                        <div class="caption-subtitle">Avg Improvement: +0.8 per week</div>
+                        <div class="corps-card competed" data-caption="visual" data-position="0">
+                            <div class="corps-name">The Academy</div>
+                            <div class="corps-stats">
+                                <span>Rank: #12 • Score: 16.78</span>
+                                <span class="improvement positive">+0.8</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="caption-section music">
+                        <div class="caption-title">Music</div>
+                        <div class="caption-subtitle">Avg Improvement: +0.4 per week</div>
+                        <div class="corps-card" data-caption="music" data-position="0">
+                            <div class="corps-name">Blue Knights</div>
+                            <div class="corps-stats">
+                                <span>Rank: #8 • Score: 17.92</span>
+                                <span class="improvement positive">+0.4</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bench-section">
+                    <h3 class="section-title">Bench</h3>
+                    <div class="lineup-grid">
+                        <div class="caption-section">
+                            <div class="caption-title">Bench Players</div>
+                            <div class="corps-card" data-caption="brass" data-bench="true">
+                                <div class="corps-name">Crossmen (Brass)</div>
+                                <div class="corps-stats">
+                                    <span>Rank: #15 • Score: 16.23</span>
+                                    <span class="improvement positive">+0.7</span>
+                                </div>
+                            </div>
+                            <div class="corps-card competed" data-caption="percussion" data-bench="true">
+                                <div class="corps-name">Madison Scouts (Perc)</div>
+                                <div class="corps-stats">
+                                    <span>Rank: #18 • Score: 15.89</span>
+                                    <span class="improvement positive">+0.5</span>
+                                </div>
+                            </div>
+                            <div class="corps-card" data-caption="visual" data-bench="true">
+                                <div class="corps-name">Mandarins (Visual)</div>
+                                <div class="corps-stats">
+                                    <span>Rank: #20 • Score: 15.12</span>
+                                    <span class="improvement positive">+0.9</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="personal-stats">
+                    <h3 class="section-title">Your Season Stats</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">847.2</div>
+                            <div class="stat-label">Average Weekly Score</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">932.5</div>
+                            <div class="stat-label">Highest Week</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">+12.3</div>
+                            <div class="stat-label">Weekly Improvement</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">5-3</div>
+                            <div class="stat-label">Win-Loss Record</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Matchup Tab -->
+            <div id="matchup-content" class="tab-content hidden">
+                <h2 class="section-title" style="text-align: center;">Week 8 Matchup</h2>
+                <div class="matchup-container">
+                    <div class="team-column">
+                        <div class="team-name">Your Team</div>
+                        <div class="score winning">873.4</div>
+                        <div style="text-align: center; color: #a0a0a0;">
+                            <p>Brass: 39.0 • Perc: 37.3 • Guard: 36.9</p>
+                            <p>GE: 18.45 • Visual: 16.78 • Music: 17.92</p>
+                        </div>
+                    </div>
+                    <div class="vs-section">VS</div>
+                    <div class="team-column">
+                        <div class="team-name">Mike's Marchers</div>
+                        <div class="score losing">856.7</div>
+                        <div style="text-align: center; color: #a0a0a0;">
+                            <p>Brass: 38.2 • Perc: 36.8 • Guard: 35.4</p>
+                            <p>GE: 19.1 • Visual: 15.9 • Music: 17.8</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="success-banner">
+                    <h3>🎉 You Won This Week! 🎉</h3>
+                    <p>Great lineup choices led to a 16.7 point victory!</p>
+                </div>
+
+                <div class="other-matchups">
+                    <h3 class="section-title">Other League Matchups</h3>
+                    <div class="matchup-item">
+                        <span>Sarah's Squad vs Tom's Titans</span>
+                        <span><strong>891.2</strong> - 867.5</span>
+                    </div>
+                    <div class="matchup-item">
+                        <span>Drum Dynasty vs Brass Bombers</span>
+                        <span>823.7 - <strong>845.1</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recruitment Tab -->
+            <div id="recruitment-content" class="tab-content hidden">
+                <h2 class="section-title">Free Agents</h2>
+                
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Search</label>
+                        <input type="text" placeholder="Search corps..." id="search-input">
+                    </div>
+                    <div class="filter-group">
+                        <label>Caption</label>
+                        <select id="caption-filter">
+                            <option value="">All Captions</option>
+                            <option value="brass">Brass</option>
+                            <option value="percussion">Percussion</option>
+                            <option value="guard">Color Guard</option>
+                            <option value="ge">General Effect</option>
+                            <option value="visual">Visual</option>
+                            <option value="music">Music</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Sort By</label>
+                        <select id="sort-filter">
+                            <option value="rank">Rank (Best First)</option>
+                            <option value="improvement">Improvement</option>
+                            <option value="score">Score</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="recruitment-grid">
+                    <div class="free-agent-card">
+                        <div class="corps-name">Spirit of JSU (Brass)</div>
+                        <div class="corps-stats">
+                            <span>Rank: #19 • Score: 15.45</span>
+                            <span class="improvement positive">+0.9</span>
+                        </div>
+                        <button class="recruit-btn">Recruit</button>
+                    </div>
+                    
+                    <div class="free-agent-card">
+                        <div class="corps-name">Mandarins (Percussion)</div>
+                        <div class="corps-stats">
+                            <span>Rank: #14 • Score: 16.78</span>
+                            <span class="improvement positive">+0.6</span>
+                        </div>
+                        <button class="recruit-btn">Recruit</button>
+                    </div>
+
+                    <div class="free-agent-card">
+                        <div class="corps-name">Genesis (Guard)</div>
+                        <div class="corps-stats">
+                            <span>Rank: #21 • Score: 14.23</span>
+                            <span class="improvement positive">+1.2</span>
+                        </div>
+                        <button class="recruit-btn">Recruit</button>
+                    </div>
+
+                    <div class="free-agent-card">
+                        <div class="corps-name">Pacific Crest (Visual)</div>
+                        <div class="corps-stats">
+                            <span>Rank: #16 • Score: 15.89</span>
+                            <span class="improvement positive">+0.4</span>
+                        </div>
+                        <button class="recruit-btn">Recruit</button>
+                    </div>
+
+                    <div class="free-agent-card">
+                        <div class="corps-name">Troopers (Brass)</div>
+                        <div class="corps-stats">
+                            <span>Rank: #17 • Score: 15.67</span>
+                            <span class="improvement negative">-0.2</span>
+                        </div>
+                        <button class="recruit-btn">Recruit</button>
+                    </div>
+
+                    <div class="free-agent-card">
+                        <div class="corps-name">Colts (Music)</div>
+                        <div class="corps-stats">
+                            <span>Rank: #20 • Score: 14.78</span>
+                            <span class="improvement positive">+0.8</span>
+                        </div>
+                        <button class="recruit-btn">Recruit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-content').classList.remove('hidden');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Add interactivity to recruit buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Recruit button functionality
+            document.querySelectorAll('.recruit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.textContent === 'Recruit') {
+                        this.textContent = 'Recruited!';
+                        this.style.background = 'linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)';
+                        this.disabled = true;
+                        
+                        // Show toast notification
+                        showToast('Corps recruited successfully!');
+                        
+                        setTimeout(() => {
+                            this.textContent = 'Recruit';
+                            this.style.background = 'linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%)';
+                            this.disabled = false;
+                        }, 3000);
+                    }
+                });
+            });
+
+            // Search functionality
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    document.querySelectorAll('.free-agent-card').forEach(card => {
+                        const corpsName = card.querySelector('.corps-name').textContent.toLowerCase();
+                        if (corpsName.includes(searchTerm)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Add hover effect to corps cards
+            document.querySelectorAll('.corps-card:not(.competed)').forEach(card => {
+                card.addEventListener('click', function() {
+                    if (this.dataset.bench === 'true') {
+                        showSwapModal(this);
+                    }
+                });
+            });
+        });
+
+        // Toast notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 12px;
+                z-index: 1001;
+                animation: slideInRight 0.3s ease-out;
+                font-weight: 600;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Swap modal functionality
+        function showSwapModal(benchCard) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            `;
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 2rem;
+                border-radius: 20px;
+                max-width: 500px;
+                width: 90%;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            modalContent.innerHTML = `
+                <h3 style="color: #4ecdc4; margin-bottom: 1rem;">Swap Corps</h3>
+                <p style="color: #a0a0a0; margin-bottom: 2rem;">Select a starter to swap with this bench player.</p>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button onclick="this.closest('div').parentElement.remove()" style="
+                        background: rgba(255, 255, 255, 0.1);
+                        color: white;
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        padding: 0.75rem 1.5rem;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-weight: 600;
+                    ">Cancel</button>
+                    <button onclick="showToast('Corps swapped!'); this.closest('div').parentElement.remove()" style="
+                        background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+                        color: white;
+                        border: none;
+                        padding: 0.75rem 1.5rem;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-weight: 600;
+                    ">Confirm Swap</button>
+                </div>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        // Add animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes fadeOut {
+                from {
+                    opacity: 1;
+                }
+                to {
+                    opacity: 0;
+                }
+            }
+            
+            @keyframes slideIn {
+                from {
+                    transform: translateY(-50px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
