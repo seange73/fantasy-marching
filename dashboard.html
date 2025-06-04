@@ -425,7 +425,7 @@
             <nav class="nav-tabs">
                 <a href="/dashboard.html" class="nav-tab active">Dashboard</a>
                 <a href="/predictions.html" class="nav-tab">Predictions</a>
-                <a href="/fantasy.html" class="nav-tab">Fantasy</a>
+                <a href="/league.html" class="nav-tab">League</a>
                 <a href="/contact.html" class="nav-tab">Contact Us</a>
             </nav>
             
@@ -459,14 +459,14 @@
             </div>
         </div>
 
-        <!-- Global Fantasy Leaderboard -->
+        <!-- Global League Leaderboard -->
         <div class="leaderboard-card">
-            <h3 class="leaderboard-title">Top Fantasy Players</h3>
-            <div id="fantasyLeaderboard">
+            <h3 class="leaderboard-title">Top League Players</h3>
+            <div id="leagueLeaderboard">
                 <div class="loading">Loading leaderboard...</div>
             </div>
             <div class="view-more">
-                <a href="/fantasy-leaderboard.html" class="view-more-btn">View Full Leaderboard →</a>
+                <a href="/league-leaderboard.html" class="view-more-btn">View Full Leaderboard →</a>
             </div>
         </div>
 
@@ -504,7 +504,7 @@
             // Load all dashboard data
             loadReminders();
             loadPredictionsLeaderboard();
-            loadFantasyLeaderboard();
+            loadLeagueLeaderboard();
             loadUserLeagues();
         }
 
@@ -591,14 +591,14 @@
                 }
             }
             
-            // Add fantasy draft reminder (placeholder for now)
+            // Add league draft reminder (placeholder for now)
             reminders.push({
                 icon: '⚡',
                 title: 'Your Turn to Draft',
-                //text: "It's your turn in the 'Brass Believers' fantasy league",
+                //text: "It's your turn in the 'Brass Believers' league league",
 				text: "THIS IS A PLACEHOLDER",
                 action: 'Make Your Pick',
-                link: '/fantasy.html?league=brass-believers'
+                link: '/league.html?leagueName=brass-believers'
             });
             
             // Check for completed events with results
@@ -685,9 +685,9 @@
             `).join('');
         }
 
-        // Load fantasy leaderboard
-        async function loadFantasyLeaderboard() {
-            // Mock data - replace with actual query when fantasy tables are created
+        // Load league leaderboard
+        async function loadLeagueLeaderboard() {
+            // Mock data - replace with actual query when league tables are created
             const mockData = [
                 //{ rank: 1, username: 'FantasyMaster', score: 1247, initial: 'F' },
                 //{ rank: 2, username: 'DrumlineKing', score: 1198, initial: 'D' },
@@ -696,7 +696,7 @@
                 //{ rank: 5, username: 'MarchingAce', score: 1034, initial: 'M' }
             ];
             
-            const container = document.getElementById('fantasyLeaderboard');
+            const container = document.getElementById('leagueLeaderboard');
             container.innerHTML = mockData.map(player => `
                 <div class="leaderboard-entry">
                     <div class="rank ${player.rank <= 3 ? `rank-${player.rank}` : 'rank-default'}">${player.rank}</div>
@@ -739,7 +739,7 @@
             if (leagues.length === 0) {
                 grid.innerHTML = `
                     <div class="no-leagues">
-                        You are currently in no leagues. <a href="/fantasy.html">Join a league in the fantasy tab!</a>
+                        You are currently in no leagues. <a href="/league.html">Join a league in the league tab!</a>
                     </div>
                 `;
                 return;
