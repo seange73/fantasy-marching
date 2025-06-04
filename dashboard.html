@@ -39,12 +39,15 @@
         }
 
         .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            height: 40px;
+            width: auto;
+            display: block;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
         }
 
         .nav-tabs {
@@ -415,7 +418,9 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <div class="logo">Fantasy Marching</div>
+            <a href="/dashboard.html" class="logo-link">
+                <img src="images/logo.png" alt="Fantasy Marching" class="logo">
+            </a>
             
             <nav class="nav-tabs">
                 <a href="/dashboard.html" class="nav-tab active">Dashboard</a>
@@ -708,6 +713,24 @@
             // Mock data - replace with actual query
             // Temporarily set to empty array to test the no leagues message
             const leagues = []; // Change this back to the array below when you want to show leagues
+            /*
+            const leagues = [
+                {
+                    name: 'Brass Believers',
+                    rank: 3,
+                    total: 12,
+                    topPlayer: 'CrownJewel',
+                    topScore: 1456
+                },
+                {
+                    name: 'Phantom Regiment Fans',
+                    rank: 1,
+                    total: 8,
+                    topPlayer: 'You',
+                    topScore: 1289
+                }
+            ];
+            */
             
             const grid = document.getElementById('leaguesGrid');
             
