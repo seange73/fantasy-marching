@@ -502,7 +502,19 @@
                 if (error) throw error;
 
                 showSuccess('Welcome back! Redirecting...');
-                // Auth state listener will handle redirect
+                
+                // Redirect to dashboard after successful login
+                setTimeout(() => {
+                    if (window.location.protocol === 'file:') {
+                        // For local file system
+                        const currentPath = window.location.pathname;
+                        const directory = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                        window.location.href = 'file://' + directory + '/dashboard.html';
+                    } else {
+                        // For web server
+                        window.location.href = '/dashboard.html';
+                    }
+                }, 1500);
 
             } catch (error) {
                 showError(error.message || 'Login failed. Please try again.');
@@ -571,7 +583,9 @@
                 const { data, error } = await supabaseClient.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: window.location.origin + '/dashboard.html'
+                        redirectTo: window.location.protocol === 'file:' 
+                            ? window.location.href.replace('index-temp.html', 'dashboard.html')
+                            : window.location.origin + '/dashboard.html'
                     }
                 });
                 
