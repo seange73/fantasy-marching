@@ -20,7 +20,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -73,7 +73,9 @@
         }
 
         input[type="text"],
-        input[type="date"] {
+        input[type="date"],
+        input[type="time"],
+        input[type="number"] {
             width: 100%;
             padding: 0.875rem;
             background: rgba(255, 255, 255, 0.08);
@@ -118,6 +120,53 @@
             transform: none;
         }
 
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        /* Corps Selection */
+        .corps-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .corps-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .corps-checkbox:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .corps-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .corps-checkbox label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Event List */
         .event-list {
             margin-top: 2rem;
         }
@@ -126,11 +175,20 @@
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            padding: 1rem;
+            padding: 1.5rem;
             margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .event-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .event-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: start;
+            margin-bottom: 1rem;
         }
 
         .event-info {
@@ -139,13 +197,20 @@
 
         .event-name {
             font-weight: 700;
-            font-size: 1.1rem;
-            margin-bottom: 0.25rem;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #4ecdc4;
         }
 
         .event-details {
             color: #a0a0a0;
             font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 0.5rem;
         }
 
         .event-status {
@@ -163,6 +228,114 @@
         .status-completed {
             background: rgba(255, 215, 0, 0.2);
             color: #ffd700;
+        }
+
+        .event-corps {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        /* Score Entry Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            position: relative;
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4ecdc4;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: white;
+        }
+
+        .score-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .corps-score-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .corps-score-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #45b7d1;
+        }
+
+        .score-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .score-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .score-input-group label {
+            font-size: 0.85rem;
+            color: #a0a0a0;
+        }
+
+        .score-input-group input {
+            padding: 0.5rem;
+            font-size: 0.9rem;
         }
 
         .message {
@@ -184,10 +357,27 @@
             border: 1px solid rgba(255, 59, 48, 0.3);
             color: #ff6b6b;
         }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4ecdc4;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            transform: translateX(-4px);
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <a href="/dashboard.html" class="back-link">← Back to Dashboard</a>
+        
         <h1>Event Management</h1>
         
         <div class="warning">
@@ -208,8 +398,23 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="eventTime">Event Time</label>
+                    <input type="time" id="eventTime" required>
+                </div>
+                
+                <div class="form-group">
                     <label for="eventLocation">Location</label>
                     <input type="text" id="eventLocation" placeholder="e.g., Indianapolis, IN" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Attending Corps</label>
+                    <div class="corps-selection" id="corpsSelection">
+                        <!-- Corps checkboxes will be populated here -->
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="toggleAllCorps()" style="margin-top: 0.5rem;">
+                        Select/Deselect All
+                    </button>
                 </div>
                 
                 <button type="submit" class="btn">Add Event</button>
@@ -226,10 +431,37 @@
         </div>
     </div>
 
+    <!-- Score Entry Modal -->
+    <div id="scoreModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Enter Scores</h2>
+                <button class="close-btn" onclick="closeScoreModal()">&times;</button>
+            </div>
+            <div id="scoreEntryContent">
+                <!-- Score entry form will be populated here -->
+            </div>
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn" onclick="saveScores()">Save Scores</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script>
-        // Check if user is admin (you'll need to implement this)
+        const allCorps = [
+            "Blue Devils", "Carolina Crown", "Bluecoats", "Boston Crusaders", 
+            "The Cavaliers", "Phantom Regiment", "Santa Clara Vanguard", "The Cadets",
+            "Blue Knights", "Mandarins", "Crossmen", "Blue Stars",
+            "Madison Scouts", "Pacific Crest", "The Academy", "Spirit of Atlanta",
+            "Colts", "Troopers", "Genesis", "Music City", "Jersey Surf", "Seattle Cascades"
+        ];
+
+        let currentEventId = null;
+        let currentEventCorps = [];
+
+        // Check if user is admin
         async function checkAdminAccess() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             
@@ -238,17 +470,44 @@
                 return false;
             }
             
-            // For now, you can check by email
-            // Later, you might want to add an 'is_admin' field to profiles
-            const adminEmails = ['your-email@example.com']; // Replace with your email
+            // Check if user has admin privileges
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('is_admin')
+                .eq('id', user.id)
+                .single();
             
-            if (!adminEmails.includes(user.email)) {
+            if (!profile || !profile.is_admin) {
                 alert('Access denied. Admin only.');
                 window.location.href = '/dashboard.html';
                 return false;
             }
             
             return true;
+        }
+
+        // Initialize corps checkboxes
+        function initializeCorpsSelection() {
+            const container = document.getElementById('corpsSelection');
+            container.innerHTML = allCorps.map(corps => `
+                <div class="corps-checkbox">
+                    <input type="checkbox" id="corps_${corps.replace(/\s+/g, '_')}" value="${corps}">
+                    <label for="corps_${corps.replace(/\s+/g, '_')}">${corps}</label>
+                </div>
+            `).join('');
+        }
+
+        // Toggle all corps selection
+        function toggleAllCorps() {
+            const checkboxes = document.querySelectorAll('#corpsSelection input[type="checkbox"]');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+        }
+
+        // Get selected corps
+        function getSelectedCorps() {
+            const checkboxes = document.querySelectorAll('#corpsSelection input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
         }
 
         // Load and display events
@@ -272,12 +531,31 @@
             
             eventList.innerHTML = events.map(event => `
                 <div class="event-item">
-                    <div class="event-info">
-                        <div class="event-name">${event.name}</div>
-                        <div class="event-details">${new Date(event.date).toLocaleDateString()} • ${event.location || 'Location TBD'}</div>
+                    <div class="event-header">
+                        <div class="event-info">
+                            <div class="event-name">${event.name}</div>
+                            <div class="event-details">
+                                ${new Date(event.date).toLocaleDateString()} 
+                                ${event.time ? `at ${event.time}` : ''} 
+                                • ${event.location || 'Location TBD'}
+                            </div>
+                            <div class="event-corps">
+                                ${event.corps_list ? `${event.corps_list.length} corps attending` : 'No corps assigned'}
+                            </div>
+                        </div>
+                        <div class="event-actions">
+                            <div class="event-status ${event.is_completed ? 'status-completed' : 'status-upcoming'}">
+                                ${event.is_completed ? 'Completed' : 'Upcoming'}
+                            </div>
+                        </div>
                     </div>
-                    <div class="event-status ${event.is_completed ? 'status-completed' : 'status-upcoming'}">
-                        ${event.is_completed ? 'Completed' : 'Upcoming'}
+                    <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                        <button class="btn btn-secondary" onclick="editScores('${event.id}', '${event.name}', ${event.corps_list ? `'${JSON.stringify(event.corps_list)}'` : 'null'})">
+                            ${event.is_completed ? 'Edit' : 'Enter'} Scores
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteEvent('${event.id}', '${event.name}')">
+                            Delete Event
+                        </button>
                     </div>
                 </div>
             `).join('');
@@ -289,14 +567,23 @@
             
             const name = document.getElementById('eventName').value;
             const date = document.getElementById('eventDate').value;
+            const time = document.getElementById('eventTime').value;
             const location = document.getElementById('eventLocation').value;
+            const corpsList = getSelectedCorps();
+            
+            if (corpsList.length === 0) {
+                showMessage('Please select at least one corps', 'error');
+                return;
+            }
             
             const { data, error } = await supabaseClient
                 .from('events')
                 .insert({
                     name: name,
                     date: date,
-                    location: location
+                    time: time,
+                    location: location,
+                    corps_list: corpsList
                 })
                 .select()
                 .single();
@@ -308,6 +595,174 @@
             
             showMessage('Event added successfully!', 'success');
             document.getElementById('eventForm').reset();
+            loadEvents();
+        }
+
+        // Delete event
+        async function deleteEvent(eventId, eventName) {
+            if (!confirm(`Are you sure you want to delete "${eventName}"? This will also delete all predictions and scores for this event.`)) {
+                return;
+            }
+            
+            const { error } = await supabaseClient
+                .from('events')
+                .delete()
+                .eq('id', eventId);
+            
+            if (error) {
+                showMessage('Error deleting event: ' + error.message, 'error');
+                return;
+            }
+            
+            showMessage('Event deleted successfully', 'success');
+            loadEvents();
+        }
+
+        // Open score entry modal
+        async function editScores(eventId, eventName, corpsListJson) {
+            currentEventId = eventId;
+            currentEventCorps = corpsListJson ? JSON.parse(corpsListJson) : [];
+            
+            if (currentEventCorps.length === 0) {
+                alert('No corps assigned to this event');
+                return;
+            }
+            
+            // Load existing scores
+            const { data: existingScores } = await supabaseClient
+                .from('event_scores')
+                .select('*')
+                .eq('event_id', eventId);
+            
+            const scoresMap = {};
+            if (existingScores) {
+                existingScores.forEach(score => {
+                    scoresMap[score.corps_name] = score;
+                });
+            }
+            
+            // Build score entry form
+            const content = document.getElementById('scoreEntryContent');
+            content.innerHTML = `
+                <h3 style="text-align: center; margin-bottom: 2rem;">${eventName}</h3>
+                <div class="score-grid">
+                    ${currentEventCorps.map(corps => `
+                        <div class="corps-score-section">
+                            <h4 class="corps-score-title">${corps}</h4>
+                            <div class="score-inputs">
+                                <div class="score-input-group">
+                                    <label>Brass</label>
+                                    <input type="number" id="brass_${corps.replace(/\s+/g, '_')}" 
+                                           value="${scoresMap[corps]?.brass_score || ''}" 
+                                           min="0" max="20" step="0.001" placeholder="0.000">
+                                </div>
+                                <div class="score-input-group">
+                                    <label>Percussion</label>
+                                    <input type="number" id="percussion_${corps.replace(/\s+/g, '_')}" 
+                                           value="${scoresMap[corps]?.percussion_score || ''}" 
+                                           min="0" max="20" step="0.001" placeholder="0.000">
+                                </div>
+                                <div class="score-input-group">
+                                    <label>Color Guard</label>
+                                    <input type="number" id="guard_${corps.replace(/\s+/g, '_')}" 
+                                           value="${scoresMap[corps]?.color_guard_score || ''}" 
+                                           min="0" max="20" step="0.001" placeholder="0.000">
+                                </div>
+                                <div class="score-input-group">
+                                    <label>General Effect</label>
+                                    <input type="number" id="ge_${corps.replace(/\s+/g, '_')}" 
+                                           value="${scoresMap[corps]?.general_effect_score || ''}" 
+                                           min="0" max="40" step="0.001" placeholder="0.000">
+                                </div>
+                                <div class="score-input-group">
+                                    <label>Visual</label>
+                                    <input type="number" id="visual_${corps.replace(/\s+/g, '_')}" 
+                                           value="${scoresMap[corps]?.visual_score || ''}" 
+                                           min="0" max="30" step="0.001" placeholder="0.000">
+                                </div>
+                                <div class="score-input-group">
+                                    <label>Music</label>
+                                    <input type="number" id="music_${corps.replace(/\s+/g, '_')}" 
+                                           value="${scoresMap[corps]?.music_score || ''}" 
+                                           min="0" max="30" step="0.001" placeholder="0.000">
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            document.getElementById('scoreModal').style.display = 'block';
+        }
+
+        // Close score modal
+        function closeScoreModal() {
+            document.getElementById('scoreModal').style.display = 'none';
+            currentEventId = null;
+            currentEventCorps = [];
+        }
+
+        // Save scores
+        async function saveScores() {
+            if (!currentEventId || currentEventCorps.length === 0) return;
+            
+            const scores = [];
+            
+            for (const corps of currentEventCorps) {
+                const corpsId = corps.replace(/\s+/g, '_');
+                const brass = parseFloat(document.getElementById(`brass_${corpsId}`).value) || 0;
+                const percussion = parseFloat(document.getElementById(`percussion_${corpsId}`).value) || 0;
+                const guard = parseFloat(document.getElementById(`guard_${corpsId}`).value) || 0;
+                const ge = parseFloat(document.getElementById(`ge_${corpsId}`).value) || 0;
+                const visual = parseFloat(document.getElementById(`visual_${corpsId}`).value) || 0;
+                const music = parseFloat(document.getElementById(`music_${corpsId}`).value) || 0;
+                
+                const total = brass + percussion + guard + ge + visual + music;
+                
+                scores.push({
+                    event_id: currentEventId,
+                    corps_name: corps,
+                    brass_score: brass,
+                    percussion_score: percussion,
+                    color_guard_score: guard,
+                    general_effect_score: ge,
+                    visual_score: visual,
+                    music_score: music,
+                    total_score: total
+                });
+            }
+            
+            // Delete existing scores and insert new ones
+            const { error: deleteError } = await supabaseClient
+                .from('event_scores')
+                .delete()
+                .eq('event_id', currentEventId);
+            
+            if (deleteError) {
+                alert('Error saving scores: ' + deleteError.message);
+                return;
+            }
+            
+            const { error: insertError } = await supabaseClient
+                .from('event_scores')
+                .insert(scores);
+            
+            if (insertError) {
+                alert('Error saving scores: ' + insertError.message);
+                return;
+            }
+            
+            // Mark event as completed if all scores are entered
+            const allScoresEntered = scores.every(s => s.total_score > 0);
+            if (allScoresEntered) {
+                await supabaseClient
+                    .from('events')
+                    .update({ is_completed: true })
+                    .eq('id', currentEventId);
+            }
+            
+            alert('Scores saved successfully!');
+            closeScoreModal();
             loadEvents();
         }
 
@@ -327,10 +782,19 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const isAdmin = await checkAdminAccess();
             if (isAdmin) {
+                initializeCorpsSelection();
                 loadEvents();
                 document.getElementById('eventForm').addEventListener('submit', addEvent);
             }
         });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('scoreModal');
+            if (event.target === modal) {
+                closeScoreModal();
+            }
+        }
     </script>
 </body>
 </html>

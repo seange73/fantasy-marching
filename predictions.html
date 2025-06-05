@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fantasy Drum Corps: Predictions</title>
+    <title>Fantasy Drum Corps: Make Predictions</title>
     <style>
         * {
             margin: 0;
@@ -16,17 +16,175 @@
             color: white;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            padding: 20px;
             overflow-x: hidden;
         }
 
-        .container {
-            max-width: 1100px;
+        /* Header Styles */
+        .header {
+            background: rgba(15, 15, 35, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            height: 75px;
+            width: auto;
+            display: block;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-tab {
+            color: #a0a0a0;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
             position: relative;
         }
 
-        .header {
+        .nav-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            color: #4ecdc4;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            border-radius: 2px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: rgba(26, 26, 46, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0.5rem;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .profile-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: #e0e0e0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .dropdown-item.admin {
+            color: #4ecdc4;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0.5rem 0;
+        }
+
+        .dropdown-icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .event-header {
             text-align: center;
             margin-bottom: 3rem;
             position: relative;
@@ -50,6 +208,21 @@
             max-width: 600px;
             margin: 0 auto;
             line-height: 1.6;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4ecdc4;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            transform: translateX(-4px);
         }
 
         .main-content {
@@ -352,6 +525,12 @@
             left: 100%;
         }
 
+        .submit-btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .submit-msg {
             margin-top: 1rem;
             font-size: 1.1rem;
@@ -368,9 +547,47 @@
             transform: translateY(0);
         }
 
+        .submit-msg.error {
+            color: #ff6b6b;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #4ecdc4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             .corps-grid {
                 grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .header-content {
+                padding: 1rem;
+            }
+            
+            .nav-tabs {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .user-name {
+                display: none;
             }
         }
 
@@ -406,14 +623,66 @@
     </style>
 </head>
 <body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/dashboard.html" class="logo-link">
+                <img src="images/logo.png" alt="Fantasy Marching" class="logo">
+            </a>
+            
+            <nav class="nav-tabs">
+                <a href="/dashboard.html" class="nav-tab">Dashboard</a>
+                <a href="/predictions-dashboard.html" class="nav-tab active">Predictions</a>
+                <a href="/league.html" class="nav-tab">League</a>
+                <a href="/contact.html" class="nav-tab">Contact Us</a>
+            </nav>
+            
+            <div class="user-profile" onclick="toggleUserMenu()">
+                <div class="user-avatar" id="userAvatar">
+                    <!-- Will be populated with user initial or image -->
+                </div>
+                <span class="user-name" id="userName">Loading...</span>
+                
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="/profile.html" class="dropdown-item">
+                        <span class="dropdown-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <a href="/settings.html" class="dropdown-item">
+                        <span class="dropdown-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
+                        <span class="dropdown-icon">🛡️</span>
+                        <span>Admin Panel</span>
+                    </a>
+                    <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
+                    <div class="dropdown-item" onclick="logout()">
+                        <span class="dropdown-icon">🚪</span>
+                        <span>Logout</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
     <div class="container">
-        <div class="header animate-in">
-            <h1>Innovations In Brass</h1>
-            <p class="subtitle">August 5, 2024</p>
-            <p class="subtitle">Canton, OH</p>
+        <a href="/predictions-dashboard.html" class="back-link">← Back to All Events</a>
+        
+        <div class="event-header animate-in">
+            <h1 id="eventName">Loading Event...</h1>
+            <p class="subtitle" id="eventDate"></p>
+            <p class="subtitle" id="eventLocation"></p>
         </div>
 
-        <div class="main-content">
+        <div id="loadingState" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading event data...</p>
+        </div>
+
+        <div id="mainContent" class="main-content" style="display: none;">
             <div class="leaderboard-section">
                 <div class="leaderboard">
                     <h2 class="leaderboard-title">Predicted Rankings</h2>
@@ -466,14 +735,20 @@
             </div>
         </div>
 
-        <div class="submit-section">
-            <button class="submit-btn" onclick="submitPredictions()">Submit Predictions</button>
+        <div class="submit-section" id="submitSection" style="display: none;">
+            <button class="submit-btn" id="submitBtn" onclick="submitPredictions()">Submit Predictions</button>
             <div id="submitMsg" class="submit-msg"></div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
     <script>
-        const corpsList = ["Blue Devils", "Carolina Crown", "Bluecoats", "Boston Crusaders", "The Cavaliers", "Phantom Regiment", "Santa Clara Vanguard", "The Cadets"];
+        let currentUser = null;
+        let isAdmin = false;
+        let currentEvent = null;
+        let existingPrediction = null;
+        let corpsList = [];
         const predictions = {};
         const captionPredictions = {
             guard: '',
@@ -481,11 +756,157 @@
             brass: ''
         };
 
-        function initializePage() {
-            createScoreInputs();
-            populateCaptionDropdowns();
+        // Get event ID from URL
+        function getEventIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('eventId');
         }
 
+        // Initialize page
+        async function initializePage() {
+            // Check authentication
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            if (!user) {
+                window.location.href = '/';
+                return;
+            }
+            
+            currentUser = user;
+            
+            // Load user profile
+            await loadUserProfile();
+            
+            // Load event data
+            const eventId = getEventIdFromUrl();
+            if (!eventId) {
+                alert('No event specified');
+                window.location.href = '/predictions-dashboard.html';
+                return;
+            }
+            
+            await loadEventData(eventId);
+        }
+
+        // Load user profile
+        async function loadUserProfile() {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('username, avatar_url, is_admin')
+                .eq('id', currentUser.id)
+                .single();
+            
+            if (profile) {
+                document.getElementById('userName').textContent = profile.username || currentUser.email.split('@')[0];
+                
+                // Set avatar (initial letter for now)
+                const initial = (profile.username || currentUser.email)[0].toUpperCase();
+                document.getElementById('userAvatar').textContent = initial;
+                
+                // Check admin status
+                isAdmin = profile.is_admin || false;
+                if (isAdmin) {
+                    document.getElementById('adminLink').style.display = 'flex';
+                    document.getElementById('adminDivider').style.display = 'block';
+                }
+            }
+        }
+
+        // Toggle user menu
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!e.target.closest('.user-profile')) {
+                    dropdown.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+
+        // Logout function
+        async function logout() {
+            const { error } = await supabaseClient.auth.signOut();
+            if (!error) {
+                window.location.href = '/';
+            }
+        }
+
+        // Load event data
+        async function loadEventData(eventId) {
+            // Load event details
+            const { data: event, error: eventError } = await supabaseClient
+                .from('events')
+                .select('*')
+                .eq('id', eventId)
+                .single();
+            
+            if (eventError || !event) {
+                alert('Event not found');
+                window.location.href = '/predictions-dashboard.html';
+                return;
+            }
+            
+            currentEvent = event;
+            corpsList = event.corps_list || [];
+            
+            // Check if event has already passed
+            const eventDate = new Date(event.date);
+            if (eventDate < new Date() && !event.is_completed) {
+                alert('This event has already passed. Predictions are closed.');
+                window.location.href = '/predictions-dashboard.html';
+                return;
+            }
+            
+            // Display event info
+            document.getElementById('eventName').textContent = event.name;
+            document.getElementById('eventDate').textContent = eventDate.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            }) + (event.time ? ` at ${event.time}` : '');
+            document.getElementById('eventLocation').textContent = event.location || 'Location TBD';
+            
+            // Check for existing prediction
+            const { data: prediction } = await supabaseClient
+                .from('predictions')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .eq('event_id', eventId)
+                .single();
+            
+            if (prediction) {
+                existingPrediction = prediction;
+                document.getElementById('submitBtn').textContent = 'Update Predictions';
+                
+                // Load existing predictions
+                if (prediction.score_predictions) {
+                    Object.assign(predictions, prediction.score_predictions);
+                }
+                if (prediction.caption_predictions) {
+                    Object.assign(captionPredictions, prediction.caption_predictions);
+                }
+            }
+            
+            // Hide loading, show content
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('submitSection').style.display = 'block';
+            
+            // Initialize the prediction form
+            createScoreInputs();
+            populateCaptionDropdowns();
+            
+            // If editing, populate existing values
+            if (existingPrediction) {
+                populateExistingPredictions();
+            }
+        }
+
+        // Create score input fields
         function createScoreInputs() {
             const container = document.getElementById('corpsGrid');
             container.innerHTML = '';
@@ -499,6 +920,7 @@
                     <div class="corps-name">${corps}</div>
                     <div class="score-input-container">
                         <input type="number" 
+                               id="score_${corps.replace(/\s+/g, '_')}"
                                min="0" 
                                max="100" 
                                step="0.001" 
@@ -512,6 +934,7 @@
             });
         }
 
+        // Populate caption award dropdowns
         function populateCaptionDropdowns() {
             const dropdowns = ['guardWinner', 'percussionWinner', 'brassWinner'];
             
@@ -534,6 +957,32 @@
             });
         }
 
+        // Populate existing predictions if editing
+        function populateExistingPredictions() {
+            // Populate scores
+            Object.entries(predictions).forEach(([corps, score]) => {
+                const input = document.getElementById(`score_${corps.replace(/\s+/g, '_')}`);
+                if (input) {
+                    input.value = score.toFixed(3);
+                }
+            });
+            
+            // Populate caption awards
+            if (captionPredictions.guard) {
+                document.getElementById('guardWinner').value = captionPredictions.guard;
+            }
+            if (captionPredictions.percussion) {
+                document.getElementById('percussionWinner').value = captionPredictions.percussion;
+            }
+            if (captionPredictions.brass) {
+                document.getElementById('brassWinner').value = captionPredictions.brass;
+            }
+            
+            // Update leaderboard
+            updateLeaderboard();
+        }
+
+        // Handle score input
         function handleScoreInput(corps, value) {
             let numValue = parseFloat(value);
             
@@ -553,6 +1002,7 @@
             updateLeaderboard();
         }
 
+        // Format score display
         function formatScore(input) {
             const value = parseFloat(input.value);
             if (!isNaN(value)) {
@@ -560,6 +1010,7 @@
             }
         }
 
+        // Update leaderboard display
         function updateLeaderboard() {
             const leaderboard = document.getElementById('leaderboard');
             
@@ -597,7 +1048,8 @@
             });
         }
 
-        function submitPredictions() {
+        // Submit predictions to Supabase
+        async function submitPredictions() {
             // Validate that at least one score is entered
             const hasScores = Object.values(predictions).some(score => score > 0);
             
@@ -605,33 +1057,77 @@
                 showMessage('Please enter at least one score prediction!', 'error');
                 return;
             }
-
-            // Collect all predictions
-            const submissionData = {
-                scores: predictions,
-                captions: captionPredictions,
-                event: 'Innovations In Brass',
-                date: '2024-08-05'
-            };
-
-            console.log('Submitting predictions:', submissionData);
             
-            // Show success message
-            showMessage('Predictions submitted successfully! 🎺', 'success');
+            // Disable submit button
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
             
-            // Here you would normally send to Supabase
-            savePredictionsToSupabase(submissionData);
+            try {
+                const predictionData = {
+                    user_id: currentUser.id,
+                    event_id: currentEvent.id,
+                    event_name: currentEvent.name,
+                    event_date: currentEvent.date,
+                    score_predictions: predictions,
+                    caption_predictions: captionPredictions,
+                    updated_at: new Date().toISOString()
+                };
+                
+                let result;
+                
+                if (existingPrediction) {
+                    // Update existing prediction
+                    const { data, error } = await supabaseClient
+                        .from('predictions')
+                        .update(predictionData)
+                        .eq('id', existingPrediction.id)
+                        .select()
+                        .single();
+                    
+                    if (error) throw error;
+                    result = data;
+                } else {
+                    // Insert new prediction
+                    const { data, error } = await supabaseClient
+                        .from('predictions')
+                        .insert(predictionData)
+                        .select()
+                        .single();
+                    
+                    if (error) throw error;
+                    result = data;
+                    existingPrediction = result;
+                }
+                
+                showMessage('Predictions saved successfully! 🎺', 'success');
+                
+                // Update button text
+                submitBtn.textContent = 'Update Predictions';
+                
+                // Redirect after a short delay
+                setTimeout(() => {
+                    window.location.href = '/predictions-dashboard.html';
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error saving predictions:', error);
+                showMessage('Error saving predictions. Please try again.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = existingPrediction ? 'Update Predictions' : 'Submit Predictions';
+            }
         }
 
+        // Show message to user
         function showMessage(text, type = 'success') {
             const msg = document.getElementById('submitMsg');
             msg.textContent = text;
-            msg.style.color = type === 'error' ? '#ff6b6b' : '#4ecdc4';
+            msg.className = `submit-msg ${type}`;
             msg.classList.add('show');
             
             setTimeout(() => {
                 msg.classList.remove('show');
-            }, 3000);
+            }, 5000);
         }
 
         // Initialize the page when loaded

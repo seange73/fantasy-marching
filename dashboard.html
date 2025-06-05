@@ -95,6 +95,7 @@
             padding: 0.5rem;
             border-radius: 12px;
             transition: all 0.2s ease;
+            position: relative;
         }
 
         .user-profile:hover {
@@ -116,6 +117,63 @@
         .user-name {
             font-weight: 600;
             color: #e0e0e0;
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: rgba(26, 26, 46, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0.5rem;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .profile-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: #e0e0e0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .dropdown-item.admin {
+            color: #4ecdc4;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0.5rem 0;
+        }
+
+        .dropdown-icon {
+            width: 20px;
+            text-align: center;
         }
 
         /* Main Content */
@@ -424,7 +482,7 @@
             
             <nav class="nav-tabs">
                 <a href="/dashboard.html" class="nav-tab active">Dashboard</a>
-                <a href="/predictions.html" class="nav-tab">Predictions</a>
+                <a href="/predictions-dashboard.html" class="nav-tab">Predictions</a>
                 <a href="/league.html" class="nav-tab">League</a>
                 <a href="/contact.html" class="nav-tab">Contact Us</a>
             </nav>
@@ -434,6 +492,28 @@
                     <!-- Will be populated with user initial or image -->
                 </div>
                 <span class="user-name" id="userName">Loading...</span>
+                
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="/profile.html" class="dropdown-item">
+                        <span class="dropdown-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <a href="/settings.html" class="dropdown-item">
+                        <span class="dropdown-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
+                        <span class="dropdown-icon">🛡️</span>
+                        <span>Admin Panel</span>
+                    </a>
+                    <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
+                    <div class="dropdown-item" onclick="logout()">
+                        <span class="dropdown-icon">🚪</span>
+                        <span>Logout</span>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -485,6 +565,7 @@
     <script src="js/supabase.js"></script>
     <script>
         let currentUser = null;
+        let isAdmin = false;
 
         // Initialize dashboard
         async function initDashboard() {
@@ -498,7 +579,7 @@
             
             currentUser = user;
             
-            // Load user profile
+            // Load user profile and check admin status
             await loadUserProfile();
             
             // Load all dashboard data
@@ -512,7 +593,7 @@
         async function loadUserProfile() {
             const { data: profile } = await supabaseClient
                 .from('profiles')
-                .select('username, avatar_url')
+                .select('username, avatar_url, is_admin')
                 .eq('id', currentUser.id)
                 .single();
             
@@ -522,6 +603,35 @@
                 // Set avatar (initial letter for now)
                 const initial = (profile.username || currentUser.email)[0].toUpperCase();
                 document.getElementById('userAvatar').textContent = initial;
+                
+                // Check admin status
+                isAdmin = profile.is_admin || false;
+                if (isAdmin) {
+                    document.getElementById('adminLink').style.display = 'flex';
+                    document.getElementById('adminDivider').style.display = 'block';
+                }
+            }
+        }
+
+        // Toggle user menu
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!e.target.closest('.user-profile')) {
+                    dropdown.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+
+        // Logout function
+        async function logout() {
+            const { error } = await supabaseClient.auth.signOut();
+            if (!error) {
+                window.location.href = '/';
             }
         }
 
@@ -541,7 +651,7 @@
                         )
                     `)
                     .eq('user_id', currentUser.id)
-                    .order('event_date', { ascending: false });
+                    .order('created_at', { ascending: false });
 
                 if (error) {
                     console.error('Error loading all predictions:', error);
@@ -574,8 +684,7 @@
                         .from('predictions')
                         .select('id')
                         .eq('user_id', currentUser.id)
-                        .eq('event_name', event.name)
-                        .eq('event_date', event.date)
+                        .eq('event_id', event.id)
                         .single();
                     
                     if (!prediction) {
@@ -585,7 +694,7 @@
                             title: 'Predictions Due Soon',
                             text: `${event.name} predictions close in ${daysUntil} days`,
                             action: 'Make Predictions',
-                            link: `/predictions.html?event=${event.name.toLowerCase().replace(/\s+/g, '-')}`
+                            link: `/predictions.html?eventId=${event.id}`
                         });
                     }
                 }
@@ -595,8 +704,7 @@
             reminders.push({
                 icon: '⚡',
                 title: 'Your Turn to Draft',
-                //text: "It's your turn in the 'Brass Believers' league league",
-				text: "THIS IS A PLACEHOLDER",
+                text: "THIS IS A PLACEHOLDER",
                 action: 'Make Your Pick',
                 link: '/league.html?leagueName=brass-believers'
             });
@@ -615,7 +723,7 @@
                     title: 'Results Available',
                     text: `Check how your predictions did for ${completedEvents[0].name}`,
                     action: 'View Results',
-                    link: `/results.html?event=${completedEvents[0].name.toLowerCase().replace(/\s+/g, '-')}`
+                    link: `/results.html?eventId=${completedEvents[0].id}`
                 });
             }
             
@@ -664,13 +772,7 @@
 
         // Fallback mock data for predictions
         function loadMockPredictionsLeaderboard() {
-            const mockData = [
-                //{ rank: 1, username: 'BlueDev1lsFan', score: 98.5, initial: 'B' },
-                //{ rank: 2, username: 'CrownJewel', score: 97.2, initial: 'C' },
-                //{ rank: 3, username: 'PhantomPhan', score: 96.8, initial: 'P' },
-                //{ rank: 4, username: 'BrassKing', score: 95.1, initial: 'B' },
-                //{ rank: 5, username: 'GuardGuru', score: 94.7, initial: 'G' }
-            ];
+            const mockData = [];
             
             const container = document.getElementById('predictionsLeaderboard');
             container.innerHTML = mockData.map(player => `
@@ -688,13 +790,7 @@
         // Load league leaderboard
         async function loadLeagueLeaderboard() {
             // Mock data - replace with actual query when league tables are created
-            const mockData = [
-                //{ rank: 1, username: 'FantasyMaster', score: 1247, initial: 'F' },
-                //{ rank: 2, username: 'DrumlineKing', score: 1198, initial: 'D' },
-                //{ rank: 3, username: 'BrassChamp', score: 1156, initial: 'B' },
-                //{ rank: 4, username: 'ColorGuardPro', score: 1089, initial: 'C' },
-                //{ rank: 5, username: 'MarchingAce', score: 1034, initial: 'M' }
-            ];
+            const mockData = [];
             
             const container = document.getElementById('leagueLeaderboard');
             container.innerHTML = mockData.map(player => `
@@ -712,26 +808,7 @@
         // Load user's leagues
         function loadUserLeagues() {
             // Mock data - replace with actual query
-            // Temporarily set to empty array to test the no leagues message
-            const leagues = []; // Change this back to the array below when you want to show leagues
-            /*
-            const leagues = [
-                {
-                    name: 'Brass Believers',
-                    rank: 3,
-                    total: 12,
-                    topPlayer: 'CrownJewel',
-                    topScore: 1456
-                },
-                {
-                    name: 'Phantom Regiment Fans',
-                    rank: 1,
-                    total: 8,
-                    topPlayer: 'You',
-                    topScore: 1289
-                }
-            ];
-            */
+            const leagues = [];
             
             const grid = document.getElementById('leaguesGrid');
             
@@ -763,12 +840,6 @@
                     </div>
                 </div>
             `).join('');
-        }
-
-        // Toggle user menu (placeholder for now)
-        function toggleUserMenu() {
-            // Future: Show dropdown with profile, settings, logout options
-            console.log('User menu clicked');
         }
 
         // Initialize on load

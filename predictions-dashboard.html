@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Marching - Predictions Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(15, 15, 35, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            height: 75px;
+            width: auto;
+            display: block;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-tab {
+            color: #a0a0a0;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            color: #4ecdc4;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            border-radius: 2px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: rgba(26, 26, 46, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0.5rem;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .profile-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: #e0e0e0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .dropdown-item.admin {
+            color: #4ecdc4;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0.5rem 0;
+        }
+
+        .dropdown-icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: #a0a0a0;
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+        }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-tab {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #a0a0a0;
+        }
+
+        .filter-tab:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .filter-tab.active {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Events Grid */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .event-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .event-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4ecdc4, #45b7d1, #6c5ce7);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border-color: rgba(78, 205, 196, 0.3);
+        }
+
+        .event-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .event-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-date {
+            font-size: 0.95rem;
+            color: #4ecdc4;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .event-location {
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .event-status {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-upcoming {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+        }
+
+        .status-predicted {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+        }
+
+        .status-completed {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+
+        .event-details {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .corps-count {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+
+        .countdown {
+            font-size: 0.85rem;
+            color: #45b7d1;
+            font-weight: 600;
+        }
+
+        .action-button {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+        }
+
+        .action-button:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #888;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #4ecdc4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .nav-tabs {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .header-content {
+                padding: 1rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/dashboard.html" class="logo-link">
+                <img src="images/logo.png" alt="Fantasy Marching" class="logo">
+            </a>
+            
+            <nav class="nav-tabs">
+                <a href="/dashboard.html" class="nav-tab">Dashboard</a>
+                <a href="/predictions-dashboard.html" class="nav-tab active">Predictions</a>
+                <a href="/league.html" class="nav-tab">League</a>
+                <a href="/contact.html" class="nav-tab">Contact Us</a>
+            </nav>
+            
+            <div class="user-profile" onclick="toggleUserMenu()">
+                <div class="user-avatar" id="userAvatar">
+                    <!-- Will be populated with user initial or image -->
+                </div>
+                <span class="user-name" id="userName">Loading...</span>
+                
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="/profile.html" class="dropdown-item">
+                        <span class="dropdown-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <a href="/settings.html" class="dropdown-item">
+                        <span class="dropdown-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
+                        <span class="dropdown-icon">🛡️</span>
+                        <span>Admin Panel</span>
+                    </a>
+                    <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
+                    <div class="dropdown-item" onclick="logout()">
+                        <span class="dropdown-icon">🚪</span>
+                        <span>Logout</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">Event Predictions</h1>
+        <p class="page-subtitle">Select an event to make your predictions</p>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <div class="filter-tab active" onclick="filterEvents('all')">All Events</div>
+            <div class="filter-tab" onclick="filterEvents('upcoming')">Upcoming</div>
+            <div class="filter-tab" onclick="filterEvents('predicted')">My Predictions</div>
+            <div class="filter-tab" onclick="filterEvents('completed')">Completed</div>
+        </div>
+
+        <!-- Events Grid -->
+        <div class="events-grid" id="eventsGrid">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading events...</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script>
+        let currentUser = null;
+        let isAdmin = false;
+        let allEvents = [];
+        let userPredictions = {};
+        let currentFilter = 'all';
+
+        // Initialize dashboard
+        async function initPredictionsDashboard() {
+            // Check authentication
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            if (!user) {
+                window.location.href = '/';
+                return;
+            }
+            
+            currentUser = user;
+            
+            // Load user profile and check admin status
+            await loadUserProfile();
+            
+            // Load events and predictions
+            await loadEvents();
+        }
+
+        // Load user profile
+        async function loadUserProfile() {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('username, avatar_url, is_admin')
+                .eq('id', currentUser.id)
+                .single();
+            
+            if (profile) {
+                document.getElementById('userName').textContent = profile.username || currentUser.email.split('@')[0];
+                
+                // Set avatar (initial letter for now)
+                const initial = (profile.username || currentUser.email)[0].toUpperCase();
+                document.getElementById('userAvatar').textContent = initial;
+                
+                // Check admin status
+                isAdmin = profile.is_admin || false;
+                if (isAdmin) {
+                    document.getElementById('adminLink').style.display = 'flex';
+                    document.getElementById('adminDivider').style.display = 'block';
+                }
+            }
+        }
+
+        // Toggle user menu
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!e.target.closest('.user-profile')) {
+                    dropdown.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+
+        // Logout function
+        async function logout() {
+            const { error } = await supabaseClient.auth.signOut();
+            if (!error) {
+                window.location.href = '/';
+            }
+        }
+
+        // Load all events and user predictions
+        async function loadEvents() {
+            // Load all events
+            const { data: events, error: eventsError } = await supabaseClient
+                .from('events')
+                .select('*')
+                .order('date', { ascending: true });
+            
+            if (eventsError) {
+                console.error('Error loading events:', eventsError);
+                return;
+            }
+            
+            allEvents = events || [];
+            
+            // Load user's predictions
+            const { data: predictions, error: predictionsError } = await supabaseClient
+                .from('predictions')
+                .select('event_id')
+                .eq('user_id', currentUser.id);
+            
+            if (!predictionsError && predictions) {
+                predictions.forEach(pred => {
+                    userPredictions[pred.event_id] = true;
+                });
+            }
+            
+            // Display events
+            displayEvents();
+        }
+
+        // Filter events
+        function filterEvents(filter) {
+            currentFilter = filter;
+            
+            // Update active tab
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            displayEvents();
+        }
+
+        // Display events based on current filter
+        function displayEvents() {
+            const now = new Date();
+            let filteredEvents = allEvents;
+            
+            switch (currentFilter) {
+                case 'upcoming':
+                    filteredEvents = allEvents.filter(event => 
+                        new Date(event.date) >= now && !event.is_completed
+                    );
+                    break;
+                case 'predicted':
+                    filteredEvents = allEvents.filter(event => 
+                        userPredictions[event.id]
+                    );
+                    break;
+                case 'completed':
+                    filteredEvents = allEvents.filter(event => 
+                        event.is_completed
+                    );
+                    break;
+            }
+            
+            const grid = document.getElementById('eventsGrid');
+            
+            if (filteredEvents.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <h3>No events found</h3>
+                        <p>${getEmptyMessage()}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = filteredEvents.map(event => {
+                const eventDate = new Date(event.date);
+                const isPast = eventDate < now;
+                const hasPredicted = userPredictions[event.id];
+                const daysUntil = Math.ceil((eventDate - now) / (1000 * 60 * 60 * 24));
+                
+                let status = 'upcoming';
+                let statusText = 'Upcoming';
+                let buttonText = 'Make Predictions';
+                let buttonDisabled = false;
+                
+                if (event.is_completed) {
+                    status = 'completed';
+                    statusText = 'Completed';
+                    buttonText = 'View Results';
+                } else if (hasPredicted) {
+                    status = 'predicted';
+                    statusText = 'Predicted';
+                    buttonText = 'Edit Predictions';
+                } else if (isPast) {
+                    buttonDisabled = true;
+                    buttonText = 'Event Passed';
+                }
+                
+                return `
+                    <div class="event-card" onclick="${!buttonDisabled ? `goToEvent('${event.id}')` : ''}">
+                        <div class="event-header">
+                            <div>
+                                <h3 class="event-title">${event.name}</h3>
+                                <div class="event-date">
+                                    <span>📅</span>
+                                    ${eventDate.toLocaleDateString('en-US', { 
+                                        weekday: 'long', 
+                                        year: 'numeric', 
+                                        month: 'long', 
+                                        day: 'numeric' 
+                                    })}
+                                    ${event.time ? ` at ${event.time}` : ''}
+                                </div>
+                                <div class="event-location">
+                                    <span>📍</span>
+                                    ${event.location || 'Location TBD'}
+                                </div>
+                            </div>
+                            <div class="event-status status-${status}">
+                                ${statusText}
+                            </div>
+                        </div>
+                        
+                        <div class="event-details">
+                            ${event.corps_list ? `
+                                <div class="corps-count">${event.corps_list.length} corps competing</div>
+                            ` : ''}
+                            ${!isPast && !event.is_completed && daysUntil >= 0 ? `
+                                <div class="countdown">
+                                    ${daysUntil === 0 ? 'Today!' : 
+                                      daysUntil === 1 ? 'Tomorrow' : 
+                                      `${daysUntil} days until event`}
+                                </div>
+                            ` : ''}
+                            
+                            <button class="action-button" ${buttonDisabled ? 'disabled' : ''}>
+                                ${buttonText}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Get empty state message based on filter
+        function getEmptyMessage() {
+            switch (currentFilter) {
+                case 'upcoming':
+                    return 'No upcoming events scheduled';
+                case 'predicted':
+                    return 'You haven\'t made any predictions yet';
+                case 'completed':
+                    return 'No completed events yet';
+                default:
+                    return 'No events available';
+            }
+        }
+
+        // Navigate to event prediction page
+        function goToEvent(eventId) {
+            window.location.href = `/predictions.html?eventId=${eventId}`;
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initPredictionsDashboard);
+    </script>
+</body>
+</html>
