@@ -294,12 +294,20 @@
             min-height: 600px;
         }
 
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         .lineup-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
-            align-items: start; /* Allow items to have different heights */
+            align-items: start;
         }
 
         .caption-section {
@@ -311,7 +319,7 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            height: auto; /* Allow natural height */
+            height: auto;
         }
 
         .caption-section:hover {
@@ -344,15 +352,13 @@
             border-left: 4px solid #ff6b6b;
         }
 
-        /* Caption sections with bench will have more height */
         .caption-section:not(.no-bench) {
             min-height: 280px;
         }
 
-        /* Caption sections without bench are more compact */
         .caption-section.no-bench {
             min-height: auto;
-            padding-bottom: 1rem; /* Less bottom padding */
+            padding-bottom: 1rem;
         }
 
         .caption-header {
@@ -802,7 +808,7 @@
 
         <div class="content">
             <!-- My Lineup Tab -->
-            <div id="lineup-content" class="tab-content">
+            <div id="lineup-content" class="tab-content active">
                 <h2 class="section-title">Starting Lineup</h2>
                 <div class="lineup-grid">
                     <div class="caption-section brass">
@@ -872,13 +878,6 @@
                             <div class="caption-title">Color Guard</div>
                             <div class="caption-total">36.88</div>
                         </div>
-                        <div class="corps-card" data-caption="guard" data-position="0" data-score="18.65">
-                            <div class="corps-name">Phantom Regiment</div>
-                            <div class="corps-stats">
-                                <span>Rank: #5 • Score: 18.65</span>
-                                <span class="improvement positive">+0.4</span>
-                            </div>
-                        </div>
                         <div class="corps-card" data-caption="guard" data-position="1" data-score="18.23">
                             <div class="corps-name">The Cavaliers</div>
                             <div class="corps-stats">
@@ -886,7 +885,6 @@
                                 <span class="improvement positive">+0.6</span>
                             </div>
                         </div>
-                        <!-- No bench section for Color Guard -->
                     </div>
 
                     <div class="caption-section ge no-bench">
@@ -901,7 +899,6 @@
                                 <span class="improvement positive">+0.3</span>
                             </div>
                         </div>
-                        <!-- No bench section for General Effect -->
                     </div>
 
                     <div class="caption-section visual">
@@ -940,6 +937,304 @@
                                 <span class="improvement positive">+0.4</span>
                             </div>
                         </div>
-                        <!-- No bench section for Music -->
                     </div>
+                </div>
+
+                <div class="personal-stats">
+                    <h2 class="section-title">Your Stats This Week</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">167.34</div>
+                            <div class="stat-label">Total Points</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">3rd</div>
+                            <div class="stat-label">League Rank</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">5-3</div>
+                            <div class="stat-label">Win-Loss Record</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">+12.4</div>
+                            <div class="stat-label">Avg Margin</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Matchup Tab -->
+            <div id="matchup-content" class="tab-content">
+                <h2 class="section-title">Week 8 Matchup</h2>
+                <div class="matchup-container">
+                    <div class="team-column">
+                        <h3 class="team-name">Your Team</h3>
+                        <div class="score winning">167.34</div>
+                        <div style="margin-top: 1.5rem;">
+                            <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <strong style="color: #4ecdc4;">Top Performers</strong>
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>Blue Devils (Brass)</strong>: 19.85 pts
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>SCV (Percussion)</strong>: 19.45 pts
+                            </div>
+                            <div>
+                                <strong>Cavaliers (Guard)</strong>: 18.23 pts
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="vs-section">VS</div>
+                    
+                    <div class="team-column">
+                        <h3 class="team-name">Brass Brigade</h3>
+                        <div class="score losing">154.21</div>
+                        <div style="margin-top: 1.5rem;">
+                            <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <strong style="color: #4ecdc4;">Top Performers</strong>
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>Bluecoats (Brass)</strong>: 19.23 pts
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>Crown (Visual)</strong>: 18.87 pts
+                            </div>
+                            <div>
+                                <strong>Cadets (GE)</strong>: 17.92 pts
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="success-banner">
+                    <h3>You're winning by 13.13 points!</h3>
+                    <p>Keep your lineup optimized to maintain your lead through the weekend.</p>
+                </div>
+
+                <div class="other-matchups">
+                    <h3 class="section-title">Other Matchups This Week</h3>
+                    <div class="matchup-item">
+                        <span><strong>Thunder & Lightning</strong> vs Sound Machine</span>
+                        <span>98.4 - 87.2</span>
+                    </div>
+                    <div class="matchup-item">
+                        <span><strong>Brass Believers</strong> vs Percussion Predators</span>
+                        <span>156.7 - 142.3</span>
+                    </div>
+                    <div class="matchup-item">
+                        <span>Guard Goals vs <strong>Visual Victory</strong></span>
+                        <span>134.5 - 145.8</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recruitment Tab -->
+            <div id="recruitment-content" class="tab-content">
+                <h2 class="section-title">Free Agent Recruitment</h2>
                 
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Caption</label>
+                        <select id="captionFilter" onchange="filterFreeAgents()">
+                            <option value="all">All Captions</option>
+                            <option value="brass">Brass</option>
+                            <option value="percussion">Percussion</option>
+                            <option value="guard">Color Guard</option>
+                            <option value="ge">General Effect</option>
+                            <option value="visual">Visual</option>
+                            <option value="music">Music</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Min Score</label>
+                        <input type="number" id="minScoreFilter" placeholder="0.0" step="0.1" onchange="filterFreeAgents()">
+                    </div>
+                    <div class="filter-group">
+                        <label>Sort By</label>
+                        <select id="sortFilter" onchange="filterFreeAgents()">
+                            <option value="score">Score (High to Low)</option>
+                            <option value="improvement">Recent Improvement</option>
+                            <option value="rank">Rank</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="recruitment-grid" id="recruitmentGrid">
+                    <div class="free-agent-card">
+                        <h3 class="corps-name">Spirit of Atlanta</h3>
+                        <div class="corps-stats" style="margin-bottom: 1rem;">
+                            <span>Brass • Rank: #9</span>
+                            <span class="improvement positive">+0.6</span>
+                        </div>
+                        <div style="color: #a0a0a0; margin-bottom: 1rem;">
+                            <div>Current Score: 17.45</div>
+                            <div>3-Show Avg: 17.12</div>
+                            <div>Season High: 17.89</div>
+                        </div>
+                        <button class="recruit-btn" onclick="recruitCorps('Spirit of Atlanta', 'brass')">
+                            Recruit to Brass
+                        </button>
+                    </div>
+
+                    <div class="free-agent-card">
+                        <h3 class="corps-name">Troopers</h3>
+                        <div class="corps-stats" style="margin-bottom: 1rem;">
+                            <span>Visual • Rank: #11</span>
+                            <span class="improvement positive">+0.8</span>
+                        </div>
+                        <div style="color: #a0a0a0; margin-bottom: 1rem;">
+                            <div>Current Score: 16.92</div>
+                            <div>3-Show Avg: 16.45</div>
+                            <div>Season High: 17.23</div>
+                        </div>
+                        <button class="recruit-btn" onclick="recruitCorps('Troopers', 'visual')">
+                            Recruit to Visual
+                        </button>
+                    </div>
+
+                    <div class="free-agent-card">
+                        <h3 class="corps-name">Pacific Crest</h3>
+                        <div class="corps-stats" style="margin-bottom: 1rem;">
+                            <span>Percussion • Rank: #14</span>
+                            <span class="improvement positive">+0.4</span>
+                        </div>
+                        <div style="color: #a0a0a0; margin-bottom: 1rem;">
+                            <div>Current Score: 16.34</div>
+                            <div>3-Show Avg: 16.12</div>
+                            <div>Season High: 16.78</div>
+                        </div>
+                        <button class="recruit-btn" onclick="recruitCorps('Pacific Crest', 'percussion')">
+                            Recruit to Percussion
+                        </button>
+                    </div>
+
+                    <div class="free-agent-card">
+                        <h3 class="corps-name">Colts</h3>
+                        <div class="corps-stats" style="margin-bottom: 1rem;">
+                            <span>Guard • Rank: #16</span>
+                            <span class="improvement positive">+0.5</span>
+                        </div>
+                        <div style="color: #a0a0a0; margin-bottom: 1rem;">
+                            <div>Current Score: 15.89</div>
+                            <div>3-Show Avg: 15.56</div>
+                            <div>Season High: 16.12</div>
+                        </div>
+                        <button class="recruit-btn" onclick="recruitCorps('Colts', 'guard')">
+                            Recruit to Guard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script>
+        let currentUser = null;
+        let isAdmin = false;
+
+        // Initialize page
+        async function init() {
+            // Check authentication
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            if (!user) {
+                window.location.href = '/';
+                return;
+            }
+            
+            currentUser = user;
+            
+            // Load user profile
+            await loadUserProfile();
+        }
+
+        // Load user profile (same as dashboard)
+        async function loadUserProfile() {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('username, avatar_url, is_admin')
+                .eq('id', currentUser.id)
+                .single();
+            
+            if (profile) {
+                document.getElementById('userName').textContent = profile.username || currentUser.email.split('@')[0];
+                
+                // Set avatar (initial letter for now)
+                const initial = (profile.username || currentUser.email)[0].toUpperCase();
+                document.getElementById('userAvatar').textContent = initial;
+                
+                // Check admin status
+                isAdmin = profile.is_admin || false;
+                if (isAdmin) {
+                    document.getElementById('adminLink').style.display = 'flex';
+                    document.getElementById('adminDivider').style.display = 'block';
+                }
+            }
+        }
+
+        // Toggle user menu (same as dashboard)
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!e.target.closest('.user-profile')) {
+                    dropdown.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+
+        // Logout function (same as dashboard)
+        async function logout() {
+            const { error } = await supabaseClient.auth.signOut();
+            if (!error) {
+                window.location.href = '/';
+            }
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            // Update tab buttons
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update content
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-content`).classList.add('active');
+        }
+
+        // Filter free agents
+        function filterFreeAgents() {
+            const caption = document.getElementById('captionFilter').value;
+            const minScore = parseFloat(document.getElementById('minScoreFilter').value) || 0;
+            const sortBy = document.getElementById('sortFilter').value;
+            
+            // In a real implementation, this would filter and sort the recruitment grid
+            console.log('Filtering by:', { caption, minScore, sortBy });
+        }
+
+        // Recruit corps
+        function recruitCorps(corpsName, caption) {
+            if (confirm(`Are you sure you want to recruit ${corpsName} to your ${caption} lineup?`)) {
+                alert(`${corpsName} has been added to your ${caption} bench!`);
+                // In a real implementation, this would update the database
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
