@@ -95,6 +95,7 @@
             padding: 0.5rem;
             border-radius: 12px;
             transition: all 0.2s ease;
+            position: relative;
         }
 
         .user-profile:hover {
@@ -116,6 +117,63 @@
         .user-name {
             font-weight: 600;
             color: #e0e0e0;
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: rgba(26, 26, 46, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0.5rem;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .profile-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: #e0e0e0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .dropdown-item.admin {
+            color: #4ecdc4;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0.5rem 0;
+        }
+
+        .dropdown-icon {
+            width: 20px;
+            text-align: center;
         }
 
         .container {
@@ -249,6 +307,9 @@
             padding: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         .caption-section:hover {
@@ -281,20 +342,33 @@
             border-left: 4px solid #ff6b6b;
         }
 
+        /* Reduce min-height for caption sections without bench */
+        .caption-section.no-bench {
+            min-height: auto;
+        }
+
+        .caption-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
         .caption-title {
             font-size: 1.4rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
             color: #4ecdc4;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .caption-subtitle {
-            font-size: 0.9rem;
-            color: #a0a0a0;
-            margin-bottom: 1rem;
-            font-style: italic;
+        .caption-total {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .corps-card {
@@ -361,9 +435,17 @@
         }
 
         .bench-section {
-            margin-top: 3rem;
-            padding-top: 2rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bench-label {
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .section-title {
@@ -607,7 +689,7 @@
             }
 
             .logo {
-                height: 80px;
+                height: 60px;
             }
 
             .nav-tabs {
@@ -640,20 +722,44 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <a href="dashboard.html" class="logo-link">
+            <a href="/dashboard.html" class="logo-link">
                 <img src="images/logo.png" alt="Fantasy Marching" class="logo">
             </a>
             
             <nav class="nav-tabs">
-                <a href="dashboard.html" class="nav-tab">Dashboard</a>
-                <a href="predictions.html" class="nav-tab">Predictions</a>
-                <a href="league.html" class="nav-tab active">League</a>
-                <a href="contact.html" class="nav-tab">Contact Us</a>
+                <a href="/dashboard.html" class="nav-tab">Dashboard</a>
+                <a href="/predictions-dashboard.html" class="nav-tab">Predictions</a>
+                <a href="/league.html" class="nav-tab active">League</a>
+                <a href="/contact.html" class="nav-tab">Contact Us</a>
             </nav>
             
             <div class="user-profile" onclick="toggleUserMenu()">
-                <div class="user-avatar" id="userAvatar">U</div>
-                <span class="user-name" id="userName">Username</span>
+                <div class="user-avatar" id="userAvatar">
+                    <!-- Will be populated with user initial or image -->
+                </div>
+                <span class="user-name" id="userName">Loading...</span>
+                
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="/profile.html" class="dropdown-item">
+                        <span class="dropdown-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <a href="/settings.html" class="dropdown-item">
+                        <span class="dropdown-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
+                        <span class="dropdown-icon">🛡️</span>
+                        <span>Admin Panel</span>
+                    </a>
+                    <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
+                    <div class="dropdown-item" onclick="logout()">
+                        <span class="dropdown-icon">🚪</span>
+                        <span>Logout</span>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -692,24 +798,26 @@
                 <h2 class="section-title">Starting Lineup</h2>
                 <div class="lineup-grid">
                     <div class="caption-section brass">
-                        <div class="caption-title">Brass</div>
-                        <div class="caption-subtitle">Avg Improvement: +0.4 per week</div>
-                        <div class="corps-card competed" data-caption="brass" data-position="0">
+                        <div class="caption-header">
+                            <div class="caption-title">Brass</div>
+                            <div class="caption-total">38.97</div>
+                        </div>
+                        <div class="corps-card competed" data-caption="brass" data-position="0" data-score="19.85">
                             <div class="corps-name">Blue Devils</div>
                             <div class="corps-stats">
                                 <span>Rank: #1 • Score: 19.85</span>
                                 <span class="improvement positive">+0.3</span>
                             </div>
                         </div>
-                        <div class="corps-card" data-caption="brass" data-position="1">
+                        <div class="corps-card" data-caption="brass" data-position="1" data-score="19.12">
                             <div class="corps-name">Carolina Crown</div>
                             <div class="corps-stats">
                                 <span>Rank: #3 • Score: 19.12</span>
                                 <span class="improvement positive">+0.5</span>
                             </div>
                         </div>
-                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                            <div style="font-size: 0.9rem; color: #a0a0a0; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Bench</div>
+                        <div class="bench-section">
+                            <div class="bench-label">Bench</div>
                             <div class="corps-card" data-caption="brass" data-bench="true">
                                 <div class="corps-name">Crossmen</div>
                                 <div class="corps-stats">
@@ -721,24 +829,26 @@
                     </div>
 
                     <div class="caption-section percussion">
-                        <div class="caption-title">Percussion</div>
-                        <div class="caption-subtitle">Avg Improvement: +0.05 per week</div>
-                        <div class="corps-card" data-caption="percussion" data-position="0">
+                        <div class="caption-header">
+                            <div class="caption-title">Percussion</div>
+                            <div class="caption-total">38.34</div>
+                        </div>
+                        <div class="corps-card" data-caption="percussion" data-position="0" data-score="19.45">
                             <div class="corps-name">Santa Clara Vanguard</div>
                             <div class="corps-stats">
                                 <span>Rank: #2 • Score: 19.45</span>
                                 <span class="improvement positive">+0.2</span>
                             </div>
                         </div>
-                        <div class="corps-card competed" data-caption="percussion" data-position="1">
+                        <div class="corps-card competed" data-caption="percussion" data-position="1" data-score="18.89">
                             <div class="corps-name">Bluecoats</div>
                             <div class="corps-stats">
                                 <span>Rank: #4 • Score: 18.89</span>
                                 <span class="improvement negative">-0.1</span>
                             </div>
                         </div>
-                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                            <div style="font-size: 0.9rem; color: #a0a0a0; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Bench</div>
+                        <div class="bench-section">
+                            <div class="bench-label">Bench</div>
                             <div class="corps-card competed" data-caption="percussion" data-bench="true">
                                 <div class="corps-name">Madison Scouts</div>
                                 <div class="corps-stats">
@@ -750,56 +860,56 @@
                     </div>
 
                     <div class="caption-section guard">
-                        <div class="caption-title">Color Guard</div>
-                        <div class="caption-subtitle">Avg Improvement: +0.5 per week</div>
-                        <div class="corps-card" data-caption="guard" data-position="0">
+                        <div class="caption-header">
+                            <div class="caption-title">Color Guard</div>
+                            <div class="caption-total">36.88</div>
+                        </div>
+                        <div class="corps-card" data-caption="guard" data-position="0" data-score="18.65">
                             <div class="corps-name">Phantom Regiment</div>
                             <div class="corps-stats">
                                 <span>Rank: #5 • Score: 18.65</span>
                                 <span class="improvement positive">+0.4</span>
                             </div>
                         </div>
-                        <div class="corps-card" data-caption="guard" data-position="1">
+                        <div class="corps-card" data-caption="guard" data-position="1" data-score="18.23">
                             <div class="corps-name">The Cavaliers</div>
                             <div class="corps-stats">
                                 <span>Rank: #7 • Score: 18.23</span>
                                 <span class="improvement positive">+0.6</span>
                             </div>
                         </div>
-                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                            <div style="font-size: 0.9rem; color: #a0a0a0; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Bench</div>
-                            <div style="color: #666; font-style: italic; text-align: center; padding: 1rem;">None</div>
-                        </div>
+                        <!-- No bench section for Color Guard -->
                     </div>
 
                     <div class="caption-section ge">
-                        <div class="caption-title">General Effect</div>
-                        <div class="caption-subtitle">Avg Improvement: +0.3 per week</div>
-                        <div class="corps-card" data-caption="ge" data-position="0">
+                        <div class="caption-header">
+                            <div class="caption-title">General Effect</div>
+                            <div class="caption-total">18.45</div>
+                        </div>
+                        <div class="corps-card" data-caption="ge" data-position="0" data-score="18.45">
                             <div class="corps-name">Boston Crusaders</div>
                             <div class="corps-stats">
                                 <span>Rank: #6 • Score: 18.45</span>
                                 <span class="improvement positive">+0.3</span>
                             </div>
                         </div>
-                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                            <div style="font-size: 0.9rem; color: #a0a0a0; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Bench</div>
-                            <div style="color: #666; font-style: italic; text-align: center; padding: 1rem;">None</div>
-                        </div>
+                        <!-- No bench section for General Effect -->
                     </div>
 
                     <div class="caption-section visual">
-                        <div class="caption-title">Visual</div>
-                        <div class="caption-subtitle">Avg Improvement: +0.8 per week</div>
-                        <div class="corps-card competed" data-caption="visual" data-position="0">
+                        <div class="caption-header">
+                            <div class="caption-title">Visual</div>
+                            <div class="caption-total">16.78</div>
+                        </div>
+                        <div class="corps-card competed" data-caption="visual" data-position="0" data-score="16.78">
                             <div class="corps-name">The Academy</div>
                             <div class="corps-stats">
                                 <span>Rank: #12 • Score: 16.78</span>
                                 <span class="improvement positive">+0.8</span>
                             </div>
                         </div>
-                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                            <div style="font-size: 0.9rem; color: #a0a0a0; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Bench</div>
+                        <div class="bench-section">
+                            <div class="bench-label">Bench</div>
                             <div class="corps-card" data-caption="visual" data-bench="true">
                                 <div class="corps-name">Mandarins</div>
                                 <div class="corps-stats">
@@ -811,366 +921,17 @@
                     </div>
 
                     <div class="caption-section music">
-                        <div class="caption-title">Music</div>
-                        <div class="caption-subtitle">Avg Improvement: +0.4 per week</div>
-                        <div class="corps-card" data-caption="music" data-position="0">
+                        <div class="caption-header">
+                            <div class="caption-title">Music</div>
+                            <div class="caption-total">17.92</div>
+                        </div>
+                        <div class="corps-card" data-caption="music" data-position="0" data-score="17.92">
                             <div class="corps-name">Blue Knights</div>
                             <div class="corps-stats">
                                 <span>Rank: #8 • Score: 17.92</span>
                                 <span class="improvement positive">+0.4</span>
                             </div>
                         </div>
-                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                            <div style="font-size: 0.9rem; color: #a0a0a0; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Bench</div>
-                            <div style="color: #666; font-style: italic; text-align: center; padding: 1rem;">None</div>
-                        </div>
+                        <!-- No bench section for Music -->
                     </div>
-                </div>
-
-                <div class="personal-stats">
-                    <h3 class="section-title">Your Season Stats</h3>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value">847.2</div>
-                            <div class="stat-label">Average Weekly Score</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">932.5</div>
-                            <div class="stat-label">Highest Week</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">+12.3</div>
-                            <div class="stat-label">Weekly Improvement</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">5-3</div>
-                            <div class="stat-label">Win-Loss Record</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Weekly Matchup Tab -->
-            <div id="matchup-content" class="tab-content hidden">
-                <h2 class="section-title" style="text-align: center;">Week 8 Matchup</h2>
-                <div class="matchup-container">
-                    <div class="team-column">
-                        <div class="team-name">Your Team</div>
-                        <div class="score winning">873.4</div>
-                        <div style="text-align: center; color: #a0a0a0;">
-                            <p>Brass: 39.0 • Perc: 37.3 • Guard: 36.9</p>
-                            <p>GE: 18.45 • Visual: 16.78 • Music: 17.92</p>
-                        </div>
-                    </div>
-                    <div class="vs-section">VS</div>
-                    <div class="team-column">
-                        <div class="team-name">Mike's Marchers</div>
-                        <div class="score losing">856.7</div>
-                        <div style="text-align: center; color: #a0a0a0;">
-                            <p>Brass: 38.2 • Perc: 36.8 • Guard: 35.4</p>
-                            <p>GE: 19.1 • Visual: 15.9 • Music: 17.8</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="success-banner">
-                    <h3>🎉 You Won This Week! 🎉</h3>
-                    <p>Great lineup choices led to a 16.7 point victory!</p>
-                </div>
-
-                <div class="other-matchups">
-                    <h3 class="section-title">Other League Matchups</h3>
-                    <div class="matchup-item">
-                        <span>Sarah's Squad vs Tom's Titans</span>
-                        <span><strong>891.2</strong> - 867.5</span>
-                    </div>
-                    <div class="matchup-item">
-                        <span>Drum Dynasty vs Brass Bombers</span>
-                        <span>823.7 - <strong>845.1</strong></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recruitment Tab -->
-            <div id="recruitment-content" class="tab-content hidden">
-                <h2 class="section-title">Free Agents</h2>
                 
-                <div class="filters">
-                    <div class="filter-group">
-                        <label>Search</label>
-                        <input type="text" placeholder="Search corps..." id="search-input">
-                    </div>
-                    <div class="filter-group">
-                        <label>Caption</label>
-                        <select id="caption-filter">
-                            <option value="">All Captions</option>
-                            <option value="brass">Brass</option>
-                            <option value="percussion">Percussion</option>
-                            <option value="guard">Color Guard</option>
-                            <option value="ge">General Effect</option>
-                            <option value="visual">Visual</option>
-                            <option value="music">Music</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Sort By</label>
-                        <select id="sort-filter">
-                            <option value="rank">Rank (Best First)</option>
-                            <option value="improvement">Improvement</option>
-                            <option value="score">Score</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="recruitment-grid">
-                    <div class="free-agent-card">
-                        <div class="corps-name">Spirit of JSU (Brass)</div>
-                        <div class="corps-stats">
-                            <span>Rank: #19 • Score: 15.45</span>
-                            <span class="improvement positive">+0.9</span>
-                        </div>
-                        <button class="recruit-btn">Recruit</button>
-                    </div>
-                    
-                    <div class="free-agent-card">
-                        <div class="corps-name">Mandarins (Percussion)</div>
-                        <div class="corps-stats">
-                            <span>Rank: #14 • Score: 16.78</span>
-                            <span class="improvement positive">+0.6</span>
-                        </div>
-                        <button class="recruit-btn">Recruit</button>
-                    </div>
-
-                    <div class="free-agent-card">
-                        <div class="corps-name">Genesis (Guard)</div>
-                        <div class="corps-stats">
-                            <span>Rank: #21 • Score: 14.23</span>
-                            <span class="improvement positive">+1.2</span>
-                        </div>
-                        <button class="recruit-btn">Recruit</button>
-                    </div>
-
-                    <div class="free-agent-card">
-                        <div class="corps-name">Pacific Crest (Visual)</div>
-                        <div class="corps-stats">
-                            <span>Rank: #16 • Score: 15.89</span>
-                            <span class="improvement positive">+0.4</span>
-                        </div>
-                        <button class="recruit-btn">Recruit</button>
-                    </div>
-
-                    <div class="free-agent-card">
-                        <div class="corps-name">Troopers (Brass)</div>
-                        <div class="corps-stats">
-                            <span>Rank: #17 • Score: 15.67</span>
-                            <span class="improvement negative">-0.2</span>
-                        </div>
-                        <button class="recruit-btn">Recruit</button>
-                    </div>
-
-                    <div class="free-agent-card">
-                        <div class="corps-name">Colts (Music)</div>
-                        <div class="corps-stats">
-                            <span>Rank: #20 • Score: 14.78</span>
-                            <span class="improvement positive">+0.8</span>
-                        </div>
-                        <button class="recruit-btn">Recruit</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Tab switching functionality
-        function switchTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected tab content
-            document.getElementById(tabName + '-content').classList.remove('hidden');
-            
-            // Add active class to clicked tab
-            event.target.classList.add('active');
-        }
-
-        // Add interactivity to recruit buttons
-        document.addEventListener('DOMContentLoaded', function() {
-            // Recruit button functionality
-            document.querySelectorAll('.recruit-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    if (this.textContent === 'Recruit') {
-                        this.textContent = 'Recruited!';
-                        this.style.background = 'linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)';
-                        this.disabled = true;
-                        
-                        // Show toast notification
-                        showToast('Corps recruited successfully!');
-                        
-                        setTimeout(() => {
-                            this.textContent = 'Recruit';
-                            this.style.background = 'linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%)';
-                            this.disabled = false;
-                        }, 3000);
-                    }
-                });
-            });
-
-            // Search functionality
-            const searchInput = document.getElementById('search-input');
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    document.querySelectorAll('.free-agent-card').forEach(card => {
-                        const corpsName = card.querySelector('.corps-name').textContent.toLowerCase();
-                        if (corpsName.includes(searchTerm)) {
-                            card.style.display = 'block';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
-                });
-            }
-
-            // Add hover effect to corps cards
-            document.querySelectorAll('.corps-card:not(.competed)').forEach(card => {
-                card.addEventListener('click', function() {
-                    if (this.dataset.bench === 'true') {
-                        showSwapModal(this);
-                    }
-                });
-            });
-        });
-
-        // Toast notification
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                top: 100px;
-                right: 20px;
-                background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-                color: white;
-                padding: 1rem 2rem;
-                border-radius: 12px;
-                z-index: 1001;
-                animation: slideInRight 0.3s ease-out;
-                font-weight: 600;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            `;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.animation = 'fadeOut 0.3s ease-out';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        // Swap modal functionality
-        function showSwapModal(benchCard) {
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.8);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 1000;
-            `;
-            
-            const modalContent = document.createElement('div');
-            modalContent.style.cssText = `
-                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                padding: 2rem;
-                border-radius: 20px;
-                max-width: 500px;
-                width: 90%;
-                animation: slideIn 0.3s ease-out;
-            `;
-            
-            modalContent.innerHTML = `
-                <h3 style="color: #4ecdc4; margin-bottom: 1rem;">Swap Corps</h3>
-                <p style="color: #a0a0a0; margin-bottom: 2rem;">Select a starter to swap with this bench player.</p>
-                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                    <button onclick="this.closest('div').parentElement.remove()" style="
-                        background: rgba(255, 255, 255, 0.1);
-                        color: white;
-                        border: 1px solid rgba(255, 255, 255, 0.2);
-                        padding: 0.75rem 1.5rem;
-                        border-radius: 12px;
-                        cursor: pointer;
-                        font-weight: 600;
-                    ">Cancel</button>
-                    <button onclick="showToast('Corps swapped!'); this.closest('div').parentElement.remove()" style="
-                        background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-                        color: white;
-                        border: none;
-                        padding: 0.75rem 1.5rem;
-                        border-radius: 12px;
-                        cursor: pointer;
-                        font-weight: 600;
-                    ">Confirm Swap</button>
-                </div>
-            `;
-            
-            modal.appendChild(modalContent);
-            document.body.appendChild(modal);
-            
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    modal.remove();
-                }
-            });
-        }
-
-        // Add animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideInRight {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-            
-            @keyframes fadeOut {
-                from {
-                    opacity: 1;
-                }
-                to {
-                    opacity: 0;
-                }
-            }
-            
-            @keyframes slideIn {
-                from {
-                    transform: translateY(-50px);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateY(0);
-                    opacity: 1;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
-</body>
-</html>
