@@ -299,6 +299,7 @@
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
+            align-items: start; /* Allow items to have different heights */
         }
 
         .caption-section {
@@ -310,6 +311,7 @@
             position: relative;
             display: flex;
             flex-direction: column;
+            height: auto; /* Allow natural height */
         }
 
         .caption-section:hover {
@@ -342,9 +344,15 @@
             border-left: 4px solid #ff6b6b;
         }
 
-        /* Reduce min-height for caption sections without bench */
+        /* Caption sections with bench will have more height */
+        .caption-section:not(.no-bench) {
+            min-height: 280px;
+        }
+
+        /* Caption sections without bench are more compact */
         .caption-section.no-bench {
             min-height: auto;
+            padding-bottom: 1rem; /* Less bottom padding */
         }
 
         .caption-header {
@@ -859,7 +867,7 @@
                         </div>
                     </div>
 
-                    <div class="caption-section guard">
+                    <div class="caption-section guard no-bench">
                         <div class="caption-header">
                             <div class="caption-title">Color Guard</div>
                             <div class="caption-total">36.88</div>
@@ -881,7 +889,7 @@
                         <!-- No bench section for Color Guard -->
                     </div>
 
-                    <div class="caption-section ge">
+                    <div class="caption-section ge no-bench">
                         <div class="caption-header">
                             <div class="caption-title">General Effect</div>
                             <div class="caption-total">18.45</div>
@@ -920,7 +928,7 @@
                         </div>
                     </div>
 
-                    <div class="caption-section music">
+                    <div class="caption-section music no-bench">
                         <div class="caption-header">
                             <div class="caption-title">Music</div>
                             <div class="caption-total">17.92</div>
