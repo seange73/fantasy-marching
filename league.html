@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fantasy Marching - League Mode</title>
+    <title>Fantasy Marching - Leagues</title>
     <style>
         * {
             margin: 0;
@@ -176,122 +176,223 @@
             text-align: center;
         }
 
+        /* Main Content */
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
         }
 
-        .page-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .page-header h1 {
-            font-size: clamp(2.5rem, 5vw, 4rem);
+        .page-title {
+            font-size: 2.5rem;
             font-weight: 800;
             background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 1rem;
-            letter-spacing: -0.02em;
+            text-align: center;
         }
 
-        .page-header p {
-            font-size: 1.2rem;
+        .page-subtitle {
+            text-align: center;
             color: #a0a0a0;
-            font-weight: 400;
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
         }
 
-        .league-info {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 2rem;
-            border-radius: 20px;
-            margin-bottom: 2rem;
+        /* My Leagues Section */
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 1.5rem;
         }
 
-        .league-info h2 {
-            color: #4ecdc4;
+        .section-title {
             font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .my-leagues-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            min-height: 200px;
+        }
+
+        .leagues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .league-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .league-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4ecdc4, #45b7d1, #6c5ce7);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .league-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .league-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .league-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
             margin-bottom: 0.5rem;
         }
 
-        .league-info p {
+        .league-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .league-members {
             color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .league-rank {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
         }
 
         .league-stats {
             display: flex;
-            gap: 3rem;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .stat {
             text-align: center;
+            flex: 1;
         }
 
         .stat-value {
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #4ecdc4;
         }
 
         .stat-label {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #a0a0a0;
             margin-top: 0.25rem;
+        }
+
+        .no-leagues {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .no-leagues h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #888;
+        }
+
+        .no-leagues p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .no-leagues .btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .no-leagues .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+        }
+
+        /* Join/Create Section */
+        .join-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
         }
 
         .tabs {
             display: flex;
             background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 0.5rem;
+            border-radius: 12px;
+            padding: 0.25rem;
             margin-bottom: 2rem;
         }
 
         .tab {
             flex: 1;
-            padding: 1rem 2rem;
+            padding: 0.75rem 1.5rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 600;
             border: none;
             background: transparent;
-            font-size: 1rem;
             color: #a0a0a0;
-            border-radius: 16px;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            border-radius: 10px;
+            font-size: 1rem;
         }
 
         .tab:hover {
-            background: rgba(255, 255, 255, 0.05);
             color: white;
         }
 
         .tab.active {
             background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
             color: white;
-        }
-
-        .content {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem;
-            min-height: 600px;
         }
 
         .tab-content {
@@ -302,432 +403,212 @@
             display: block;
         }
 
-        .lineup-grid {
+        /* Available Leagues */
+        .available-leagues {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-            align-items: start;
-        }
-
-        .caption-section {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 16px;
-            padding: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            height: auto;
-        }
-
-        .caption-section:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .caption-section.brass {
-            border-left: 4px solid #45b7d1;
-        }
-
-        .caption-section.percussion {
-            border-left: 4px solid #e74c3c;
-        }
-
-        .caption-section.guard {
-            border-left: 4px solid #f39c12;
-        }
-
-        .caption-section.ge {
-            border-left: 4px solid #27ae60;
-        }
-
-        .caption-section.visual {
-            border-left: 4px solid #e91e63;
-        }
-
-        .caption-section.music {
-            border-left: 4px solid #ff6b6b;
-        }
-
-        .caption-section:not(.no-bench) {
-            min-height: 280px;
-        }
-
-        .caption-section.no-bench {
-            min-height: auto;
-            padding-bottom: 1rem;
-        }
-
-        .caption-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .caption-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #4ecdc4;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .caption-total {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .corps-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .corps-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateX(4px);
-            border-color: rgba(78, 205, 196, 0.3);
-        }
-
-        .corps-card.competed {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .corps-card.competed::after {
-            content: "COMPETED";
-            position: absolute;
-            top: 8px;
-            right: 12px;
-            background: rgba(108, 117, 125, 0.8);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .corps-name {
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-            color: white;
-        }
-
-        .corps-stats {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            color: #a0a0a0;
-        }
-
-        .improvement {
-            font-weight: 700;
-        }
-
-        .improvement.positive {
-            color: #4ecdc4;
-        }
-
-        .improvement.negative {
-            color: #ff6b6b;
-        }
-
-        .bench-section {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .bench-label {
-            font-size: 0.9rem;
-            color: #a0a0a0;
-            margin-bottom: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .section-title {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #4ecdc4;
-            margin-bottom: 1.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .matchup-container {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 2rem;
-            align-items: center;
-            margin-bottom: 3rem;
-        }
-
-        .team-column {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 20px;
-            padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .team-column:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateY(-2px);
-        }
-
-        .team-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 1rem;
-            color: #4ecdc4;
-        }
-
-        .vs-section {
-            text-align: center;
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .score {
-            font-size: 3rem;
-            font-weight: 800;
-            text-align: center;
-            margin: 1rem 0;
-        }
-
-        .score.winning {
-            background: linear-gradient(135deg, #4ecdc4 0%, #27ae60 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .score.losing {
-            color: #ff6b6b;
-        }
-
-        .recruitment-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1rem;
         }
 
-        .free-agent-card {
+        .available-league-card {
             background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             padding: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             transition: all 0.3s ease;
-            cursor: pointer;
         }
 
-        .free-agent-card:hover {
+        .available-league-card:hover {
             background: rgba(255, 255, 255, 0.05);
-            transform: translateY(-2px);
-            border-color: rgba(78, 205, 196, 0.3);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateX(4px);
         }
 
-        .recruit-btn {
+        .available-league-info {
+            flex: 1;
+        }
+
+        .available-league-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .global-badge {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #000;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+            display: inline-block;
+        }
+
+        .available-league-details {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .join-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .password-input {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            width: 150px;
+            transition: all 0.2s ease;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+        }
+
+        .btn {
             background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
             color: white;
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 700;
-            transition: all 0.3s ease;
-            margin-top: 1rem;
-            width: 100%;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .recruit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
-        }
-
-        .filters {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .filter-group label {
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
             font-weight: 600;
-            color: #4ecdc4;
+            cursor: pointer;
+            transition: all 0.3s ease;
             font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .filter-group select, .filter-group input {
-            padding: 0.75rem 1rem;
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Create League Form */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem;
             background: rgba(255, 255, 255, 0.08);
             border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             color: white;
             font-size: 1rem;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             transition: all 0.2s ease;
         }
 
-        .filter-group select option {
-            background: #1a1a2e;
-            color: white;
-        }
-
-        .filter-group select:focus, .filter-group input:focus {
+        .form-input:focus {
             outline: none;
             border-color: #4ecdc4;
             box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
             background: rgba(255, 255, 255, 0.12);
         }
 
-        .personal-stats {
-            margin-top: 3rem;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stats-grid {
+        .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1.5rem;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
         }
 
-        .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 1.5rem;
-            border-radius: 16px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .stat-card .stat-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-card .stat-label {
+        .form-help {
+            font-size: 0.85rem;
             color: #a0a0a0;
             margin-top: 0.5rem;
         }
 
-        .hidden {
+        .create-btn {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            margin-top: 2rem;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        /* Messages */
+        .message {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            text-align: center;
             display: none;
         }
 
-        .success-banner {
+        .message.success {
             background: rgba(78, 205, 196, 0.1);
             border: 1px solid rgba(78, 205, 196, 0.3);
-            border-radius: 16px;
-            padding: 1.5rem;
-            text-align: center;
-            margin: 2rem 0;
-        }
-
-        .success-banner h3 {
-            color: #4ecdc4;
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .other-matchups {
-            margin-top: 3rem;
-        }
-
-        .matchup-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 1.5rem;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            margin-bottom: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .matchup-item strong {
             color: #4ecdc4;
         }
 
-        @media (max-width: 968px) {
-            .header-content {
-                padding: 1rem;
-            }
+        .message.error {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+        }
 
-            .logo {
-                height: 60px;
-            }
-
+        @media (max-width: 768px) {
             .nav-tabs {
                 gap: 1rem;
                 font-size: 0.9rem;
+            }
+
+            .header-content {
+                padding: 1rem;
             }
 
             .user-name {
                 display: none;
             }
 
-            .league-info {
-                flex-direction: column;
-                gap: 2rem;
-                text-align: center;
+            .leagues-grid {
+                grid-template-columns: 1fr;
             }
 
-            .matchup-container {
+            .form-row {
                 grid-template-columns: 1fr;
+            }
+
+            .league-stats {
                 gap: 1rem;
-            }
-
-            .lineup-grid {
-                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -778,356 +659,85 @@
         </div>
     </header>
 
+    <!-- Main Content -->
     <div class="container">
-        <div class="league-info">
-            <div>
-                <h2>Thunder Valley League</h2>
-                <p>2024 • Week 8 of 12 • Next Competition: Saturday 8:00 PM</p>
+        <h1 class="page-title">Fantasy Leagues</h1>
+        <p class="page-subtitle">Compete with friends or join the global league</p>
+
+        <!-- My Leagues Section -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">My Leagues</h2>
             </div>
-            <div class="league-stats">
-                <div class="stat">
-                    <div class="stat-value">3rd</div>
-                    <div class="stat-label">League Rank</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">5-3</div>
-                    <div class="stat-label">Record</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">847.2</div>
-                    <div class="stat-label">Avg Score</div>
+            
+            <div class="my-leagues-container">
+                <div id="myLeaguesContent">
+                    <div class="loading">Loading your leagues...</div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('lineup')">My Lineup</button>
-            <button class="tab" onclick="switchTab('matchup')">Weekly Matchup</button>
-            <button class="tab" onclick="switchTab('recruitment')">Recruitment</button>
-        </div>
+        <!-- Join/Create League Section -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Join or Create a League</h2>
+            </div>
+            
+            <div class="join-section">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('join')">Join a League</button>
+                    <button class="tab" onclick="switchTab('create')">Create a League</button>
+                </div>
 
-        <div class="content">
-            <!-- My Lineup Tab -->
-            <div id="lineup-content" class="tab-content active">
-                <h2 class="section-title">Starting Lineup</h2>
-                <div class="lineup-grid">
-                    <div class="caption-section brass">
-                        <div class="caption-header">
-                            <div class="caption-title">Brass</div>
-                            <div class="caption-total">38.97</div>
-                        </div>
-                        <div class="corps-card competed" data-caption="brass" data-position="0" data-score="19.85">
-                            <div class="corps-name">Blue Devils</div>
-                            <div class="corps-stats">
-                                <span>Rank: #1 • Score: 19.85</span>
-                                <span class="improvement positive">+0.3</span>
-                            </div>
-                        </div>
-                        <div class="corps-card" data-caption="brass" data-position="1" data-score="19.12">
-                            <div class="corps-name">Carolina Crown</div>
-                            <div class="corps-stats">
-                                <span>Rank: #3 • Score: 19.12</span>
-                                <span class="improvement positive">+0.5</span>
-                            </div>
-                        </div>
-                        <div class="bench-section">
-                            <div class="bench-label">Bench</div>
-                            <div class="corps-card" data-caption="brass" data-bench="true">
-                                <div class="corps-name">Crossmen</div>
-                                <div class="corps-stats">
-                                    <span>Rank: #15 • Score: 16.23</span>
-                                    <span class="improvement positive">+0.7</span>
-                                </div>
-                            </div>
-                        </div>
+                <div id="message" class="message"></div>
+
+                <!-- Join League Tab -->
+                <div id="join-content" class="tab-content active">
+                    <div class="search-section" style="margin-bottom: 1.5rem;">
+                        <input type="text" 
+                               id="leagueSearch" 
+                               class="form-input" 
+                               placeholder="Search by league name or creator..."
+                               onkeyup="searchLeagues()">
                     </div>
-
-                    <div class="caption-section percussion">
-                        <div class="caption-header">
-                            <div class="caption-title">Percussion</div>
-                            <div class="caption-total">38.34</div>
-                        </div>
-                        <div class="corps-card" data-caption="percussion" data-position="0" data-score="19.45">
-                            <div class="corps-name">Santa Clara Vanguard</div>
-                            <div class="corps-stats">
-                                <span>Rank: #2 • Score: 19.45</span>
-                                <span class="improvement positive">+0.2</span>
-                            </div>
-                        </div>
-                        <div class="corps-card competed" data-caption="percussion" data-position="1" data-score="18.89">
-                            <div class="corps-name">Bluecoats</div>
-                            <div class="corps-stats">
-                                <span>Rank: #4 • Score: 18.89</span>
-                                <span class="improvement negative">-0.1</span>
-                            </div>
-                        </div>
-                        <div class="bench-section">
-                            <div class="bench-label">Bench</div>
-                            <div class="corps-card competed" data-caption="percussion" data-bench="true">
-                                <div class="corps-name">Madison Scouts</div>
-                                <div class="corps-stats">
-                                    <span>Rank: #18 • Score: 15.89</span>
-                                    <span class="improvement positive">+0.5</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="caption-section guard no-bench">
-                        <div class="caption-header">
-                            <div class="caption-title">Color Guard</div>
-                            <div class="caption-total">36.88</div>
-                        </div>
-                        <div class="corps-card" data-caption="guard" data-position="1" data-score="18.23">
-                            <div class="corps-name">The Cavaliers</div>
-                            <div class="corps-stats">
-                                <span>Rank: #7 • Score: 18.23</span>
-                                <span class="improvement positive">+0.6</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="caption-section ge no-bench">
-                        <div class="caption-header">
-                            <div class="caption-title">General Effect</div>
-                            <div class="caption-total">18.45</div>
-                        </div>
-                        <div class="corps-card" data-caption="ge" data-position="0" data-score="18.45">
-                            <div class="corps-name">Boston Crusaders</div>
-                            <div class="corps-stats">
-                                <span>Rank: #6 • Score: 18.45</span>
-                                <span class="improvement positive">+0.3</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="caption-section visual">
-                        <div class="caption-header">
-                            <div class="caption-title">Visual</div>
-                            <div class="caption-total">16.78</div>
-                        </div>
-                        <div class="corps-card competed" data-caption="visual" data-position="0" data-score="16.78">
-                            <div class="corps-name">The Academy</div>
-                            <div class="corps-stats">
-                                <span>Rank: #12 • Score: 16.78</span>
-                                <span class="improvement positive">+0.8</span>
-                            </div>
-                        </div>
-                        <div class="bench-section">
-                            <div class="bench-label">Bench</div>
-                            <div class="corps-card" data-caption="visual" data-bench="true">
-                                <div class="corps-name">Mandarins</div>
-                                <div class="corps-stats">
-                                    <span>Rank: #20 • Score: 15.12</span>
-                                    <span class="improvement positive">+0.9</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="caption-section music no-bench">
-                        <div class="caption-header">
-                            <div class="caption-title">Music</div>
-                            <div class="caption-total">17.92</div>
-                        </div>
-                        <div class="corps-card" data-caption="music" data-position="0" data-score="17.92">
-                            <div class="corps-name">Blue Knights</div>
-                            <div class="corps-stats">
-                                <span>Rank: #8 • Score: 17.92</span>
-                                <span class="improvement positive">+0.4</span>
-                            </div>
-                        </div>
+                    <div class="available-leagues" id="availableLeagues">
+                        <div class="loading">Loading available leagues...</div>
                     </div>
                 </div>
 
-                <div class="personal-stats">
-                    <h2 class="section-title">Your Stats This Week</h2>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value">167.34</div>
-                            <div class="stat-label">Total Points</div>
+                <!-- Create League Tab -->
+                <div id="create-content" class="tab-content">
+                    <form id="createLeagueForm">
+                        <div class="form-group">
+                            <label for="leagueName">League Name</label>
+                            <input type="text" id="leagueName" class="form-input" placeholder="Enter league name" required>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-value">3rd</div>
-                            <div class="stat-label">League Rank</div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="leaguePassword">Password (Optional)</label>
+                                <input type="text" id="leaguePassword" class="form-input" placeholder="Leave blank for public league">
+                                <p class="form-help">Setting a password makes the league private. Users can join with the password or send a request to join.</p>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="maxMembers">Max Members</label>
+                                <input type="number" id="maxMembers" class="form-input" value="12" min="2" max="20" step="2" required>
+                                <p class="form-help">Must be an even number between 2 and 20</p>
+                            </div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-value">5-3</div>
-                            <div class="stat-label">Win-Loss Record</div>
+
+                        <div class="form-group">
+                            <label for="draftTime">Draft Time (Optional)</label>
+                            <input type="datetime-local" id="draftTime" class="form-input">
+                            <p class="form-help">You can set this later from the league settings</p>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-value">+12.4</div>
-                            <div class="stat-label">Avg Margin</div>
-                        </div>
-                    </div>
+
+                        <button type="submit" class="btn create-btn">Create League</button>
+                    </form>
                 </div>
             </div>
-
-            <!-- Weekly Matchup Tab -->
-            <div id="matchup-content" class="tab-content">
-                <h2 class="section-title">Week 8 Matchup</h2>
-                <div class="matchup-container">
-                    <div class="team-column">
-                        <h3 class="team-name">Your Team</h3>
-                        <div class="score winning">167.34</div>
-                        <div style="margin-top: 1.5rem;">
-                            <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                <strong style="color: #4ecdc4;">Top Performers</strong>
-                            </div>
-                            <div style="margin-bottom: 0.75rem;">
-                                <strong>Blue Devils (Brass)</strong>: 19.85 pts
-                            </div>
-                            <div style="margin-bottom: 0.75rem;">
-                                <strong>SCV (Percussion)</strong>: 19.45 pts
-                            </div>
-                            <div>
-                                <strong>Cavaliers (Guard)</strong>: 18.23 pts
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="vs-section">VS</div>
-                    
-                    <div class="team-column">
-                        <h3 class="team-name">Brass Brigade</h3>
-                        <div class="score losing">154.21</div>
-                        <div style="margin-top: 1.5rem;">
-                            <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                <strong style="color: #4ecdc4;">Top Performers</strong>
-                            </div>
-                            <div style="margin-bottom: 0.75rem;">
-                                <strong>Bluecoats (Brass)</strong>: 19.23 pts
-                            </div>
-                            <div style="margin-bottom: 0.75rem;">
-                                <strong>Crown (Visual)</strong>: 18.87 pts
-                            </div>
-                            <div>
-                                <strong>Cadets (GE)</strong>: 17.92 pts
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="success-banner">
-                    <h3>You're winning by 13.13 points!</h3>
-                    <p>Keep your lineup optimized to maintain your lead through the weekend.</p>
-                </div>
-
-                <div class="other-matchups">
-                    <h3 class="section-title">Other Matchups This Week</h3>
-                    <div class="matchup-item">
-                        <span><strong>Thunder & Lightning</strong> vs Sound Machine</span>
-                        <span>98.4 - 87.2</span>
-                    </div>
-                    <div class="matchup-item">
-                        <span><strong>Brass Believers</strong> vs Percussion Predators</span>
-                        <span>156.7 - 142.3</span>
-                    </div>
-                    <div class="matchup-item">
-                        <span>Guard Goals vs <strong>Visual Victory</strong></span>
-                        <span>134.5 - 145.8</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recruitment Tab -->
-            <div id="recruitment-content" class="tab-content">
-                <h2 class="section-title">Free Agent Recruitment</h2>
-                
-                <div class="filters">
-                    <div class="filter-group">
-                        <label>Caption</label>
-                        <select id="captionFilter" onchange="filterFreeAgents()">
-                            <option value="all">All Captions</option>
-                            <option value="brass">Brass</option>
-                            <option value="percussion">Percussion</option>
-                            <option value="guard">Color Guard</option>
-                            <option value="ge">General Effect</option>
-                            <option value="visual">Visual</option>
-                            <option value="music">Music</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Min Score</label>
-                        <input type="number" id="minScoreFilter" placeholder="0.0" step="0.1" onchange="filterFreeAgents()">
-                    </div>
-                    <div class="filter-group">
-                        <label>Sort By</label>
-                        <select id="sortFilter" onchange="filterFreeAgents()">
-                            <option value="score">Score (High to Low)</option>
-                            <option value="improvement">Recent Improvement</option>
-                            <option value="rank">Rank</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="recruitment-grid" id="recruitmentGrid">
-                    <div class="free-agent-card">
-                        <h3 class="corps-name">Spirit of Atlanta</h3>
-                        <div class="corps-stats" style="margin-bottom: 1rem;">
-                            <span>Brass • Rank: #9</span>
-                            <span class="improvement positive">+0.6</span>
-                        </div>
-                        <div style="color: #a0a0a0; margin-bottom: 1rem;">
-                            <div>Current Score: 17.45</div>
-                            <div>3-Show Avg: 17.12</div>
-                            <div>Season High: 17.89</div>
-                        </div>
-                        <button class="recruit-btn" onclick="recruitCorps('Spirit of Atlanta', 'brass')">
-                            Recruit to Brass
-                        </button>
-                    </div>
-
-                    <div class="free-agent-card">
-                        <h3 class="corps-name">Troopers</h3>
-                        <div class="corps-stats" style="margin-bottom: 1rem;">
-                            <span>Visual • Rank: #11</span>
-                            <span class="improvement positive">+0.8</span>
-                        </div>
-                        <div style="color: #a0a0a0; margin-bottom: 1rem;">
-                            <div>Current Score: 16.92</div>
-                            <div>3-Show Avg: 16.45</div>
-                            <div>Season High: 17.23</div>
-                        </div>
-                        <button class="recruit-btn" onclick="recruitCorps('Troopers', 'visual')">
-                            Recruit to Visual
-                        </button>
-                    </div>
-
-                    <div class="free-agent-card">
-                        <h3 class="corps-name">Pacific Crest</h3>
-                        <div class="corps-stats" style="margin-bottom: 1rem;">
-                            <span>Percussion • Rank: #14</span>
-                            <span class="improvement positive">+0.4</span>
-                        </div>
-                        <div style="color: #a0a0a0; margin-bottom: 1rem;">
-                            <div>Current Score: 16.34</div>
-                            <div>3-Show Avg: 16.12</div>
-                            <div>Season High: 16.78</div>
-                        </div>
-                        <button class="recruit-btn" onclick="recruitCorps('Pacific Crest', 'percussion')">
-                            Recruit to Percussion
-                        </button>
-                    </div>
-
-                    <div class="free-agent-card">
-                        <h3 class="corps-name">Colts</h3>
-                        <div class="corps-stats" style="margin-bottom: 1rem;">
-                            <span>Guard • Rank: #16</span>
-                            <span class="improvement positive">+0.5</span>
-                        </div>
-                        <div style="color: #a0a0a0; margin-bottom: 1rem;">
-                            <div>Current Score: 15.89</div>
-                            <div>3-Show Avg: 15.56</div>
-                            <div>Season High: 16.12</div>
-                        </div>
-                        <button class="recruit-btn" onclick="recruitCorps('Colts', 'guard')">
-                            Recruit to Guard
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </section>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1135,9 +745,11 @@
     <script>
         let currentUser = null;
         let isAdmin = false;
+        let myLeagues = [];
+        let availableLeagues = [];
 
         // Initialize page
-        async function init() {
+        async function initializePage() {
             // Check authentication
             const { data: { user } } = await supabaseClient.auth.getUser();
             
@@ -1150,9 +762,13 @@
             
             // Load user profile
             await loadUserProfile();
+            
+            // Load leagues data
+            await loadMyLeagues();
+            await loadAvailableLeagues();
         }
 
-        // Load user profile (same as dashboard)
+        // Load user profile
         async function loadUserProfile() {
             const { data: profile } = await supabaseClient
                 .from('profiles')
@@ -1176,7 +792,7 @@
             }
         }
 
-        // Toggle user menu (same as dashboard)
+        // Toggle user menu
         function toggleUserMenu() {
             const dropdown = document.getElementById('profileDropdown');
             dropdown.classList.toggle('show');
@@ -1190,7 +806,7 @@
             });
         }
 
-        // Logout function (same as dashboard)
+        // Logout function
         async function logout() {
             const { error } = await supabaseClient.auth.signOut();
             if (!error) {
@@ -1198,43 +814,389 @@
             }
         }
 
+        // Load user's leagues
+        async function loadMyLeagues() {
+            const { data: leagues, error } = await supabaseClient
+                .from('league_members')
+                .select(`
+                    league_id,
+                    role,
+                    leagues (
+                        id,
+                        name,
+                        is_global,
+                        owner_id,
+                        created_at,
+                        max_members
+                    )
+                `)
+                .eq('user_id', currentUser.id)
+                .eq('status', 'active');
+
+            if (error) {
+                console.error('Error loading leagues:', error);
+                return;
+            }
+
+            myLeagues = leagues || [];
+            displayMyLeagues();
+        }
+
+        // Display user's leagues
+        async function displayMyLeagues() {
+            const container = document.getElementById('myLeaguesContent');
+            
+            if (myLeagues.length === 0) {
+                container.innerHTML = `
+                    <div class="no-leagues">
+                        <h3>You're not in any leagues yet</h3>
+                        <p>Join a league below to start competing!</p>
+                        <a href="#join-section" class="btn" onclick="document.getElementById('join-section').scrollIntoView({behavior: 'smooth'}); return false;">Join a League</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Get member counts for each league
+            const leagueIds = myLeagues.map(l => l.leagues.id);
+            const { data: memberCounts } = await supabaseClient
+                .from('league_members')
+                .select('league_id')
+                .in('league_id', leagueIds)
+                .eq('status', 'active');
+
+            const memberCountMap = {};
+            if (memberCounts) {
+                memberCounts.forEach(m => {
+                    memberCountMap[m.league_id] = (memberCountMap[m.league_id] || 0) + 1;
+                });
+            }
+
+            container.innerHTML = `
+                <div class="leagues-grid">
+                    ${myLeagues.map(item => {
+                        const league = item.leagues;
+                        const memberCount = memberCountMap[league.id] || 1;
+                        const isOwner = item.role === 'owner';
+                        
+                        return `
+                            <div class="league-card" onclick="goToLeague('${league.id}')">
+                                <div class="league-name">
+                                    ${league.name}
+                                    ${league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
+                                </div>
+                                <div class="league-info">
+                                    <div class="league-members">${memberCount} / ${league.max_members} members</div>
+                                    ${isOwner ? '<div class="league-rank" style="background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #000;">Owner</div>' : '<div class="league-rank">Rank #3</div>'}
+                                </div>
+                                <div class="league-stats">
+                                    <div class="stat">
+                                        <div class="stat-value">5-3</div>
+                                        <div class="stat-label">Record</div>
+                                    </div>
+                                    <div class="stat">
+                                        <div class="stat-value">847.2</div>
+                                        <div class="stat-label">Avg Score</div>
+                                    </div>
+                                    <div class="stat">
+                                        <div class="stat-value">3rd</div>
+                                        <div class="stat-label">Position</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // Load available leagues
+        async function loadAvailableLeagues() {
+            // Get leagues user is not part of with owner information
+            const { data: leagues, error } = await supabaseClient
+                .from('leagues')
+                .select(`
+                    *,
+                    profiles!leagues_owner_id_fkey (username)
+                `)
+                .or('is_global.eq.true,password.is.null')
+                .eq('is_active', true)
+                .order('is_global', { ascending: false })
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error loading available leagues:', error);
+                return;
+            }
+
+            // Filter out leagues user is already in
+            const myLeagueIds = myLeagues.map(l => l.leagues.id);
+            availableLeagues = leagues.filter(l => !myLeagueIds.includes(l.id));
+            
+            displayAvailableLeagues();
+        }
+
+        // Display available leagues
+        async function displayAvailableLeagues(searchTerm = '') {
+            const container = document.getElementById('availableLeagues');
+            
+            // Filter leagues based on search term
+            let filteredLeagues = availableLeagues;
+            if (searchTerm) {
+                const search = searchTerm.toLowerCase();
+                filteredLeagues = availableLeagues.filter(league => 
+                    league.name.toLowerCase().includes(search) ||
+                    (league.profiles?.username || '').toLowerCase().includes(search)
+                );
+            }
+            
+            if (filteredLeagues.length === 0) {
+                container.innerHTML = searchTerm 
+                    ? '<p style="text-align: center; color: #666;">No leagues found matching your search</p>'
+                    : '<p style="text-align: center; color: #666;">No available leagues at the moment</p>';
+                return;
+            }
+
+            // Get member counts
+            const leagueIds = filteredLeagues.map(l => l.id);
+            const { data: memberCounts } = await supabaseClient
+                .from('league_members')
+                .select('league_id')
+                .in('league_id', leagueIds)
+                .eq('status', 'active');
+
+            const memberCountMap = {};
+            if (memberCounts) {
+                memberCounts.forEach(m => {
+                    memberCountMap[m.league_id] = (memberCountMap[m.league_id] || 0) + 1;
+                });
+            }
+
+            container.innerHTML = filteredLeagues.map(league => {
+                const memberCount = memberCountMap[league.id] || 0;
+                const isFull = memberCount >= league.max_members;
+                const creatorName = league.is_global ? 'System' : (league.profiles?.username || 'Unknown');
+                
+                return `
+                    <div class="available-league-card">
+                        <div class="available-league-info">
+                            <div class="available-league-name">
+                                ${league.name}
+                                ${league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
+                            </div>
+                            <div class="available-league-details">
+                                Created by ${creatorName} • ${memberCount} / ${league.max_members} members
+                                ${league.password ? ' • Password Protected' : ' • Public'}
+                            </div>
+                        </div>
+                        <div class="join-controls">
+                            ${league.password && !league.is_global ? `
+                                <input type="password" 
+                                       class="password-input" 
+                                       id="password_${league.id}" 
+                                       placeholder="Enter password">
+                            ` : ''}
+                            ${isFull ? 
+                                '<button class="btn" disabled>League Full</button>' :
+                                `<button class="btn" onclick="joinLeague('${league.id}', ${!!league.password})">
+                                    ${league.password && !league.is_global ? 'Join with Password' : 'Join League'}
+                                </button>`
+                            }
+                            ${league.password && !league.is_global && !isFull ? `
+                                <button class="btn btn-secondary" onclick="requestToJoin('${league.id}')">
+                                    Request to Join
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Join a league
+        async function joinLeague(leagueId, requiresPassword) {
+            let password = null;
+            
+            if (requiresPassword) {
+                const passwordInput = document.getElementById(`password_${leagueId}`);
+                password = passwordInput.value.trim();
+                
+                if (!password) {
+                    showMessage('Please enter the league password', 'error');
+                    return;
+                }
+                
+                // Verify password
+                const { data: league } = await supabaseClient
+                    .from('leagues')
+                    .select('password')
+                    .eq('id', leagueId)
+                    .single();
+                
+                if (league.password !== password) {
+                    showMessage('Incorrect password', 'error');
+                    return;
+                }
+            }
+            
+            // Join the league
+            const { error } = await supabaseClient
+                .from('league_members')
+                .insert({
+                    league_id: leagueId,
+                    user_id: currentUser.id,
+                    role: 'member',
+                    status: 'active'
+                });
+            
+            if (error) {
+                if (error.code === '23505') { // Unique violation
+                    showMessage('You are already in this league', 'error');
+                } else {
+                    showMessage('Error joining league: ' + error.message, 'error');
+                }
+                return;
+            }
+            
+            showMessage('Successfully joined the league!', 'success');
+            
+            // Reload leagues
+            await loadMyLeagues();
+            await loadAvailableLeagues();
+        }
+
+        // Request to join a league
+        async function requestToJoin(leagueId) {
+            const { error } = await supabaseClient
+                .from('league_join_requests')
+                .insert({
+                    league_id: leagueId,
+                    user_id: currentUser.id,
+                    status: 'pending'
+                });
+            
+            if (error) {
+                if (error.code === '23505') { // Unique violation
+                    showMessage('You have already requested to join this league', 'error');
+                } else {
+                    showMessage('Error sending request: ' + error.message, 'error');
+                }
+                return;
+            }
+            
+            showMessage('Join request sent! The league owner will review your request.', 'success');
+        }
+
+        // Create a new league
+        async function createLeague(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('leagueName').value.trim();
+            const password = document.getElementById('leaguePassword').value.trim() || null;
+            const maxMembers = parseInt(document.getElementById('maxMembers').value);
+            const draftTime = document.getElementById('draftTime').value || null;
+            
+            // Validate max members is even
+            if (maxMembers % 2 !== 0) {
+                showMessage('Max members must be an even number', 'error');
+                return;
+            }
+            
+            // Validate max members range
+            if (maxMembers < 2 || maxMembers > 20) {
+                showMessage('Max members must be between 2 and 20', 'error');
+                return;
+            }
+            
+            // Create the league
+            const { data: league, error: leagueError } = await supabaseClient
+                .from('leagues')
+                .insert({
+                    name: name,
+                    password: password,
+                    owner_id: currentUser.id,
+                    max_members: maxMembers,
+                    draft_time: draftTime
+                })
+                .select()
+                .single();
+            
+            if (leagueError) {
+                showMessage('Error creating league: ' + leagueError.message, 'error');
+                return;
+            }
+            
+            // Add creator as owner member
+            const { error: memberError } = await supabaseClient
+                .from('league_members')
+                .insert({
+                    league_id: league.id,
+                    user_id: currentUser.id,
+                    role: 'owner',
+                    status: 'active'
+                });
+            
+            if (memberError) {
+                showMessage('Error adding you to the league: ' + memberError.message, 'error');
+                return;
+            }
+            
+            showMessage('League created successfully!', 'success');
+            document.getElementById('createLeagueForm').reset();
+            
+            // Reload leagues
+            await loadMyLeagues();
+            await loadAvailableLeagues();
+            
+            // Switch to join tab
+            switchTab('join');
+        }
+
+        // Go to league page
+        function goToLeague(leagueId) {
+            window.location.href = `/league-detail.html?id=${leagueId}`;
+        }
+
         // Switch tabs
         function switchTab(tabName) {
             // Update tab buttons
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => {
+            document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             event.target.classList.add('active');
             
-            // Update content
-            const contents = document.querySelectorAll('.tab-content');
-            contents.forEach(content => {
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             document.getElementById(`${tabName}-content`).classList.add('active');
         }
 
-        // Filter free agents
-        function filterFreeAgents() {
-            const caption = document.getElementById('captionFilter').value;
-            const minScore = parseFloat(document.getElementById('minScoreFilter').value) || 0;
-            const sortBy = document.getElementById('sortFilter').value;
-            
-            // In a real implementation, this would filter and sort the recruitment grid
-            console.log('Filtering by:', { caption, minScore, sortBy });
+        // Search leagues
+        function searchLeagues() {
+            const searchTerm = document.getElementById('leagueSearch').value;
+            displayAvailableLeagues(searchTerm);
         }
 
-        // Recruit corps
-        function recruitCorps(corpsName, caption) {
-            if (confirm(`Are you sure you want to recruit ${corpsName} to your ${caption} lineup?`)) {
-                alert(`${corpsName} has been added to your ${caption} bench!`);
-                // In a real implementation, this would update the database
-            }
+        // Show message
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+            
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 5000);
         }
 
         // Initialize on load
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializePage();
+            
+            // Add form submit handler
+            document.getElementById('createLeagueForm').addEventListener('submit', createLeague);
+        });
     </script>
 </body>
 </html>

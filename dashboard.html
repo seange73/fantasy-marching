@@ -669,6 +669,41 @@
         async function loadReminders() {
             const reminders = [];
             
+            // Check for league join requests (for league owners)
+            const { data: ownedLeagues } = await supabaseClient
+                .from('leagues')
+                .select('id, name')
+                .eq('owner_id', currentUser.id);
+            
+            if (ownedLeagues && ownedLeagues.length > 0) {
+                const leagueIds = ownedLeagues.map(l => l.id);
+                const { data: joinRequests } = await supabaseClient
+                    .from('league_join_requests')
+                    .select(`
+                        id,
+                        league_id,
+                        user_id,
+                        profiles!league_join_requests_user_id_fkey (username)
+                    `)
+                    .in('league_id', leagueIds)
+                    .eq('status', 'pending');
+                
+                if (joinRequests && joinRequests.length > 0) {
+                    const leagueMap = {};
+                    ownedLeagues.forEach(l => leagueMap[l.id] = l.name);
+                    
+                    joinRequests.forEach(request => {
+                        reminders.push({
+                            icon: '👥',
+                            title: 'League Join Request',
+                            text: `${request.profiles?.username || 'A user'} wants to join ${leagueMap[request.league_id]}`,
+                            action: 'Review Request',
+                            link: `/league-requests.html?league=${request.league_id}`
+                        });
+                    });
+                }
+            }
+            
             // Check for upcoming events without predictions
             const { data: upcomingEvents } = await supabaseClient
                 .from('events')
@@ -699,15 +734,6 @@
                     }
                 }
             }
-            
-            // Add league draft reminder (placeholder for now)
-            reminders.push({
-                icon: '⚡',
-                title: 'Your Turn to Draft',
-                text: "THIS IS A PLACEHOLDER",
-                action: 'Make Your Pick',
-                link: '/league.html?leagueName=brass-believers'
-            });
             
             // Check for completed events with results
             const { data: completedEvents } = await supabaseClient
@@ -806,14 +832,30 @@
         }
 
         // Load user's leagues
-        function loadUserLeagues() {
-            // Mock data - replace with actual query
-            const leagues = [];
+        async function loadUserLeagues() {
+            const { data: userLeagues, error } = await supabaseClient
+                .from('league_members')
+                .select(`
+                    league_id,
+                    role,
+                    leagues (
+                        id,
+                        name,
+                        is_global
+                    )
+                `)
+                .eq('user_id', currentUser.id)
+                .eq('status', 'active');
+            
+            if (error) {
+                console.error('Error loading user leagues:', error);
+                return;
+            }
             
             const grid = document.getElementById('leaguesGrid');
             
             // Check if user has no leagues
-            if (leagues.length === 0) {
+            if (!userLeagues || userLeagues.length === 0) {
                 grid.innerHTML = `
                     <div class="no-leagues">
                         You are currently in no leagues. <a href="/league.html">Join a league in the league tab!</a>
@@ -822,24 +864,32 @@
                 return;
             }
             
-            grid.innerHTML = leagues.map(league => `
-                <div class="leaderboard-card">
-                    <h3 class="leaderboard-title">${league.name}</h3>
-                    <div class="leaderboard-entry" style="background: rgba(78, 205, 196, 0.1);">
-                        <div class="rank ${league.rank <= 3 ? `rank-${league.rank}` : 'rank-default'}">${league.rank}</div>
-                        <div class="player-info">
-                            <span class="player-name">Your Position</span>
+            // Display user's leagues (mock data for now since we don't have full league stats yet)
+            grid.innerHTML = userLeagues.map((item, index) => {
+                const league = item.leagues;
+                const mockRank = index + 1;
+                const mockTotal = 12;
+                const mockTopScore = 1456 - (index * 100);
+                
+                return `
+                    <div class="leaderboard-card">
+                        <h3 class="leaderboard-title">${league.name}</h3>
+                        <div class="leaderboard-entry" style="background: rgba(78, 205, 196, 0.1);">
+                            <div class="rank ${mockRank <= 3 ? `rank-${mockRank}` : 'rank-default'}">${mockRank}</div>
+                            <div class="player-info">
+                                <span class="player-name">Your Position</span>
+                            </div>
+                            <span class="player-score">${mockRank}/${mockTotal}</span>
                         </div>
-                        <span class="player-score">${league.rank}/${league.total}</span>
+                        <div style="margin: 1rem 0; text-align: center; color: #666; font-size: 0.9rem;">
+                            ${item.role === 'owner' ? 'You are the owner' : `Leader: User (${mockTopScore} pts)`}
+                        </div>
+                        <div class="view-more">
+                            <a href="/league-detail.html?id=${league.id}" class="view-more-btn">View League →</a>
+                        </div>
                     </div>
-                    <div style="margin: 1rem 0; text-align: center; color: #666; font-size: 0.9rem;">
-                        Leader: ${league.topPlayer} (${league.topScore} pts)
-                    </div>
-                    <div class="view-more">
-                        <a href="/league.html?id=${league.name.toLowerCase().replace(/\s+/g, '-')}" class="view-more-btn">View League →</a>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Initialize on load
