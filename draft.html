@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Marching - Draft</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(15, 15, 35, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            height: 75px;
+            width: auto;
+            display: block;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-tab {
+            color: #a0a0a0;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            color: #4ecdc4;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: rgba(26, 26, 46, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0.5rem;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .profile-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: #e0e0e0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .dropdown-item.admin {
+            color: #4ecdc4;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0.5rem 0;
+        }
+
+        .dropdown-icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Layout */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 2rem;
+        }
+
+        /* Draft Info Panel */
+        .draft-info {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .draft-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #4ecdc4;
+            margin-bottom: 1rem;
+        }
+
+        .draft-status {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .draft-status.your-turn {
+            background: rgba(78, 205, 196, 0.2);
+            border-color: #4ecdc4;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .current-pick {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #4ecdc4;
+            margin-bottom: 0.5rem;
+        }
+
+        .pick-timer {
+            font-size: 2rem;
+            font-weight: 800;
+            text-align: center;
+            margin: 1rem 0;
+            color: #ff6b6b;
+        }
+
+        /* Draft Order */
+        .draft-order {
+            margin-top: 2rem;
+        }
+
+        .draft-order-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #a0a0a0;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .draft-order-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .draft-order-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .draft-order-item.active {
+            background: rgba(78, 205, 196, 0.2);
+            border: 1px solid rgba(78, 205, 196, 0.5);
+        }
+
+        .draft-order-item.completed {
+            opacity: 0.5;
+        }
+
+        .draft-position {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        /* Main Draft Board */
+        .draft-board {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .board-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .board-title {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Caption Tabs */
+        .caption-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 0.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .caption-tab {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            color: #a0a0a0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        .caption-tab:hover {
+            color: white;
+        }
+
+        .caption-tab.active {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+        }
+
+        /* Corps Grid */
+        .corps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .corps-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .corps-card:hover:not(.drafted) {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            border-color: rgba(78, 205, 196, 0.5);
+        }
+
+        .corps-card.drafted {
+            opacity: 0.4;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .corps-card.drafted::after {
+            content: 'DRAFTED';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-20deg);
+            font-weight: 800;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.3);
+            letter-spacing: 2px;
+        }
+
+        .corps-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .corps-stats {
+            font-size: 0.85rem;
+            color: #a0a0a0;
+        }
+
+        .draft-button {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.75rem;
+            width: 100%;
+        }
+
+        .draft-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .draft-button:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Recent Picks */
+        .recent-picks {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .recent-picks-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #4ecdc4;
+            margin-bottom: 1rem;
+        }
+
+        .pick-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .pick-round {
+            font-weight: 600;
+            color: #4ecdc4;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pick-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.25rem;
+        }
+
+        .pick-corps {
+            font-weight: 600;
+        }
+
+        .pick-caption {
+            color: #a0a0a0;
+            font-size: 0.85rem;
+        }
+
+        .pick-user {
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #4ecdc4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar Styling */
+        .corps-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .corps-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .corps-grid::-webkit-scrollbar-thumb {
+            background: rgba(78, 205, 196, 0.3);
+            border-radius: 4px;
+        }
+
+        .corps-grid::-webkit-scrollbar-thumb:hover {
+            background: rgba(78, 205, 196, 0.5);
+        }
+
+        /* My Team Section */
+        .my-team-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .my-team-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #4ecdc4;
+            margin-bottom: 1.5rem;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .caption-group {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .caption-group-title {
+            font-weight: 700;
+            color: #45b7d1;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .team-slot {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .team-slot.filled {
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            background: rgba(78, 205, 196, 0.1);
+            font-weight: 600;
+        }
+
+        .empty-slot {
+            color: #666;
+            font-style: italic;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .draft-info,
+            .recent-picks {
+                position: static;
+            }
+
+            .team-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/dashboard.html" class="logo-link">
+                <img src="images/logo.png" alt="Fantasy Marching" class="logo">
+            </a>
+            
+            <nav class="nav-tabs">
+                <a href="/dashboard.html" class="nav-tab">Dashboard</a>
+                <a href="/predictions-dashboard.html" class="nav-tab">Predictions</a>
+                <a href="/league.html" class="nav-tab active">League</a>
+                <a href="/contact.html" class="nav-tab">Contact Us</a>
+            </nav>
+            
+            <div class="user-profile" onclick="toggleUserMenu()">
+                <div class="user-avatar" id="userAvatar">
+                    <!-- Will be populated with user initial or image -->
+                </div>
+                <span class="user-name" id="userName">Loading...</span>
+                
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="/profile.html" class="dropdown-item">
+                        <span class="dropdown-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <a href="/settings.html" class="dropdown-item">
+                        <span class="dropdown-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
+                        <span class="dropdown-icon">🛡️</span>
+                        <span>Admin Panel</span>
+                    </a>
+                    <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
+                    <div class="dropdown-item" onclick="logout()">
+                        <span class="dropdown-icon">🚪</span>
+                        <span>Logout</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Left Panel - Draft Info -->
+        <div class="draft-info">
+            <h2 class="draft-title" id="leagueName">Loading...</h2>
+            
+            <div class="draft-status" id="draftStatus">
+                <div class="current-pick">Round 1, Pick 1</div>
+                <div>Waiting for draft to start...</div>
+            </div>
+            
+            <div class="pick-timer" id="pickTimer" style="display: none;">
+                1:30
+            </div>
+            
+            <div class="draft-order">
+                <h3 class="draft-order-title">Draft Order</h3>
+                <div class="draft-order-list" id="draftOrderList">
+                    <!-- Draft order will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Center - Main Draft Board -->
+        <div class="draft-board">
+            <div class="board-header">
+                <h1 class="board-title">Available Corps</h1>
+            </div>
+            
+            <div class="caption-tabs">
+                <button class="caption-tab active" onclick="switchCaption('brass')">Brass</button>
+                <button class="caption-tab" onclick="switchCaption('percussion')">Percussion</button>
+                <button class="caption-tab" onclick="switchCaption('guard')">Color Guard</button>
+                <button class="caption-tab" onclick="switchCaption('ge')">General Effect</button>
+                <button class="caption-tab" onclick="switchCaption('visual')">Visual</button>
+                <button class="caption-tab" onclick="switchCaption('music')">Music</button>
+            </div>
+            
+            <div class="corps-grid" id="corpsGrid">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading available corps...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Recent Picks -->
+        <div class="recent-picks">
+            <h2 class="recent-picks-title">Recent Picks</h2>
+            <div id="recentPicksList">
+                <p style="color: #666; text-align: center;">No picks yet</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Team Section -->
+    <div class="container" style="grid-template-columns: 1fr; margin-top: 0;">
+        <div class="my-team-section">
+            <h2 class="my-team-title">My Team</h2>
+            <div class="team-grid">
+                <!-- Main Captions -->
+                <div class="caption-group">
+                    <h3 class="caption-group-title">Brass (0/2)</h3>
+                    <div class="team-slot" id="brass-0">
+                        <span class="empty-slot">Empty Slot</span>
+                    </div>
+                    <div class="team-slot" id="brass-1">
+                        <span class="empty-slot">Empty Slot</span>
+                    </div>
+                </div>
+                
+                <div class="caption-group">
+                    <h3 class="caption-group-title">Percussion (0/2)</h3>
+                    <div class="team-slot" id="percussion-0">
+                        <span class="empty-slot">Empty Slot</span>
+                    </div>
+                    <div class="team-slot" id="percussion-1">
+                        <span class="empty-slot">Empty Slot</span>
+                    </div>
+                </div>
+                
+                <div class="caption-group">
+                    <h3 class="caption-group-title">Color Guard (0/2)</h3>
+                    <div class="team-slot" id="guard-0">
+                        <span class="empty-slot">Empty Slot</span>
+                    </div>
+                    <div class="team-slot" id="guard-1">
+                        <span class="empty-slot">Empty Slot</span>
+                    </div>
+                </div>
+                
+                <!-- Secondary Captions -->
+                <div class="caption-group">
+                    <h3 class="caption-group-title">General Effect (0/1)</h3>
+                    <div class="team-slot" id="ge-0">
+                        <span class="empty-slot">Empty Slot</span>
+                    </div>
+                </div>
+                
+                <div class="caption-group">
+                    <h3 class="caption-group-title">Visual (0/1)</h3>
+                    <div class="team-slot" id="visual-0">
+                        <span class="empty-slot">Empty Slot</span>
+                    </div>
+                </div>
+                
+                <div class="caption-group">
+                    <h3 class="caption-group-title">Music (0/1)</h3>
+                    <div class="team-slot" id="music-0">
+                        <span class="empty-slot">Empty Slot</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script>
+        // Corps list without The Cadets
+        const ALL_CORPS = [
+            'Blue Devils', 'Blue Knights', 'Blue Stars', 'Bluecoats', 
+            'Boston Crusaders', 'Carolina Crown', 'Colts', 'Crossmen', 
+            'Genesis', 'Madison Scouts', 'Mandarins', 'Music City', 
+            'Pacific Crest', 'Phantom Regiment', 'Santa Clara Vanguard', 
+            'Seattle Cascades', 'Spirit of Atlanta', 'The Academy', 
+            'The Cavaliers', 'Troopers'
+        ];
+
+        let currentUser = null;
+        let leagueId = null;
+        let currentLeague = null;
+        let draftState = null;
+        let currentCaption = 'brass';
+        let draftedCorps = new Map(); // Map of caption -> Set of corps names
+        let pickTimer = null;
+        let draftMembers = [];
+        let myTeam = new Map(); // Map of caption -> array of corps
+        let isMyTurn = false;
+        let timerInterval = null;
+
+        // Initialize drafted corps map
+        ['brass', 'percussion', 'guard', 'ge', 'visual', 'music'].forEach(caption => {
+            draftedCorps.set(caption, new Set());
+            myTeam.set(caption, []);
+        });
+
+        // Get league ID from URL
+        function getLeagueIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('leagueId');
+        }
+
+        // Initialize page
+        async function initializePage() {
+            // Check authentication
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            if (!user) {
+                window.location.href = '/';
+                return;
+            }
+            
+            currentUser = user;
+            leagueId = getLeagueIdFromUrl();
+            
+            if (!leagueId) {
+                alert('No league specified');
+                window.location.href = '/league.html';
+                return;
+            }
+            
+            // Load user profile
+            await loadUserProfile();
+            
+            // Load league and draft data
+            await loadLeagueData();
+            await loadDraftState();
+            
+            // Set up real-time subscriptions
+            setupRealtimeSubscriptions();
+            
+            // Load available corps for current caption
+            await loadAvailableCorps();
+        }
+
+        // Load user profile
+        async function loadUserProfile() {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('username, avatar_url, is_admin')
+                .eq('id', currentUser.id)
+                .single();
+            
+            if (profile) {
+                document.getElementById('userName').textContent = profile.username || currentUser.email.split('@')[0];
+                
+                // Set avatar (initial letter for now)
+                const initial = (profile.username || currentUser.email)[0].toUpperCase();
+                document.getElementById('userAvatar').textContent = initial;
+                
+                // Check admin status
+                if (profile.is_admin) {
+                    document.getElementById('adminLink').style.display = 'flex';
+                    document.getElementById('adminDivider').style.display = 'block';
+                }
+            }
+        }
+
+        // Toggle user menu
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!e.target.closest('.user-profile')) {
+                    dropdown.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+
+        // Logout function
+        async function logout() {
+            const { error } = await supabaseClient.auth.signOut();
+            if (!error) {
+                window.location.href = '/';
+            }
+        }
+
+        // Load league data
+        async function loadLeagueData() {
+            const { data: league, error } = await supabaseClient
+                .from('leagues')
+                .select('*')
+                .eq('id', leagueId)
+                .single();
+            
+            if (error || !league) {
+                alert('League not found');
+                window.location.href = '/league.html';
+                return;
+            }
+            
+            currentLeague = league;
+            document.getElementById('leagueName').textContent = league.name;
+        }
+
+        // Load draft state
+        async function loadDraftState() {
+            // Get draft info
+            const { data: draft, error: draftError } = await supabaseClient
+                .from('league_drafts')
+                .select('*')
+                .eq('league_id', leagueId)
+                .single();
+            
+            if (draftError || !draft) {
+                // Draft hasn't started
+                updateDraftStatus('Draft has not started yet', false);
+                return;
+            }
+            
+            draftState = draft;
+            
+            // Load draft order with usernames
+            await loadDraftOrder();
+            
+            // Load all previous picks
+            await loadAllPicks
