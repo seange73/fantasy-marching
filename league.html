@@ -1109,32 +1109,30 @@
             }
             
             // Create the league
-            const { data: league, error: leagueError } = await supabaseClient
-                .from('leagues')
-                .insert({
-                    name: name,
-                    password: password,
-                    owner_id: currentUser.id,
-                    max_members: maxMembers,
-                    draft_time: draftTime
-                })
-                .select()
-                .single();
-            
-            if (leagueError) {
-                showMessage('Error creating league: ' + leagueError.message, 'error');
-                return;
-            }
-                     
-            showMessage('League created successfully!', 'success');
-            document.getElementById('createLeagueForm').reset();
-            
-            // Reload leagues
-            await loadMyLeagues();
-            await loadAvailableLeagues();
-            
-            // Switch to join tab
-            switchTab('join');
+const { data, error } = await supabaseClient.rpc('create_league_with_owner', {
+    p_name: name,
+    p_password: password,
+    p_owner_id: currentUser.id,
+    p_max_members: maxMembers,
+    p_draft_time: draftTime
+});
+
+if (error) {
+    showMessage('Error creating league: ' + error.message, 'error');
+    return;
+}
+
+// Remove any code that tries to insert into league_members
+
+showMessage('League created successfully!', 'success');
+document.getElementById('createLeagueForm').reset();
+
+// Reload leagues
+await loadMyLeagues();
+await loadAvailableLeagues();
+
+// Switch to join tab
+switchTab('join');
         }
 
         // Go to league page
