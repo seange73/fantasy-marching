@@ -1125,22 +1125,7 @@
                 showMessage('Error creating league: ' + leagueError.message, 'error');
                 return;
             }
-            
-            // Add creator as owner member
-            const { error: memberError } = await supabaseClient
-                .from('league_members')
-                .insert({
-                    league_id: league.id,
-                    user_id: currentUser.id,
-                    role: 'owner',
-                    status: 'active'
-                });
-            
-            if (memberError) {
-                showMessage('Error adding you to the league: ' + memberError.message, 'error');
-                return;
-            }
-            
+                     
             showMessage('League created successfully!', 'success');
             document.getElementById('createLeagueForm').reset();
             
