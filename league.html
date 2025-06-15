@@ -816,31 +816,31 @@
 
         // Load user's leagues
         async function loadMyLeagues() {
-            const { data: leagues, error } = await supabaseClient
-                .from('league_members')
-                .select(`
-                    league_id,
-                    role,
-                    leagues (
-                        id,
-                        name,
-                        is_global,
-                        owner_id,
-                        created_at,
-                        max_members
-                    )
-                `)
-                .eq('user_id', currentUser.id)
-                .eq('status', 'active');
+    const { data: leagues, error } = await supabaseClient
+        .from('league_members')
+        .select(`
+            league_id,
+            role,
+            leagues:league_id (
+                id,
+                name,
+                is_global,
+                owner_id,
+                created_at,
+                max_members
+            )
+        `)
+        .eq('user_id', currentUser.id)
+        .eq('status', 'active');
 
-            if (error) {
-                console.error('Error loading leagues:', error);
-                return;
-            }
+    if (error) {
+        console.error('Error loading leagues:', error);
+        return;
+    }
 
-            myLeagues = leagues || [];
-            displayMyLeagues();
-        }
+    myLeagues = leagues || [];
+    displayMyLeagues();
+}
 
         // Display user's leagues
         async function displayMyLeagues() {
@@ -911,30 +911,31 @@
         }
 
         // Load available leagues
-        async function loadAvailableLeagues() {
-            // Get leagues user is not part of with owner information
-            const { data: leagues, error } = await supabaseClient
-                .from('leagues')
-                .select(`
-                    *,
-                    profiles!leagues_owner_id_fkey (username)
-                `)
-                .or('is_global.eq.true,password.is.null')
-                .eq('is_active', true)
-                .order('is_global', { ascending: false })
-                .order('created_at', { ascending: false });
+        // Load available leagues
+async function loadAvailableLeagues() {
+    // Get leagues user is not part of
+    const { data: leagues, error } = await supabaseClient
+        .from('leagues')
+        .select(`
+            *,
+            profiles:owner_id (username)
+        `)
+        .or('is_global.eq.true,password.is.null')
+        .eq('is_active', true)
+        .order('is_global', { ascending: false })
+        .order('created_at', { ascending: false });
 
-            if (error) {
-                console.error('Error loading available leagues:', error);
-                return;
-            }
+    if (error) {
+        console.error('Error loading available leagues:', error);
+        return;
+    }
 
-            // Filter out leagues user is already in
-            const myLeagueIds = myLeagues.map(l => l.leagues.id);
-            availableLeagues = leagues.filter(l => !myLeagueIds.includes(l.id));
-            
-            displayAvailableLeagues();
-        }
+    // Filter out leagues user is already in
+    const myLeagueIds = myLeagues.map(l => l.leagues.id);
+    availableLeagues = leagues.filter(l => !myLeagueIds.includes(l.id));
+    
+    displayAvailableLeagues();
+}
 
         // Display available leagues
         async function displayAvailableLeagues(searchTerm = '') {
