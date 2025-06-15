@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fantasy Marching - League</title>
+    <title>Fantasy Marching - Leagues</title>
     <style>
         * {
             margin: 0;
@@ -176,55 +176,168 @@
             text-align: center;
         }
 
+        /* Main Content */
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
         }
 
-        /* Pre-draft placeholder */
-        .pre-draft-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 4rem 2rem;
-            text-align: center;
-            margin-top: 4rem;
-        }
-
-        .pre-draft-container h1 {
-            font-size: 3rem;
+        .page-title {
+            font-size: 2.5rem;
             font-weight: 800;
             background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 1rem;
+            text-align: center;
         }
 
-        .pre-draft-container p {
-            font-size: 1.3rem;
+        .page-subtitle {
+            text-align: center;
             color: #a0a0a0;
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+        }
+
+        /* My Leagues Section */
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .my-leagues-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            min-height: 200px;
+        }
+
+        .leagues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .league-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .league-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4ecdc4, #45b7d1, #6c5ce7);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .league-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .league-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .league-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .league-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .league-members {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .league-rank {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .league-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #4ecdc4;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #a0a0a0;
+            margin-top: 0.25rem;
+        }
+
+        .no-leagues {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .no-leagues h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #888;
+        }
+
+        .no-leagues p {
+            font-size: 1.1rem;
             margin-bottom: 2rem;
         }
 
-        .draft-countdown {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #4ecdc4;
-            margin: 2rem 0;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 2rem;
-        }
-
-        .btn {
+        .no-leagues .btn {
             background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
             color: white;
             border: none;
@@ -235,12 +348,148 @@
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
+        }
+
+        .no-leagues .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+        }
+
+        /* Join/Create Section */
+        .join-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 0.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            color: #a0a0a0;
+            border-radius: 10px;
             font-size: 1rem;
+        }
+
+        .tab:hover {
+            color: white;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Available Leagues */
+        .available-leagues {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .available-league-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .available-league-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
+        }
+
+        .available-league-info {
+            flex: 1;
+        }
+
+        .available-league-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .global-badge {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #000;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+            display: inline-block;
+        }
+
+        .available-league-details {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .join-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .password-input {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            width: 150px;
+            transition: all 0.2s ease;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
         }
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.3);
         }
 
         .btn:disabled {
@@ -256,373 +505,160 @@
 
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
         }
 
-        .btn-success {
-            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-        }
-
-        .btn-success:hover {
-            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.4);
-        }
-
-        /* League info when draft hasn't started */
-        .league-members-list {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-top: 2rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .members-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #4ecdc4;
-            margin-bottom: 1rem;
-        }
-
-        .member-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-        }
-
-        .member-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .member-name {
-            flex: 1;
-            font-weight: 500;
-        }
-
-        .member-role {
-            font-size: 0.85rem;
-            color: #ffd700;
-            font-weight: 600;
-        }
-
-        /* Post-draft league content (hidden by default) */
-        #leagueContent {
-            display: none;
-        }
-
-        .league-info {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 2rem;
-            border-radius: 20px;
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .league-info h2 {
-            color: #4ecdc4;
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .league-info p {
-            color: #a0a0a0;
-        }
-
-        .league-stats {
-            display: flex;
-            gap: 3rem;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: #a0a0a0;
-            margin-top: 0.25rem;
-        }
-
-        .tabs {
-            display: flex;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 0.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .tab {
-            flex: 1;
-            padding: 1rem 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            border: none;
-            background: transparent;
-            font-size: 1rem;
-            color: #a0a0a0;
-            border-radius: 16px;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        .tab:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .tab.active {
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            color: white;
-        }
-
-        .content {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem;
-            min-height: 600px;
-        }
-
-        .lineup-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .caption-section {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 16px;
-            padding: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            height: auto;
-        }
-
-        .caption-section:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .caption-section.brass {
-            border-left: 4px solid #45b7d1;
-        }
-
-        .caption-section.percussion {
-            border-left: 4px solid #e74c3c;
-        }
-
-        .caption-section.guard {
-            border-left: 4px solid #f39c12;
-        }
-
-        .caption-section.ge {
-            border-left: 4px solid #27ae60;
-        }
-
-        .caption-section.visual {
-            border-left: 4px solid #e91e63;
-        }
-
-        .caption-section.music {
-            border-left: 4px solid #ff6b6b;
-        }
-
-        .caption-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .caption-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #4ecdc4;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .caption-total {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .corps-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .corps-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateX(4px);
-            border-color: rgba(78, 205, 196, 0.3);
-        }
-
-        .corps-card.competed {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .corps-card.competed::after {
-            content: "COMPETED";
-            position: absolute;
-            top: 8px;
-            right: 12px;
-            background: rgba(108, 117, 125, 0.8);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .corps-name {
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-            color: white;
-        }
-
-        .corps-stats {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            color: #a0a0a0;
-        }
-
-        .improvement {
-            font-weight: 700;
-        }
-
-        .improvement.positive {
-            color: #4ecdc4;
-        }
-
-        .improvement.negative {
-            color: #ff6b6b;
-        }
-
-        .bench-section {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .bench-label {
-            font-size: 0.9rem;
-            color: #a0a0a0;
-            margin-bottom: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .section-title {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #4ecdc4;
+        /* Create League Form */
+        .form-group {
             margin-bottom: 1.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .hidden {
-            display: none;
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #e0e0e0;
         }
 
-        /* Loading state */
+        .form-input {
+            width: 100%;
+            padding: 0.875rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-help {
+            font-size: 0.85rem;
+            color: #a0a0a0;
+            margin-top: 0.5rem;
+        }
+
+        .create-btn {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            margin-top: 2rem;
+        }
+
+        /* Loading State */
         .loading {
             text-align: center;
-            padding: 4rem 2rem;
+            padding: 2rem;
             color: #666;
         }
 
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #4ecdc4;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+        /* Alert Styles */
+        .alert {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(26, 26, 46, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            min-width: 300px;
+            max-width: 500px;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .alert.show {
+            opacity: 1;
+            visibility: visible;
         }
 
-        @media (max-width: 968px) {
-            .header-content {
-                padding: 1rem;
-            }
+        .alert.success {
+            border-color: rgba(78, 205, 196, 0.3);
+            background: rgba(78, 205, 196, 0.1);
+        }
 
-            .logo {
-                height: 60px;
-            }
+        .alert.error {
+            border-color: rgba(255, 107, 107, 0.3);
+            background: rgba(255, 107, 107, 0.1);
+        }
 
+        .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+        }
+
+        .alert.success .alert-icon {
+            color: #4ecdc4;
+        }
+
+        .alert.error .alert-icon {
+            color: #ff6b6b;
+        }
+
+        .alert-message {
+            flex: 1;
+            color: white;
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .alert-close:hover {
+            color: white;
+        }
+
+        @media (max-width: 768px) {
             .nav-tabs {
                 gap: 1rem;
                 font-size: 0.9rem;
+            }
+
+            .header-content {
+                padding: 1rem;
             }
 
             .user-name {
                 display: none;
             }
 
-            .league-info {
-                flex-direction: column;
-                gap: 2rem;
-                text-align: center;
+            .leagues-grid {
+                grid-template-columns: 1fr;
             }
 
-            .lineup-grid {
+            .form-row {
                 grid-template-columns: 1fr;
+            }
+
+            .league-stats {
+                gap: 1rem;
             }
         }
     </style>
@@ -673,143 +709,83 @@
         </div>
     </header>
 
+    <!-- Main Content -->
     <div class="container">
-        <!-- Loading State -->
-        <div id="loadingState" class="loading">
-            <div class="loading-spinner"></div>
-            <p>Loading league data...</p>
-        </div>
+        <h1 class="page-title">Fantasy Leagues</h1>
+        <p class="page-subtitle">Compete with friends or join the global league</p>
 
-        <!-- Pre-Draft State -->
-        <div id="preDraftContent" class="pre-draft-container" style="display: none;">
-            <h1>Draft Has Not Started</h1>
-            <p id="leagueName">Loading league...</p>
-            <div id="draftInfo">
-                <!-- Draft time info will be inserted here -->
+        <!-- My Leagues Section -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">My Leagues</h2>
             </div>
             
-            <!-- Draft actions for owner -->
-            <div id="ownerActions" style="display: none;">
-                <div class="action-buttons">
-                    <button class="btn btn-success" onclick="startDraft()">
-                        Start Draft Now
-                    </button>
-                    <button class="btn btn-secondary" onclick="scheduleDraft()">
-                        Schedule Draft
-                    </button>
+            <div class="my-leagues-container">
+                <div id="myLeaguesContent">
+                    <div class="loading">Loading your leagues...</div>
                 </div>
+            </div>
+        </section>
+
+        <!-- Join/Create League Section -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Join or Create a League</h2>
             </div>
             
-            <!-- Member list -->
-            <div class="league-members-list">
-                <h3 class="members-title">League Members</h3>
-                <div id="membersList">
-                    <!-- Members will be populated here -->
+            <div class="join-section">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('join')">Join a League</button>
+                    <button class="tab" onclick="switchTab('create')">Create a League</button>
                 </div>
-            </div>
-            
-            <div class="action-buttons">
-                <a href="/league.html" class="btn btn-secondary">Back to Leagues</a>
-            </div>
-        </div>
 
-        <!-- During Draft State -->
-        <div id="duringDraftContent" style="display: none;">
-            <div style="text-align: center; padding: 4rem;">
-                <h1 style="font-size: 3rem; margin-bottom: 2rem;">Draft in Progress</h1>
-                <p style="font-size: 1.3rem; color: #a0a0a0; margin-bottom: 2rem;">
-                    The draft is currently underway. Click below to join the draft room.
-                </p>
-                <button class="btn" onclick="goToDraft()" style="font-size: 1.2rem; padding: 1rem 3rem;">
-                    Enter Draft Room →
-                </button>
-            </div>
-        </div>
-
-        <!-- Post-Draft League Content -->
-        <div id="leagueContent" style="display: none;">
-            <div class="league-info">
-                <div>
-                    <h2 id="leagueTitle">Loading...</h2>
-                    <p id="leagueDetails">Loading...</p>
-                </div>
-                <div class="league-stats">
-                    <div class="stat">
-                        <div class="stat-value" id="leagueRank">-</div>
-                        <div class="stat-label">League Rank</div>
+                <!-- Join League Tab -->
+                <div id="join-content" class="tab-content active">
+                    <div class="search-section" style="margin-bottom: 1.5rem;">
+                        <input type="text" 
+                               id="leagueSearch" 
+                               class="form-input" 
+                               placeholder="Search by league name or creator..."
+                               onkeyup="searchLeagues()">
                     </div>
-                    <div class="stat">
-                        <div class="stat-value" id="record">-</div>
-                        <div class="stat-label">Record</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="avgScore">-</div>
-                        <div class="stat-label">Avg Score</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('lineup')">My Lineup</button>
-                <button class="tab" onclick="switchTab('matchup')">Weekly Matchup</button>
-                <button class="tab" onclick="switchTab('standings')">Standings</button>
-                <button class="tab" onclick="switchTab('recruitment')">Free Agents</button>
-            </div>
-
-            <div class="content">
-                <!-- My Lineup Tab -->
-                <div id="lineup-content" class="tab-content">
-                    <h2 class="section-title">Starting Lineup</h2>
-                    <div class="lineup-grid" id="lineupGrid">
-                        <!-- Lineup will be populated here -->
+                    <div class="available-leagues" id="availableLeagues">
+                        <div class="loading">Loading available leagues...</div>
                     </div>
                 </div>
 
-                <!-- Weekly Matchup Tab -->
-                <div id="matchup-content" class="tab-content hidden">
-                    <h2 class="section-title">Week <span id="currentWeek">1</span> Matchup</h2>
-                    <div id="matchupContainer">
-                        <!-- Matchup content will be populated here -->
-                    </div>
-                </div>
+                <!-- Create League Tab -->
+                <div id="create-content" class="tab-content">
+                    <form id="createLeagueForm">
+                        <div class="form-group">
+                            <label for="leagueName">League Name</label>
+                            <input type="text" id="leagueName" class="form-input" placeholder="Enter league name" required>
+                        </div>
 
-                <!-- Standings Tab -->
-                <div id="standings-content" class="tab-content hidden">
-                    <h2 class="section-title">League Standings</h2>
-                    <div id="standingsContainer">
-                        <!-- Standings will be populated here -->
-                    </div>
-                </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="leaguePassword">Password (Optional)</label>
+                                <input type="text" id="leaguePassword" class="form-input" placeholder="Leave blank for public league">
+                                <p class="form-help">Setting a password makes the league private. Users can join with the password or send a request to join.</p>
+                            </div>
 
-                <!-- Free Agents Tab -->
-                <div id="recruitment-content" class="tab-content hidden">
-                    <h2 class="section-title">Free Agents</h2>
-                    <div id="freeAgentsContainer">
-                        <!-- Free agents will be populated here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                            <div class="form-group">
+                                <label for="maxMembers">Max Members</label>
+                                <input type="number" id="maxMembers" class="form-input" value="12" min="2" max="20" step="2" required>
+                                <p class="form-help">Must be an even number between 2 and 20</p>
+                            </div>
+                        </div>
 
-    <!-- Modal for scheduling draft -->
-    <div id="scheduleDraftModal" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Schedule Draft</h3>
-                <button class="modal-close" onclick="closeModal('scheduleDraftModal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label" for="draftDateTime">Draft Date & Time</label>
-                    <input type="datetime-local" id="draftDateTime" class="form-input">
+                        <div class="form-group">
+                            <label for="draftTime">Draft Time (Optional)</label>
+                            <input type="datetime-local" id="draftTime" class="form-input">
+                            <p class="form-help">You can set this later from the league settings</p>
+                        </div>
+
+                        <button type="submit" class="btn create-btn">Create League</button>
+                    </form>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('scheduleDraftModal')">Cancel</button>
-                <button class="btn" onclick="saveDraftTime()">Save</button>
-            </div>
-        </div>
+        </section>
     </div>
 
     <!-- Alert container -->
@@ -826,17 +802,8 @@
     <script>
         let currentUser = null;
         let isAdmin = false;
-        let currentLeague = null;
-        let currentTeam = null;
-        let leagueId = null;
-        let isOwner = false;
-        let draftState = null;
-
-        // Get league ID from URL
-        function getLeagueIdFromUrl() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('id');
-        }
+        let myLeagues = [];
+        let availableLeagues = [];
 
         // Initialize page
         async function initializePage() {
@@ -849,18 +816,13 @@
             }
             
             currentUser = user;
-            leagueId = getLeagueIdFromUrl();
-            
-            if (!leagueId) {
-                window.location.href = '/league.html';
-                return;
-            }
             
             // Load user profile
             await loadUserProfile();
             
-            // Load league data
-            await loadLeagueData();
+            // Load leagues data
+            await loadMyLeagues();
+            await loadAvailableLeagues();
         }
 
         // Load user profile
@@ -909,243 +871,378 @@
             }
         }
 
-        // Load league data
-        async function loadLeagueData() {
-            // Get league info
-            const { data: league, error: leagueError } = await supabaseClient
+        // Load user's leagues
+        async function loadMyLeagues() {
+            // First, get the league IDs where user is a member
+            const { data: memberships, error: memberError } = await supabaseClient
+                .from('league_members')
+                .select('league_id, role')
+                .eq('user_id', currentUser.id)
+                .eq('status', 'active');
+
+            if (memberError) {
+                console.error('Error loading memberships:', memberError);
+                return;
+            }
+
+            if (!memberships || memberships.length === 0) {
+                myLeagues = [];
+                displayMyLeagues();
+                return;
+            }
+
+            // Then get the league details separately
+            const leagueIds = memberships.map(m => m.league_id);
+            const { data: leagues, error: leaguesError } = await supabaseClient
                 .from('leagues')
                 .select('*')
-                .eq('id', leagueId)
-                .single();
-            
-            if (leagueError || !league) {
-                alert('League not found');
-                window.location.href = '/league.html';
+                .in('id', leagueIds);
+
+            if (leaguesError) {
+                console.error('Error loading league details:', leaguesError);
                 return;
             }
+
+            // Combine the data
+            myLeagues = memberships.map(membership => {
+                const league = leagues.find(l => l.id === membership.league_id);
+                return {
+                    league_id: membership.league_id,
+                    role: membership.role,
+                    leagues: league
+                };
+            });
+
+            displayMyLeagues();
+        }
+
+        // Display user's leagues
+        async function displayMyLeagues() {
+            const container = document.getElementById('myLeaguesContent');
             
-            currentLeague = league;
-            isOwner = league.owner_id === currentUser.id;
-            
-            // Check if user is a member
-            const { data: membership } = await supabaseClient
-                .from('league_members')
-                .select('*')
-                .eq('league_id', leagueId)
-                .eq('user_id', currentUser.id)
-                .eq('status', 'active')
-                .single();
-            
-            if (!membership) {
-                alert('You are not a member of this league');
-                window.location.href = '/league.html';
+            if (myLeagues.length === 0) {
+                container.innerHTML = `
+                    <div class="no-leagues">
+                        <h3>You're not in any leagues yet</h3>
+                        <p>Join a league below to start competing!</p>
+                        <a href="#join-section" class="btn" onclick="document.getElementById('join-section').scrollIntoView({behavior: 'smooth'}); return false;">Join a League</a>
+                    </div>
+                `;
                 return;
             }
-            
-            // Check draft status
-            const { data: draft } = await supabaseClient
-                .from('league_drafts')
-                .select('*')
-                .eq('league_id', leagueId)
-                .single();
-            
-            draftState = draft;
-            
-            // Hide loading state
-            document.getElementById('loadingState').style.display = 'none';
-            
-            // Determine which view to show
-            if (!draft || draft.status === 'not_started') {
-                // Show pre-draft state
-                showPreDraftState();
-            } else if (draft.status === 'in_progress') {
-                // Show during draft state
-                showDuringDraftState();
-            } else {
-                // Show post-draft league content
-                await showLeagueContent();
-            }
-        }
 
-        // Show pre-draft state
-        async function showPreDraftState() {
-            document.getElementById('preDraftContent').style.display = 'block';
-            document.getElementById('leagueName').textContent = currentLeague.name;
-            
-            const draftInfoEl = document.getElementById('draftInfo');
-            
-            if (currentLeague.draft_time) {
-                const draftDate = new Date(currentLeague.draft_time);
-                const now = new Date();
-                const timeDiff = draftDate - now;
-                const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-                
-                draftInfoEl.innerHTML = `
-                    <p>Draft scheduled for:</p>
-                    <div class="draft-countdown">${draftDate.toLocaleDateString()} at ${draftDate.toLocaleTimeString()}</div>
-                    <p style="color: #666; font-size: 1rem;">${daysDiff} days until draft</p>
-                `;
-            } else {
-                draftInfoEl.innerHTML = `
-                    <p style="color: #666;">Draft time has not been set yet</p>
-                    <p style="color: #666; font-size: 1rem;">The league owner will schedule the draft soon</p>
-                `;
-            }
-            
-            // Show owner actions if user is owner
-            if (isOwner) {
-                document.getElementById('ownerActions').style.display = 'block';
-            }
-            
-            // Load and display members
-            await loadLeagueMembers();
-        }
-
-        // Show during draft state
-        function showDuringDraftState() {
-            document.getElementById('duringDraftContent').style.display = 'block';
-        }
-
-        // Go to draft room
-        function goToDraft() {
-            window.location.href = `/draft.html?leagueId=${leagueId}`;
-        }
-
-        // Load league members
-        async function loadLeagueMembers() {
-            console.log('Loading members for league:', leagueId);
-            
-            const { data: members, error } = await supabaseClient
+            // Get member counts for each league
+            const leagueIds = myLeagues.map(l => l.leagues.id);
+            const { data: memberCounts } = await supabaseClient
                 .from('league_members')
-                .select(`
-                    *,
-                    profiles:user_id (username)
-                `)
-                .eq('league_id', leagueId)
+                .select('league_id')
+                .in('league_id', leagueIds)
                 .eq('status', 'active');
-            
+
+            const memberCountMap = {};
+            if (memberCounts) {
+                memberCounts.forEach(m => {
+                    memberCountMap[m.league_id] = (memberCountMap[m.league_id] || 0) + 1;
+                });
+            }
+
+            container.innerHTML = `
+                <div class="leagues-grid">
+                    ${myLeagues.map(item => {
+                        const league = item.leagues;
+                        const memberCount = memberCountMap[league.id] || 1;
+                        const isOwner = item.role === 'owner';
+                        
+                        return `
+                            <div class="league-card" onclick="goToLeague('${league.id}')">
+                                <div class="league-name">
+                                    ${league.name}
+                                    ${league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
+                                </div>
+                                <div class="league-info">
+                                    <div class="league-members">${memberCount} / ${league.max_members} members</div>
+                                    ${isOwner ? '<div class="league-rank" style="background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #000;">Owner</div>' : '<div class="league-rank">Rank #3</div>'}
+                                </div>
+                                <div class="league-stats">
+                                    <div class="stat">
+                                        <div class="stat-value">5-3</div>
+                                        <div class="stat-label">Record</div>
+                                    </div>
+                                    <div class="stat">
+                                        <div class="stat-value">847.2</div>
+                                        <div class="stat-label">Avg Score</div>
+                                    </div>
+                                    <div class="stat">
+                                        <div class="stat-value">3rd</div>
+                                        <div class="stat-label">Position</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // Load available leagues
+        async function loadAvailableLeagues() {
+            // Get all public/global leagues
+            const { data: leagues, error } = await supabaseClient
+                .from('leagues')
+                .select('*')
+                .or('is_global.eq.true,password.is.null')
+                .eq('is_active', true)
+                .order('is_global', { ascending: false })
+                .order('created_at', { ascending: false });
+
             if (error) {
-                console.error('Error loading members:', error);
-                showAlert('Error loading members: ' + error.message, 'error');
+                console.error('Error loading available leagues:', error);
                 return;
             }
+
+            // Get owner usernames separately
+            const ownerIds = [...new Set(leagues.map(l => l.owner_id))];
+            const { data: profiles } = await supabaseClient
+                .from('profiles')
+                .select('id, username')
+                .in('id', ownerIds);
+
+            // Add username to each league
+            const leaguesWithProfiles = leagues.map(league => ({
+                ...league,
+                profiles: profiles?.find(p => p.id === league.owner_id)
+            }));
+
+            // Filter out leagues user is already in
+            const myLeagueIds = myLeagues.map(l => l.leagues.id);
+            availableLeagues = leaguesWithProfiles.filter(l => !myLeagueIds.includes(l.id));
             
-            console.log('Loaded members:', members);
+            displayAvailableLeagues();
+        }
+
+        // Display available leagues
+        async function displayAvailableLeagues(searchTerm = '') {
+            const container = document.getElementById('availableLeagues');
             
-            const container = document.getElementById('membersList');
-            
-            if (!members || members.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #666;">No members found</p>';
-                return;
+            // Filter leagues based on search term
+            let filteredLeagues = availableLeagues;
+            if (searchTerm) {
+                const search = searchTerm.toLowerCase();
+                filteredLeagues = availableLeagues.filter(league => 
+                    league.name.toLowerCase().includes(search) ||
+                    (league.profiles?.username || '').toLowerCase().includes(search)
+                );
             }
             
-            container.innerHTML = members.map(member => {
-                const username = member.profiles?.username || 'Unknown User';
-                const initial = username[0].toUpperCase();
+            if (filteredLeagues.length === 0) {
+                container.innerHTML = searchTerm 
+                    ? '<p style="text-align: center; color: #666;">No leagues found matching your search</p>'
+                    : '<p style="text-align: center; color: #666;">No available leagues at the moment</p>';
+                return;
+            }
+
+            // Get member counts
+            const leagueIds = filteredLeagues.map(l => l.id);
+            const { data: memberCounts } = await supabaseClient
+                .from('league_members')
+                .select('league_id')
+                .in('league_id', leagueIds)
+                .eq('status', 'active');
+
+            const memberCountMap = {};
+            if (memberCounts) {
+                memberCounts.forEach(m => {
+                    memberCountMap[m.league_id] = (memberCountMap[m.league_id] || 0) + 1;
+                });
+            }
+
+            container.innerHTML = filteredLeagues.map(league => {
+                const memberCount = memberCountMap[league.id] || 0;
+                const isFull = memberCount >= league.max_members;
+                const creatorName = league.is_global ? 'System' : (league.profiles?.username || 'Unknown');
                 
                 return `
-                    <div class="member-item">
-                        <div class="member-avatar">${initial}</div>
-                        <div class="member-name">${username}</div>
-                        ${member.role === 'owner' ? '<div class="member-role">Owner</div>' : ''}
+                    <div class="available-league-card">
+                        <div class="available-league-info">
+                            <div class="available-league-name">
+                                ${league.name}
+                                ${league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
+                            </div>
+                            <div class="available-league-details">
+                                Created by ${creatorName} • ${memberCount} / ${league.max_members} members
+                                ${league.password ? ' • Password Protected' : ' • Public'}
+                            </div>
+                        </div>
+                        <div class="join-controls">
+                            ${league.password && !league.is_global ? `
+                                <input type="password" 
+                                       class="password-input" 
+                                       id="password_${league.id}" 
+                                       placeholder="Enter password">
+                            ` : ''}
+                            ${isFull ? 
+                                '<button class="btn" disabled>League Full</button>' :
+                                `<button class="btn" onclick="joinLeague('${league.id}', ${!!league.password})">
+                                    ${league.password && !league.is_global ? 'Join with Password' : 'Join League'}
+                                </button>`
+                            }
+                            ${league.password && !league.is_global && !isFull ? `
+                                <button class="btn btn-secondary" onclick="requestToJoin('${league.id}')">
+                                    Request to Join
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Start draft immediately
-        async function startDraft() {
-            // Check if we have enough members
-            const { count } = await supabaseClient
-                .from('league_members')
-                .select('*', { count: 'exact', head: true })
-                .eq('league_id', leagueId)
-                .eq('status', 'active');
+        // Join a league
+        async function joinLeague(leagueId, requiresPassword) {
+            let password = null;
             
-            if (count < 2) {
-                showAlert('You need at least 2 members to start a draft', 'error');
-                return;
-            }
-            
-            if (count % 2 !== 0) {
-                showAlert('You need an even number of members to start a draft', 'error');
-                return;
-            }
-            
-            showAlert('Starting draft... Please wait', 'success');
-            
-            try {
-                // Initialize the draft
-                const { error } = await supabaseClient.rpc('initialize_draft', {
-                    p_league_id: leagueId
-                });
+            if (requiresPassword) {
+                const passwordInput = document.getElementById(`password_${leagueId}`);
+                password = passwordInput.value.trim();
                 
-                if (error) throw error;
+                if (!password) {
+                    showAlert('Please enter the league password', 'error');
+                    return;
+                }
                 
-                showAlert('Draft started! Redirecting to draft room...', 'success');
-                
-                // Redirect to draft room
-                setTimeout(() => {
-                    window.location.href = `/draft.html?leagueId=${leagueId}`;
-                }, 1500);
-                
-            } catch (error) {
-                console.error('Error starting draft:', error);
-                showAlert('Error starting draft: ' + error.message, 'error');
-            }
-        }
-
-        // Schedule draft
-        function scheduleDraft() {
-            // Show the modal
-            document.getElementById('scheduleDraftModal').classList.add('show');
-            
-            // Set minimum date to now
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('draftDateTime').min = now.toISOString().slice(0, 16);
-        }
-
-        // Save draft time
-        async function saveDraftTime() {
-            const dateTimeInput = document.getElementById('draftDateTime');
-            const draftDate = new Date(dateTimeInput.value);
-            
-            if (!dateTimeInput.value) {
-                showAlert('Please select a date and time', 'error');
-                return;
-            }
-            
-            if (draftDate <= new Date()) {
-                showAlert('Draft time must be in the future', 'error');
-                return;
-            }
-            
-            try {
-                const { error } = await supabaseClient
+                // Verify password
+                const { data: league } = await supabaseClient
                     .from('leagues')
-                    .update({ draft_time: draftDate.toISOString() })
-                    .eq('id', leagueId);
+                    .select('password')
+                    .eq('id', leagueId)
+                    .single();
                 
-                if (error) throw error;
-                
-                showAlert('Draft time updated successfully!', 'success');
-                closeModal('scheduleDraftModal');
-                
-                // Reload the page to show updated draft time
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-                
-            } catch (error) {
-                console.error('Error updating draft time:', error);
-                showAlert('Error updating draft time: ' + error.message, 'error');
+                if (league.password !== password) {
+                    showAlert('Incorrect password', 'error');
+                    return;
+                }
             }
+            
+            // Join the league
+            const { error } = await supabaseClient
+                .from('league_members')
+                .insert({
+                    league_id: leagueId,
+                    user_id: currentUser.id,
+                    role: 'member',
+                    status: 'active'
+                });
+            
+            if (error) {
+                if (error.code === '23505') { // Unique violation
+                    showAlert('You are already in this league', 'error');
+                } else {
+                    showAlert('Error joining league: ' + error.message, 'error');
+                }
+                return;
+            }
+            
+            showAlert('Successfully joined the league!', 'success');
+            
+            // Reload leagues
+            await loadMyLeagues();
+            await loadAvailableLeagues();
         }
 
-        // Modal functions
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
+        // Request to join a league
+        async function requestToJoin(leagueId) {
+            const { error } = await supabaseClient
+                .from('league_join_requests')
+                .insert({
+                    league_id: leagueId,
+                    user_id: currentUser.id,
+                    status: 'pending'
+                });
+            
+            if (error) {
+                if (error.code === '23505') { // Unique violation
+                    showAlert('You have already requested to join this league', 'error');
+                } else {
+                    showAlert('Error sending request: ' + error.message, 'error');
+                }
+                return;
+            }
+            
+            showAlert('Join request sent! The league owner will review your request.', 'success');
+        }
+
+        // Create a new league
+        async function createLeague(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('leagueName').value.trim();
+            const password = document.getElementById('leaguePassword').value.trim() || null;
+            const maxMembers = parseInt(document.getElementById('maxMembers').value);
+            const draftTime = document.getElementById('draftTime').value || null;
+            
+            // Validate max members is even
+            if (maxMembers % 2 !== 0) {
+                showAlert('Max members must be an even number', 'error');
+                return;
+            }
+            
+            // Validate max members range
+            if (maxMembers < 2 || maxMembers > 20) {
+                showAlert('Max members must be between 2 and 20', 'error');
+                return;
+            }
+            
+            // Create the league using the function
+            const { data, error } = await supabaseClient.rpc('create_league_with_owner', {
+                p_name: name,
+                p_password: password,
+                p_owner_id: currentUser.id,
+                p_max_members: maxMembers,
+                p_draft_time: draftTime
+            });
+            
+            if (error) {
+                showAlert('Error creating league: ' + error.message, 'error');
+                return;
+            }
+            
+            showAlert('League created successfully!', 'success');
+            document.getElementById('createLeagueForm').reset();
+            
+            // Add small delay before reloading to ensure transaction commits
+            setTimeout(async () => {
+                await loadMyLeagues();
+                await loadAvailableLeagues();
+            }, 500);
+            
+            // Switch to join tab
+            switchTab('join');
+        }
+
+        // Go to league page
+        function goToLeague(leagueId) {
+            window.location.href = `/league-detail.html?id=${leagueId}`;
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-content`).classList.add('active');
+        }
+
+        // Search leagues
+        function searchLeagues() {
+            const searchTerm = document.getElementById('leagueSearch').value;
+            displayAvailableLeagues(searchTerm);
         }
 
         // Alert functions
@@ -1173,327 +1270,13 @@
             document.getElementById('alertContainer').classList.remove('show');
         }
 
-        // Update draft time function (remove the old one that used prompt)
-        async function updateDraftTime(draftTime) {
-            // This function is no longer needed since we use the modal
-        }
-
-        // Show league content (post-draft)
-        async function showLeagueContent() {
-            document.getElementById('leagueContent').style.display = 'block';
-            
-            // Set league info
-            document.getElementById('leagueTitle').textContent = currentLeague.name;
-            
-            // Get member count
-            const { count: memberCount } = await supabaseClient
-                .from('league_members')
-                .select('*', { count: 'exact', head: true })
-                .eq('league_id', leagueId)
-                .eq('status', 'active');
-            
-            const currentWeek = getCurrentWeek();
-            document.getElementById('leagueDetails').textContent = 
-                `${memberCount || 0} members • Week ${currentWeek} of 12`;
-            
-            // Load user's team
-            await loadUserTeam();
-            
-            // Load lineup from draft picks
-            await loadLineupFromDraft();
-            
-            // Calculate stats
-            await calculateStats();
-        }
-
-        // Get current week (mock for now)
-        function getCurrentWeek() {
-            // This would normally calculate based on league start date and events
-            return 8;
-        }
-
-        // Load user's team
-        async function loadUserTeam() {
-            const { data: team } = await supabaseClient
-                .from('league_teams')
-                .select('*')
-                .eq('league_id', leagueId)
-                .eq('user_id', currentUser.id)
-                .single();
-            
-            if (!team) {
-                // Create team if doesn't exist
-                const { data: newTeam } = await supabaseClient
-                    .from('league_teams')
-                    .insert({
-                        league_id: leagueId,
-                        user_id: currentUser.id,
-                        team_name: `${currentUser.email.split('@')[0]}'s Team`
-                    })
-                    .select()
-                    .single();
-                
-                currentTeam = newTeam;
-            } else {
-                currentTeam = team;
-            }
-        }
-
-        // Load lineup from draft picks
-        async function loadLineupFromDraft() {
-            if (!currentTeam) return;
-            
-            // Get roster from draft picks
-            const { data: roster, error } = await supabaseClient
-                .from('league_team_roster')
-                .select('*')
-                .eq('team_id', currentTeam.id)
-                .order('caption')
-                .order('position');
-            
-            if (error || !roster || roster.length === 0) {
-                // Use mock data if no draft data
-                loadMockLineup();
-                return;
-            }
-            
-            // Group by caption
-            const lineup = {
-                brass: [],
-                percussion: [],
-                guard: [],
-                ge: [],
-                visual: [],
-                music: []
-            };
-            
-            roster.forEach(item => {
-                // Mock scores for now - would come from real event data
-                lineup[item.caption].push({
-                    name: item.corps_name,
-                    position: item.position,
-                    score: 18 + Math.random() * 2,
-                    improvement: (Math.random() - 0.5) * 1.5
-                });
-            });
-            
-            displayLineup(lineup);
-        }
-
-        // Load mock lineup (fallback)
-        function loadMockLineup() {
-            const mockLineup = {
-                brass: [
-                    { name: 'Blue Devils', position: 0, score: 19.85, improvement: 0.3 },
-                    { name: 'Carolina Crown', position: 1, score: 19.12, improvement: 0.5 }
-                ],
-                percussion: [
-                    { name: 'Santa Clara Vanguard', position: 0, score: 19.45, improvement: 0.2 },
-                    { name: 'Bluecoats', position: 1, score: 18.89, improvement: -0.1 }
-                ],
-                guard: [
-                    { name: 'Phantom Regiment', position: 0, score: 18.65, improvement: 0.4 },
-                    { name: 'The Cavaliers', position: 1, score: 18.23, improvement: 0.6 }
-                ],
-                ge: [
-                    { name: 'Boston Crusaders', position: 0, score: 18.45, improvement: 0.3 }
-                ],
-                visual: [
-                    { name: 'The Academy', position: 0, score: 16.78, improvement: 0.8 }
-                ],
-                music: [
-                    { name: 'Blue Knights', position: 0, score: 17.92, improvement: 0.4 }
-                ]
-            };
-            
-            displayLineup(mockLineup);
-        }
-
-        // Display lineup
-        function displayLineup(lineup) {
-            const grid = document.getElementById('lineupGrid');
-            const captions = [
-                { key: 'brass', title: 'Brass', class: 'brass' },
-                { key: 'percussion', title: 'Percussion', class: 'percussion' },
-                { key: 'guard', title: 'Color Guard', class: 'guard' },
-                { key: 'ge', title: 'General Effect', class: 'ge' },
-                { key: 'visual', title: 'Visual', class: 'visual' },
-                { key: 'music', title: 'Music', class: 'music' }
-            ];
-            
-            grid.innerHTML = captions.map(caption => {
-                const corps = lineup[caption.key] || [];
-                const total = corps.reduce((sum, c) => sum + c.score, 0);
-                
-                return `
-                    <div class="caption-section ${caption.class}">
-                        <div class="caption-header">
-                            <div class="caption-title">${caption.title}</div>
-                            <div class="caption-total">${total.toFixed(2)}</div>
-                        </div>
-                        ${corps.map(c => `
-                            <div class="corps-card" data-score="${c.score}">
-                                <div class="corps-name">${c.name}</div>
-                                <div class="corps-stats">
-                                    <span>Score: ${c.score.toFixed(2)}</span>
-                                    <span class="improvement ${c.improvement >= 0 ? 'positive' : 'negative'}">
-                                        ${c.improvement >= 0 ? '+' : ''}${c.improvement.toFixed(2)}
-                                    </span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Calculate stats
-        async function calculateStats() {
-            // Get matchups for this team
-            const { data: matchups } = await supabaseClient
-                .from('league_matchups')
-                .select('*')
-                .eq('league_id', leagueId)
-                .or(`team1_id.eq.${currentTeam?.id},team2_id.eq.${currentTeam?.id}`);
-            
-            let wins = 0, losses = 0, totalScore = 0, gamesPlayed = 0;
-            
-            if (matchups) {
-                matchups.forEach(matchup => {
-                    if (matchup.winner_id) {
-                        gamesPlayed++;
-                        if (matchup.winner_id === currentTeam?.id) {
-                            wins++;
-                        } else {
-                            losses++;
-                        }
-                        
-                        if (matchup.team1_id === currentTeam?.id) {
-                            totalScore += matchup.team1_score || 0;
-                        } else {
-                            totalScore += matchup.team2_score || 0;
-                        }
-                    }
-                });
-            }
-            
-            // Update display (using mock data for rank)
-            document.getElementById('leagueRank').textContent = '3rd';
-            document.getElementById('record').textContent = `${wins}-${losses}`;
-            document.getElementById('avgScore').textContent = gamesPlayed > 0 
-                ? (totalScore / gamesPlayed).toFixed(1) 
-                : '0.0';
-        }
-
-        // Tab switching
-        function switchTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected tab content
-            document.getElementById(tabName + '-content').classList.remove('hidden');
-            
-            // Add active class to clicked tab
-            event.target.classList.add('active');
-            
-            // Load content for the selected tab
-            switch(tabName) {
-                case 'matchup':
-                    loadMatchup();
-                    break;
-                case 'standings':
-                    loadStandings();
-                    break;
-                case 'recruitment':
-                    loadFreeAgents();
-                    break;
-            }
-        }
-
-        // Load matchup
-        async function loadMatchup() {
-            const week = getCurrentWeek();
-            document.getElementById('currentWeek').textContent = week;
-            
-            // For now, show mock data
-            const container = document.getElementById('matchupContainer');
-            container.innerHTML = `
-                <div style="text-align: center; padding: 3rem;">
-                    <p style="color: #666; font-size: 1.2rem;">Matchup data will be available after implementation</p>
-                </div>
-            `;
-        }
-
-        // Load standings
-        async function loadStandings() {
-            const container = document.getElementById('standingsContainer');
-            
-            // Get all teams and calculate standings
-            const { data: teams } = await supabaseClient
-                .from('league_teams')
-                .select(`
-                    *,
-                    profiles!league_teams_user_id_fkey (username)
-                `)
-                .eq('league_id', leagueId);
-            
-            if (!teams || teams.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #666;">No teams found</p>';
-                return;
-            }
-            
-            // For now, show teams with mock standings
-            container.innerHTML = `
-                <div style="display: grid; gap: 0.5rem;">
-                    ${teams.map((team, index) => `
-                        <div style="
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            padding: 1rem 1.5rem;
-                            background: rgba(255, 255, 255, 0.05);
-                            border-radius: 12px;
-                            border: 1px solid rgba(255, 255, 255, 0.1);
-                        ">
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <span style="
-                                    font-size: 1.5rem;
-                                    font-weight: 800;
-                                    color: ${index < 3 ? '#4ecdc4' : '#666'};
-                                ">${index + 1}</span>
-                                <span style="font-weight: 600;">
-                                    ${team.profiles?.username || 'Unknown'}'s Team
-                                </span>
-                            </div>
-                            <div style="display: flex; gap: 2rem; color: #a0a0a0;">
-                                <span>5-3</span>
-                                <span>847.2 avg</span>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        // Load free agents
-        async function loadFreeAgents() {
-            const container = document.getElementById('freeAgentsContainer');
-            container.innerHTML = `
-                <div style="text-align: center; padding: 3rem;">
-                    <p style="color: #666; font-size: 1.2rem;">Free agent system will be available soon</p>
-                </div>
-            `;
-        }
-
         // Initialize on load
-        document.addEventListener('DOMContentLoaded', initializePage);
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializePage();
+            
+            // Add form submit handler
+            document.getElementById('createLeagueForm').addEventListener('submit', createLeague);
+        });
     </script>
 </body>
 </html>
