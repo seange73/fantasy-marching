@@ -1,15 +1,3 @@
-// Load available corps for current caption
-        async function loadAvailableCorps() {
-            const container = document.getElementById('corpsGrid');
-            const draftedInCaption = draftedCorps.get(currentCaption);
-            
-            // Check if draft is active
-            if (!draftState || draftState.status !== 'in_progress') {
-                container.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1/-1;">Draft has not started or is complete</p>';
-                return;
-            }
-            
-            container.innerHTML = ALL_CORPS.map(corps => {<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">

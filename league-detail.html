@@ -597,6 +597,102 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Notification Styles */
+        .notification-container {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .notification {
+            background: rgba(26, 26, 46, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            animation: slideIn 0.3s ease-out;
+            position: relative;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.success {
+            border-color: rgba(78, 205, 196, 0.3);
+        }
+
+        .notification.error {
+            border-color: rgba(255, 107, 107, 0.3);
+        }
+
+        .notification.info {
+            border-color: rgba(69, 183, 209, 0.3);
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .notification.success .notification-icon {
+            color: #4ecdc4;
+        }
+
+        .notification.error .notification-icon {
+            color: #ff6b6b;
+        }
+
+        .notification.info .notification-icon {
+            color: #45b7d1;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            color: white;
+        }
+
+        .notification-message {
+            font-size: 0.9rem;
+            color: #e0e0e0;
+            line-height: 1.4;
+        }
+
+        .notification-close {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.2s ease;
+        }
+
+        .notification-close:hover {
+            color: white;
+        }
+
         @media (max-width: 968px) {
             .header-content {
                 padding: 1rem;
@@ -792,6 +888,9 @@
         </div>
     </div>
 
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="notification-container"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script>
@@ -802,6 +901,59 @@
         let leagueId = null;
         let isOwner = false;
         let draftState = null;
+
+        // Notification functions
+        function showNotification(title, message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            const id = Date.now();
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="notification-icon">
+                    ${type === 'success' ? '✓' : type === 'error' ? '⚠' : 'ℹ'}
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">${title}</div>
+                    <div class="notification-message">${message}</div>
+                </div>
+                <button class="notification-close" onclick="closeNotification(${id})">&times;</button>
+            `;
+            
+            notification.id = `notification-${id}`;
+            container.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                closeNotification(id);
+            }, 5000);
+        }
+
+        function closeNotification(id) {
+            const notification = document.getElementById(`notification-${id}`);
+            if (notification) {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }
+        }
+
+        // Add slideOut animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
 
         // Get league ID from URL
         function getLeagueIdFromUrl() {
@@ -890,8 +1042,10 @@
                 .single();
             
             if (leagueError || !league) {
-                alert('League not found');
-                window.location.href = '/league.html';
+                showNotification('Error', 'League not found', 'error');
+                setTimeout(() => {
+                    window.location.href = '/league.html';
+                }, 2000);
                 return;
             }
             
@@ -908,8 +1062,10 @@
                 .single();
             
             if (!membership) {
-                alert('You are not a member of this league');
-                window.location.href = '/league.html';
+                showNotification('Error', 'You are not a member of this league', 'error');
+                setTimeout(() => {
+                    window.location.href = '/league.html';
+                }, 2000);
                 return;
             }
             
@@ -1023,12 +1179,12 @@
                 .eq('status', 'active');
             
             if (count < 2) {
-                alert('You need at least 2 members to start a draft');
+                showNotification('Cannot Start Draft', 'You need at least 2 members to start a draft', 'error');
                 return;
             }
             
             if (count % 2 !== 0) {
-                alert('You need an even number of members to start a draft');
+                showNotification('Cannot Start Draft', 'You need an even number of members to start a draft', 'error');
                 return;
             }
             
@@ -1037,23 +1193,47 @@
             }
             
             try {
-                // Initialize the draft
+                // First, create league teams for all members if they don't exist
+                const { data: members } = await supabaseClient
+                    .from('league_members')
+                    .select('user_id')
+                    .eq('league_id', leagueId)
+                    .eq('status', 'active');
+                
+                // Create teams for each member
+                for (const member of members) {
+                    const { error: teamError } = await supabaseClient
+                        .from('league_teams')
+                        .upsert({
+                            league_id: leagueId,
+                            user_id: member.user_id,
+                            team_name: `Team ${member.user_id.substring(0, 8)}`
+                        }, {
+                            onConflict: 'league_id,user_id'
+                        });
+                    
+                    if (teamError) {
+                        console.error('Error creating team:', teamError);
+                    }
+                }
+                
+                // Now initialize the draft
                 const { error } = await supabaseClient.rpc('initialize_draft', {
                     p_league_id: leagueId
                 });
                 
                 if (error) throw error;
                 
-                alert('Draft started! Redirecting to draft room...');
+                showNotification('Draft Started!', 'Redirecting to draft room...', 'success');
                 
                 // Redirect to draft room
                 setTimeout(() => {
                     window.location.href = `/draft.html?leagueId=${leagueId}`;
-                }, 1000);
+                }, 1500);
                 
             } catch (error) {
                 console.error('Error starting draft:', error);
-                alert('Error starting draft: ' + error.message);
+                showNotification('Error Starting Draft', error.message, 'error');
             }
         }
 
@@ -1065,12 +1245,12 @@
             // Basic validation
             const draftDate = new Date(dateTime);
             if (isNaN(draftDate.getTime())) {
-                alert('Invalid date format');
+                showNotification('Invalid Date', 'Please enter a valid date format', 'error');
                 return;
             }
             
             if (draftDate <= new Date()) {
-                alert('Draft time must be in the future');
+                showNotification('Invalid Date', 'Draft time must be in the future', 'error');
                 return;
             }
             
@@ -1087,12 +1267,16 @@
                 
                 if (error) throw error;
                 
-                alert('Draft time updated successfully!');
-                location.reload();
+                showNotification('Success', 'Draft time updated successfully!', 'success');
+                
+                // Reload the page to show updated time
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
                 
             } catch (error) {
                 console.error('Error updating draft time:', error);
-                alert('Error updating draft time: ' + error.message);
+                showNotification('Error', 'Failed to update draft time', 'error');
             }
         }
 
