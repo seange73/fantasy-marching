@@ -1061,8 +1061,8 @@
                     profiles:user_id (username)
                 `)
                 .eq('league_id', leagueId)
-                .order('round', { ascending: false })
-                .order('pick_number', { ascending: false });
+                .order('round', { ascending: true })
+                .order('pick_number', { ascending: true });
             
             if (error) {
                 console.error('Error loading picks:', error);
@@ -1072,7 +1072,7 @@
             // Clear existing data
             ['brass', 'percussion', 'guard', 'ge', 'visual', 'music'].forEach(caption => {
                 draftedCorps.get(caption).clear();
-                myTeam.get(caption).length = 0; // Clear array while keeping reference
+                myTeam.set(caption, []); // Reset to empty array
             });
             
             // Update drafted corps sets and my team
@@ -1085,11 +1085,14 @@
                 }
             });
             
-            // Display recent picks
-            displayRecentPicks(picks || []);
+            console.log('My team after loading picks:', myTeam);
+            
+            // Display recent picks (show in reverse order - most recent first)
+            displayRecentPicks(picks ? [...picks].reverse() : []);
             
             // Update my team display
             updateMyTeamDisplay();
+        }
         }
 
         // Display recent picks
@@ -1152,18 +1155,7 @@
             });
         }
 
-        // Update draft UI based on state
-        function updateDraftUI() {
-            if (!draftState) return;
-            
-            isMyTurn = draftState.current_user_id === currentUser.id;
-            
-            // Update status display
-            const statusDiv = document.getElementById('draftStatus');
-            const currentPick = `Round ${draftState.current_round}, Pick ${draftState.current_pick}`;
-            
-            if (draftState.status === 'completed') {
-                statusDiv.className = 'draft-status';
+
                 statusDiv.innerHTML = `
                     <div class="current-pick">Draft Complete!</div>
                     <div>All picks have been made</div>
@@ -1305,6 +1297,9 @@
                 return;
             }
             
+            // Disable all draft buttons immediately to prevent double-clicks
+            document.querySelectorAll('.draft-button').forEach(btn => btn.disabled = true);
+            
             try {
                 // Make the pick using the database function
                 const { error } = await supabaseClient.rpc('make_draft_pick', {
@@ -1316,18 +1311,20 @@
                 
                 if (error) throw error;
                 
-                // Immediately update local state while waiting for subscription
-                draftedCorps.get(currentCaption).add(corpsName);
-                myTeam.get(currentCaption).push(corpsName);
-                updateMyTeamDisplay();
-                
-                // Update will come through real-time subscription
-                hideTimer();
+                // Show success message
                 showAlert(`Successfully drafted ${corpsName} for ${formatCaption(currentCaption)}!`, 'success');
+                
+                // Immediately reload everything to ensure UI is in sync
+                // Don't wait for subscriptions since they might not be working
+                await loadAllPicks();
+                await loadDraftState();
+                await loadAvailableCorps();
                 
             } catch (error) {
                 console.error('Error making pick:', error);
                 showAlert('Error making pick: ' + error.message, 'error');
+                // Re-enable buttons if there was an error and reload
+                await loadAvailableCorps();
             }
         }
 
@@ -1338,24 +1335,33 @@
                 .channel('draft-state')
                 .on('postgres_changes', 
                     { event: '*', schema: 'public', table: 'league_drafts', filter: `league_id=eq.${leagueId}` },
-                    (payload) => {
+                    async (payload) => {
                         console.log('Draft state changed:', payload);
-                        loadDraftState();
+                        // Reload the entire draft state when it changes
+                        await loadDraftState();
+                        await loadAvailableCorps();
                     }
                 )
-                .subscribe();
+                .subscribe((status) => {
+                    console.log('Draft state subscription status:', status);
+                });
             
             // Subscribe to new picks
             supabaseClient
                 .channel('draft-picks')
                 .on('postgres_changes',
                     { event: 'INSERT', schema: 'public', table: 'draft_picks', filter: `league_id=eq.${leagueId}` },
-                    (payload) => {
+                    async (payload) => {
                         console.log('New pick:', payload);
-                        handleNewPick(payload.new);
+                        // Don't just handle the new pick, reload everything to ensure consistency
+                        await loadAllPicks();
+                        await loadDraftState();
+                        await loadAvailableCorps();
                     }
                 )
-                .subscribe();
+                .subscribe((status) => {
+                    console.log('Draft picks subscription status:', status);
+                });
             
             // Subscribe to notifications for this user
             supabaseClient
@@ -1367,10 +1373,14 @@
                         if (payload.new.type === 'draft_turn') {
                             // Show browser notification if permitted
                             showNotification('Your turn to draft!', 'Make your pick in Fantasy Marching');
+                            // Also reload the draft state when it becomes our turn
+                            loadDraftState();
                         }
                     }
                 )
-                .subscribe();
+                .subscribe((status) => {
+                    console.log('Notifications subscription status:', status);
+                });
         }
 
         // Handle new pick from subscription
