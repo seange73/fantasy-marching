@@ -1,4 +1,15 @@
-<!DOCTYPE html>
+// Load available corps for current caption
+        async function loadAvailableCorps() {
+            const container = document.getElementById('corpsGrid');
+            const draftedInCaption = draftedCorps.get(currentCaption);
+            
+            // Check if draft is active
+            if (!draftState || draftState.status !== 'in_progress') {
+                container.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1/-1;">Draft has not started or is complete</p>';
+                return;
+            }
+            
+            container.innerHTML = ALL_CORPS.map(corps =><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1069,6 +1080,8 @@
                 return;
             }
             
+            console.log('All picks loaded:', picks);
+            
             // Clear existing data
             ['brass', 'percussion', 'guard', 'ge', 'visual', 'music'].forEach(caption => {
                 draftedCorps.get(caption).clear();
@@ -1081,9 +1094,17 @@
                 
                 // If it's my pick, add to my team
                 if (pick.user_id === currentUser.id) {
-                    myTeam.get(pick.caption).push(pick.corps_name);
+                    const captionArray = myTeam.get(pick.caption);
+                    
+                    // Only add if within limits
+                    const limits = { brass: 2, percussion: 2, guard: 2, ge: 1, visual: 1, music: 1 };
+                    if (captionArray.length < limits[pick.caption]) {
+                        captionArray.push(pick.corps_name);
+                    }
                 }
             });
+            
+            console.log('My team after loading:', Object.fromEntries(myTeam));
             
             // Display recent picks (show in reverse order)
             displayRecentPicks(picks ? [...picks].reverse() : []);
@@ -1214,19 +1235,21 @@
             }
             
             container.innerHTML = ALL_CORPS.map(corps => {
-                const isDrafted = draftedInCaption.has(corps);
+                const isDraftedForThisCaption = draftedInCaption.has(corps);
                 
                 return `
-                    <div class="corps-card ${isDrafted ? 'drafted' : ''}" 
+                    <div class="corps-card ${isDraftedForThisCaption ? 'drafted' : ''}" 
                          data-corps="${corps}"
-                         ${!isDrafted && isMyTurn ? `onclick="selectCorps('${corps}')"` : ''}>
+                         ${!isDraftedForThisCaption && isMyTurn ? `onclick="selectCorps('${corps}')"` : ''}>
                         <div class="corps-name">${corps}</div>
                         <div class="corps-stats">2024 Rank: ${Math.floor(Math.random() * 20) + 1}</div>
-                        ${!isDrafted && isMyTurn ? 
+                        ${!isDraftedForThisCaption && isMyTurn ? 
                             `<button class="draft-button" onclick="event.stopPropagation(); draftCorps('${corps}')">
-                                Draft ${formatCaption(currentCaption)}
+                                Draft for ${formatCaption(currentCaption)}
                             </button>` : 
-                            `<button class="draft-button" disabled>${isDrafted ? 'Drafted' : 'Not Your Turn'}</button>`
+                            isDraftedForThisCaption ? 
+                                `<button class="draft-button" disabled>Already Drafted</button>` :
+                                `<button class="draft-button" disabled>Not Your Turn</button>`
                         }
                     </div>
                 `;
@@ -1265,26 +1288,40 @@
 
         // Draft a corps (WITH FIXES)
         async function draftCorps(corpsName) {
+            // Prevent any action if we're already processing
+            if (window.isDrafting) {
+                return;
+            }
+            
             if (!isMyTurn || !draftState) {
                 showAlert('It is not your turn to draft', 'error');
                 return;
             }
             
-            // Check if already drafted
+            // Check if already drafted in this caption
             if (draftedCorps.get(currentCaption).has(corpsName)) {
                 showAlert('This corps has already been drafted for this caption', 'error');
                 return;
             }
             
-            // Check roster limits
+            // Check roster limits BEFORE making the pick
             const limits = { brass: 2, percussion: 2, guard: 2, ge: 1, visual: 1, music: 1 };
-            if (myTeam.get(currentCaption).length >= limits[currentCaption]) {
-                showAlert(`You already have the maximum number of ${formatCaption(currentCaption)} corps`, 'error');
+            const currentCount = myTeam.get(currentCaption).length;
+            
+            if (currentCount >= limits[currentCaption]) {
+                showAlert(`You already have the maximum ${limits[currentCaption]} ${formatCaption(currentCaption)} corps`, 'error');
                 return;
             }
             
+            // Set flag to prevent multiple picks
+            window.isDrafting = true;
+            
             // Disable all draft buttons immediately
             document.querySelectorAll('.draft-button').forEach(btn => btn.disabled = true);
+            
+            // Also disable the clicked button specifically
+            event.target.disabled = true;
+            event.target.textContent = 'Drafting...';
             
             try {
                 // Make the pick using the database function
@@ -1299,16 +1336,31 @@
                 
                 showAlert(`Successfully drafted ${corpsName} for ${formatCaption(currentCaption)}!`, 'success');
                 
-                // Immediately reload everything to ensure UI is in sync
+                // Add a small delay before reloading to ensure database has updated
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Reload everything to ensure UI is in sync
                 await loadAllPicks();
                 await loadDraftState();
                 await loadAvailableCorps();
                 
             } catch (error) {
                 console.error('Error making pick:', error);
-                showAlert('Error making pick: ' + error.message, 'error');
+                
+                // More user-friendly error messages
+                if (error.message.includes('duplicate key')) {
+                    showAlert('This corps has already been drafted for this caption', 'error');
+                } else if (error.message.includes('Not your turn')) {
+                    showAlert('It is not your turn to draft', 'error');
+                } else {
+                    showAlert('Error making pick: ' + error.message, 'error');
+                }
+                
                 // Re-enable buttons if there was an error
                 await loadAvailableCorps();
+            } finally {
+                // Clear the flag
+                window.isDrafting = false;
             }
         }
 
