@@ -800,7 +800,157 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script>
-// Continue the displayMyLeagues function
+        let currentUser = null;
+        let isAdmin = false;
+        let myLeagues = [];
+        let availableLeagues = [];
+
+        // Initialize page
+        async function initializePage() {
+            // Check authentication
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            if (!user) {
+                window.location.href = '/';
+                return;
+            }
+            
+            currentUser = user;
+            
+            // Load user profile
+            await loadUserProfile();
+            
+            // Load leagues data
+            await loadMyLeagues();
+            await loadAvailableLeagues();
+        }
+
+        // Load user profile
+        async function loadUserProfile() {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('username, avatar_url, is_admin')
+                .eq('id', currentUser.id)
+                .single();
+            
+            if (profile) {
+                document.getElementById('userName').textContent = profile.username || currentUser.email.split('@')[0];
+                
+                // Set avatar (initial letter for now)
+                const initial = (profile.username || currentUser.email)[0].toUpperCase();
+                document.getElementById('userAvatar').textContent = initial;
+                
+                // Check admin status
+                isAdmin = profile.is_admin || false;
+                if (isAdmin) {
+                    document.getElementById('adminLink').style.display = 'flex';
+                    document.getElementById('adminDivider').style.display = 'block';
+                }
+            }
+        }
+
+        // Toggle user menu
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!e.target.closest('.user-profile')) {
+                    dropdown.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+
+        // Logout function
+        async function logout() {
+            const { error } = await supabaseClient.auth.signOut();
+            if (!error) {
+                window.location.href = '/';
+            }
+        }
+
+        // Load user's leagues
+        async function loadMyLeagues() {
+            // First, get the league IDs where user is a member
+            const { data: memberships, error: memberError } = await supabaseClient
+                .from('league_members')
+                .select('league_id, role')
+                .eq('user_id', currentUser.id)
+                .eq('status', 'active');
+
+            if (memberError) {
+                console.error('Error loading memberships:', memberError);
+                return;
+            }
+
+            if (!memberships || memberships.length === 0) {
+                myLeagues = [];
+                displayMyLeagues();
+                return;
+            }
+
+            // Then get the league details separately
+            const leagueIds = memberships.map(m => m.league_id);
+            const { data: leagues, error: leaguesError } = await supabaseClient
+                .from('leagues')
+                .select('*')
+                .in('id', leagueIds);
+
+            if (leaguesError) {
+                console.error('Error loading league details:', leaguesError);
+                return;
+            }
+
+            // Combine the data
+            myLeagues = memberships.map(membership => {
+                const league = leagues.find(l => l.id === membership.league_id);
+                return {
+                    league_id: membership.league_id,
+                    role: membership.role,
+                    leagues: league
+                };
+            });
+
+            displayMyLeagues();
+        }
+
+        // Display user's leagues
+        async function displayMyLeagues() {
+            const container = document.getElementById('myLeaguesContent');
+            
+            if (myLeagues.length === 0) {
+                container.innerHTML = `
+                    <div class="no-leagues">
+                        <h3>You're not in any leagues yet</h3>
+                        <p>Join a league below to start competing!</p>
+                        <a href="#join-section" class="btn" onclick="document.getElementById('join-section').scrollIntoView({behavior: 'smooth'}); return false;">Join a League</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Get member counts for each league
+            const leagueIds = myLeagues.map(l => l.leagues.id);
+            const { data: memberCounts } = await supabaseClient
+                .from('league_members')
+                .select('league_id')
+                .in('league_id', leagueIds)
+                .eq('status', 'active');
+
+            const memberCountMap = {};
+            if (memberCounts) {
+                memberCounts.forEach(m => {
+                    memberCountMap[m.league_id] = (memberCountMap[m.league_id] || 0) + 1;
+                });
+            }
+
+            container.innerHTML = `
+                <div class="leagues-grid">
+                    ${myLeagues.map(item => {
+                        const league = item.leagues;
+                        const memberCount = memberCountMap[league.id] || 1;
                         const isOwner = item.role === 'owner';
                         
                         return `
