@@ -576,6 +576,77 @@
             font-style: italic;
         }
 
+        /* Alert Styles */
+        .alert {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(26, 26, 46, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            min-width: 300px;
+            max-width: 500px;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .alert.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .alert.success {
+            border-color: rgba(78, 205, 196, 0.3);
+            background: rgba(78, 205, 196, 0.1);
+        }
+
+        .alert.error {
+            border-color: rgba(255, 107, 107, 0.3);
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+        }
+
+        .alert.success .alert-icon {
+            color: #4ecdc4;
+        }
+
+        .alert.error .alert-icon {
+            color: #ff6b6b;
+        }
+
+        .alert-message {
+            flex: 1;
+            color: white;
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .alert-close:hover {
+            color: white;
+        }
+
         @media (max-width: 1200px) {
             .container {
                 grid-template-columns: 1fr;
@@ -759,6 +830,15 @@
         </div>
     </div>
 
+    <!-- Alert container -->
+    <div id="alertContainer" class="alert">
+        <div class="alert-content">
+            <span class="alert-icon"></span>
+            <span class="alert-message"></span>
+            <button class="alert-close" onclick="hideAlert()">&times;</button>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script>
@@ -810,8 +890,10 @@
             leagueId = getLeagueIdFromUrl();
             
             if (!leagueId) {
-                alert('No league specified');
-                window.location.href = '/league.html';
+                showAlert('No league specified', 'error');
+                setTimeout(() => {
+                    window.location.href = '/league.html';
+                }, 2000);
                 return;
             }
             
@@ -883,8 +965,10 @@
                 .single();
             
             if (error || !league) {
-                alert('League not found');
-                window.location.href = '/league.html';
+                showAlert('League not found', 'error');
+                setTimeout(() => {
+                    window.location.href = '/league.html';
+                }, 2000);
                 return;
             }
             
@@ -913,4 +997,451 @@
             await loadDraftOrder();
             
             // Load all previous picks
-            await loadAllPicks
+            await loadAllPicks();
+            
+            // Update UI based on draft state
+            updateDraftUI();
+        }
+
+        // Load draft order with usernames
+        async function loadDraftOrder() {
+            if (!draftState || !draftState.draft_order) return;
+            
+            const userIds = draftState.draft_order;
+            
+            // Get all user profiles
+            const { data: profiles } = await supabaseClient
+                .from('profiles')
+                .select('id, username')
+                .in('id', userIds);
+            
+            const profileMap = {};
+            profiles?.forEach(p => profileMap[p.id] = p.username);
+            
+            // Store draft members for display
+            draftMembers = userIds.map((userId, index) => ({
+                userId,
+                username: profileMap[userId] || 'Unknown User',
+                position: index + 1
+            }));
+            
+            // Display draft order
+            displayDraftOrder();
+        }
+
+        // Display draft order
+        function displayDraftOrder() {
+            const container = document.getElementById('draftOrderList');
+            
+            container.innerHTML = draftMembers.map(member => {
+                const isActive = member.userId === draftState.current_user_id;
+                const hasPickedThisRound = checkIfUserPickedInRound(member.userId);
+                
+                return `
+                    <div class="draft-order-item ${isActive ? 'active' : ''} ${hasPickedThisRound ? 'completed' : ''}">
+                        <div class="draft-position">${member.position}</div>
+                        <div>${member.username}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Check if user has picked in current round
+        function checkIfUserPickedInRound(userId) {
+            // This would be determined by checking picks, simplified for now
+            return false;
+        }
+
+        // Load all previous picks
+        async function loadAllPicks() {
+            const { data: picks, error } = await supabaseClient
+                .from('draft_picks')
+                .select(`
+                    *,
+                    profiles:user_id (username)
+                `)
+                .eq('league_id', leagueId)
+                .order('round', { ascending: false })
+                .order('pick_number', { ascending: false });
+            
+            if (error) {
+                console.error('Error loading picks:', error);
+                return;
+            }
+            
+            // Update drafted corps sets and my team
+            picks?.forEach(pick => {
+                draftedCorps.get(pick.caption).add(pick.corps_name);
+                
+                // If it's my pick, add to my team
+                if (pick.user_id === currentUser.id) {
+                    myTeam.get(pick.caption).push(pick.corps_name);
+                }
+            });
+            
+            // Display recent picks
+            displayRecentPicks(picks || []);
+            
+            // Update my team display
+            updateMyTeamDisplay();
+        }
+
+        // Display recent picks
+        function displayRecentPicks(picks) {
+            const container = document.getElementById('recentPicksList');
+            
+            if (picks.length === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center;">No picks yet</p>';
+                return;
+            }
+            
+            // Show last 10 picks
+            const recentPicks = picks.slice(0, 10);
+            
+            container.innerHTML = recentPicks.map(pick => `
+                <div class="pick-item">
+                    <div class="pick-round">Round ${pick.round}, Pick ${pick.pick_number}</div>
+                    <div class="pick-details">
+                        <span class="pick-corps">${pick.corps_name}</span>
+                        <span class="pick-caption">${formatCaption(pick.caption)}</span>
+                    </div>
+                    <div class="pick-user">by ${pick.profiles?.username || 'Unknown'}</div>
+                </div>
+            `).join('');
+        }
+
+        // Update my team display
+        function updateMyTeamDisplay() {
+            const captionLimits = {
+                brass: 2,
+                percussion: 2,
+                guard: 2,
+                ge: 1,
+                visual: 1,
+                music: 1
+            };
+            
+            Object.entries(captionLimits).forEach(([caption, limit]) => {
+                const corps = myTeam.get(caption);
+                
+                // Update caption title with count
+                const titleElement = document.querySelector(`#${caption}-0`).parentElement.querySelector('.caption-group-title');
+                if (titleElement) {
+                    titleElement.textContent = `${formatCaption(caption)} (${corps.length}/${limit})`;
+                }
+                
+                // Update slots
+                for (let i = 0; i < limit; i++) {
+                    const slot = document.getElementById(`${caption}-${i}`);
+                    if (slot) {
+                        if (corps[i]) {
+                            slot.innerHTML = corps[i];
+                            slot.classList.add('filled');
+                        } else {
+                            slot.innerHTML = '<span class="empty-slot">Empty Slot</span>';
+                            slot.classList.remove('filled');
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update draft UI based on state
+        function updateDraftUI() {
+            if (!draftState) return;
+            
+            isMyTurn = draftState.current_user_id === currentUser.id;
+            
+            // Update status display
+            const statusDiv = document.getElementById('draftStatus');
+            const currentPick = `Round ${draftState.current_round}, Pick ${draftState.current_pick}`;
+            
+            if (draftState.status === 'completed') {
+                statusDiv.className = 'draft-status';
+                statusDiv.innerHTML = `
+                    <div class="current-pick">Draft Complete!</div>
+                    <div>All picks have been made</div>
+                `;
+                hideTimer();
+            } else if (isMyTurn) {
+                statusDiv.className = 'draft-status your-turn';
+                statusDiv.innerHTML = `
+                    <div class="current-pick">${currentPick}</div>
+                    <div>It's your turn to pick!</div>
+                `;
+                startTimer();
+            } else {
+                const currentUser = draftMembers.find(m => m.userId === draftState.current_user_id);
+                statusDiv.className = 'draft-status';
+                statusDiv.innerHTML = `
+                    <div class="current-pick">${currentPick}</div>
+                    <div>Waiting for ${currentUser?.username || 'Unknown'}</div>
+                `;
+                hideTimer();
+            }
+            
+            // Update draft order display
+            displayDraftOrder();
+        }
+
+        // Timer functions
+        function startTimer() {
+            const timerDiv = document.getElementById('pickTimer');
+            timerDiv.style.display = 'block';
+            
+            let timeLeft = 90; // 1:30 in seconds
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDiv.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    // Auto-pick logic would go here
+                }
+                
+                timeLeft--;
+            }, 1000);
+        }
+
+        function hideTimer() {
+            document.getElementById('pickTimer').style.display = 'none';
+            clearInterval(timerInterval);
+        }
+
+        // Load available corps for current caption
+        async function loadAvailableCorps() {
+            const container = document.getElementById('corpsGrid');
+            const draftedInCaption = draftedCorps.get(currentCaption);
+            
+            // Check if draft is active
+            if (!draftState || draftState.status !== 'in_progress') {
+                container.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1/-1;">Draft has not started or is complete</p>';
+                return;
+            }
+            
+            container.innerHTML = ALL_CORPS.map(corps => {
+                const isDrafted = draftedInCaption.has(corps);
+                
+                return `
+                    <div class="corps-card ${isDrafted ? 'drafted' : ''}" 
+                         data-corps="${corps}"
+                         ${!isDrafted && isMyTurn ? `onclick="selectCorps('${corps}')"` : ''}>
+                        <div class="corps-name">${corps}</div>
+                        <div class="corps-stats">2024 Rank: ${Math.floor(Math.random() * 20) + 1}</div>
+                        ${!isDrafted && isMyTurn ? 
+                            `<button class="draft-button" onclick="event.stopPropagation(); draftCorps('${corps}')">
+                                Draft ${formatCaption(currentCaption)}
+                            </button>` : 
+                            `<button class="draft-button" disabled>${isDrafted ? 'Drafted' : 'Not Your Turn'}</button>`
+                        }
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Switch caption tab
+        function switchCaption(caption) {
+            currentCaption = caption;
+            
+            // Update tab styling
+            document.querySelectorAll('.caption-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Reload available corps
+            loadAvailableCorps();
+        }
+
+        // Select corps (visual feedback)
+        function selectCorps(corpsName) {
+            if (!isMyTurn) return;
+            
+            // Remove previous selection
+            document.querySelectorAll('.corps-card').forEach(card => {
+                card.style.border = '';
+            });
+            
+            // Highlight selected
+            const card = document.querySelector(`[data-corps="${corpsName}"]`);
+            if (card && !card.classList.contains('drafted')) {
+                card.style.border = '2px solid #4ecdc4';
+            }
+        }
+
+        // Draft a corps
+        async function draftCorps(corpsName) {
+            if (!isMyTurn || !draftState) {
+                showAlert('It is not your turn to draft', 'error');
+                return;
+            }
+            
+            // Check if already drafted
+            if (draftedCorps.get(currentCaption).has(corpsName)) {
+                showAlert('This corps has already been drafted for this caption', 'error');
+                return;
+            }
+            
+            // Check roster limits
+            const limits = { brass: 2, percussion: 2, guard: 2, ge: 1, visual: 1, music: 1 };
+            if (myTeam.get(currentCaption).length >= limits[currentCaption]) {
+                showAlert(`You already have the maximum number of ${formatCaption(currentCaption)} corps`, 'error');
+                return;
+            }
+            
+            try {
+                // Make the pick using the database function
+                const { error } = await supabaseClient.rpc('make_draft_pick', {
+                    p_league_id: leagueId,
+                    p_user_id: currentUser.id,
+                    p_corps_name: corpsName,
+                    p_caption: currentCaption
+                });
+                
+                if (error) throw error;
+                
+                // Update will come through real-time subscription
+                hideTimer();
+                showAlert(`Successfully drafted ${corpsName} for ${formatCaption(currentCaption)}!`, 'success');
+                
+            } catch (error) {
+                console.error('Error making pick:', error);
+                showAlert('Error making pick: ' + error.message, 'error');
+            }
+        }
+
+        // Set up real-time subscriptions
+        function setupRealtimeSubscriptions() {
+            // Subscribe to draft state changes
+            supabaseClient
+                .channel('draft-state')
+                .on('postgres_changes', 
+                    { event: '*', schema: 'public', table: 'league_drafts', filter: `league_id=eq.${leagueId}` },
+                    (payload) => {
+                        console.log('Draft state changed:', payload);
+                        loadDraftState();
+                    }
+                )
+                .subscribe();
+            
+            // Subscribe to new picks
+            supabaseClient
+                .channel('draft-picks')
+                .on('postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'draft_picks', filter: `league_id=eq.${leagueId}` },
+                    (payload) => {
+                        console.log('New pick:', payload);
+                        handleNewPick(payload.new);
+                    }
+                )
+                .subscribe();
+            
+            // Subscribe to notifications for this user
+            supabaseClient
+                .channel('notifications')
+                .on('postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${currentUser.id}` },
+                    (payload) => {
+                        console.log('New notification:', payload);
+                        if (payload.new.type === 'draft_turn') {
+                            // Show browser notification if permitted
+                            showNotification('Your turn to draft!', 'Make your pick in Fantasy Marching');
+                        }
+                    }
+                )
+                .subscribe();
+        }
+
+        // Handle new pick from subscription
+        async function handleNewPick(pick) {
+            // Add to drafted corps
+            draftedCorps.get(pick.caption).add(pick.corps_name);
+            
+            // If it's my pick, add to my team
+            if (pick.user_id === currentUser.id) {
+                myTeam.get(pick.caption).push(pick.corps_name);
+                updateMyTeamDisplay();
+            }
+            
+            // Reload the draft state to get updated current user
+            await loadDraftState();
+            
+            // Reload picks to update recent picks display
+            await loadAllPicks();
+            
+            // Reload available corps if we're on the same caption
+            if (pick.caption === currentCaption) {
+                await loadAvailableCorps();
+            }
+        }
+
+        // Show browser notification
+        function showNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, { body, icon: '/images/logo.png' });
+            }
+        }
+
+        // Request notification permission
+        async function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                await Notification.requestPermission();
+            }
+        }
+
+        // Format caption name for display
+        function formatCaption(caption) {
+            const names = {
+                brass: 'Brass',
+                percussion: 'Percussion',
+                guard: 'Color Guard',
+                ge: 'General Effect',
+                visual: 'Visual',
+                music: 'Music'
+            };
+            return names[caption] || caption;
+        }
+
+        // Update draft status display
+        function updateDraftStatus(message, isYourTurn = false) {
+            const statusDiv = document.getElementById('draftStatus');
+            statusDiv.className = isYourTurn ? 'draft-status your-turn' : 'draft-status';
+            statusDiv.innerHTML = `<div>${message}</div>`;
+        }
+
+        // Alert functions
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alertContainer');
+            const icon = alert.querySelector('.alert-icon');
+            const messageEl = alert.querySelector('.alert-message');
+            
+            // Set type
+            alert.className = `alert ${type} show`;
+            
+            // Set icon
+            icon.textContent = type === 'success' ? '✓' : '⚠';
+            
+            // Set message
+            messageEl.textContent = message;
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                hideAlert();
+            }, 5000);
+        }
+
+        function hideAlert() {
+            document.getElementById('alertContainer').classList.remove('show');
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializePage();
+            await requestNotificationPermission();
+        });
+    </script>
+</body>
+</html>
