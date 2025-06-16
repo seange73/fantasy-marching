@@ -1072,7 +1072,7 @@
             // Clear existing data
             ['brass', 'percussion', 'guard', 'ge', 'visual', 'music'].forEach(caption => {
                 draftedCorps.get(caption).clear();
-                myTeam.set(caption, []); // Reset to empty array
+                myTeam.set(caption, []);
             });
             
             // Update drafted corps sets and my team
@@ -1085,14 +1085,11 @@
                 }
             });
             
-            console.log('My team after loading picks:', myTeam);
-            
-            // Display recent picks (show in reverse order - most recent first)
+            // Display recent picks (show in reverse order)
             displayRecentPicks(picks ? [...picks].reverse() : []);
             
             // Update my team display
             updateMyTeamDisplay();
-        }
         }
 
         // Display recent picks
@@ -1155,7 +1152,18 @@
             });
         }
 
-
+        // Update draft UI based on state
+        function updateDraftUI() {
+            if (!draftState) return;
+            
+            isMyTurn = draftState.current_user_id === currentUser.id;
+            
+            // Update status display
+            const statusDiv = document.getElementById('draftStatus');
+            const currentPick = `Round ${draftState.current_round}, Pick ${draftState.current_pick}`;
+            
+            if (draftState.status === 'completed') {
+                statusDiv.className = 'draft-status';
                 statusDiv.innerHTML = `
                     <div class="current-pick">Draft Complete!</div>
                     <div>All picks have been made</div>
@@ -1182,33 +1190,11 @@
             displayDraftOrder();
         }
 
-        // Timer functions
+        // Timer functions (TEMPORARILY DISABLED)
         function startTimer() {
-            // TEMPORARILY DISABLED - Timer removed for testing
             const timerDiv = document.getElementById('pickTimer');
             timerDiv.style.display = 'none';
             return;
-            
-            /*
-            const timerDiv = document.getElementById('pickTimer');
-            timerDiv.style.display = 'block';
-            
-            let timeLeft = 90; // 1:30 in seconds
-            
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                timerDiv.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    // Auto-pick logic would go here
-                }
-                
-                timeLeft--;
-            }, 1000);
-            */
         }
 
         function hideTimer() {
@@ -1277,7 +1263,7 @@
             }
         }
 
-        // Draft a corps
+        // Draft a corps (WITH FIXES)
         async function draftCorps(corpsName) {
             if (!isMyTurn || !draftState) {
                 showAlert('It is not your turn to draft', 'error');
@@ -1297,7 +1283,7 @@
                 return;
             }
             
-            // Disable all draft buttons immediately to prevent double-clicks
+            // Disable all draft buttons immediately
             document.querySelectorAll('.draft-button').forEach(btn => btn.disabled = true);
             
             try {
@@ -1311,11 +1297,9 @@
                 
                 if (error) throw error;
                 
-                // Show success message
                 showAlert(`Successfully drafted ${corpsName} for ${formatCaption(currentCaption)}!`, 'success');
                 
                 // Immediately reload everything to ensure UI is in sync
-                // Don't wait for subscriptions since they might not be working
                 await loadAllPicks();
                 await loadDraftState();
                 await loadAvailableCorps();
@@ -1323,12 +1307,12 @@
             } catch (error) {
                 console.error('Error making pick:', error);
                 showAlert('Error making pick: ' + error.message, 'error');
-                // Re-enable buttons if there was an error and reload
+                // Re-enable buttons if there was an error
                 await loadAvailableCorps();
             }
         }
 
-        // Set up real-time subscriptions
+        // Set up real-time subscriptions (ENHANCED)
         function setupRealtimeSubscriptions() {
             // Subscribe to draft state changes
             supabaseClient
@@ -1337,14 +1321,11 @@
                     { event: '*', schema: 'public', table: 'league_drafts', filter: `league_id=eq.${leagueId}` },
                     async (payload) => {
                         console.log('Draft state changed:', payload);
-                        // Reload the entire draft state when it changes
                         await loadDraftState();
                         await loadAvailableCorps();
                     }
                 )
-                .subscribe((status) => {
-                    console.log('Draft state subscription status:', status);
-                });
+                .subscribe();
             
             // Subscribe to new picks
             supabaseClient
@@ -1353,15 +1334,12 @@
                     { event: 'INSERT', schema: 'public', table: 'draft_picks', filter: `league_id=eq.${leagueId}` },
                     async (payload) => {
                         console.log('New pick:', payload);
-                        // Don't just handle the new pick, reload everything to ensure consistency
                         await loadAllPicks();
                         await loadDraftState();
                         await loadAvailableCorps();
                     }
                 )
-                .subscribe((status) => {
-                    console.log('Draft picks subscription status:', status);
-                });
+                .subscribe();
             
             // Subscribe to notifications for this user
             supabaseClient
@@ -1373,41 +1351,16 @@
                         if (payload.new.type === 'draft_turn') {
                             // Show browser notification if permitted
                             showNotification('Your turn to draft!', 'Make your pick in Fantasy Marching');
-                            // Also reload the draft state when it becomes our turn
                             loadDraftState();
                         }
                     }
                 )
-                .subscribe((status) => {
-                    console.log('Notifications subscription status:', status);
-                });
+                .subscribe();
         }
 
-        // Handle new pick from subscription
+        // Handle new pick from subscription (NO LONGER USED - we reload everything instead)
         async function handleNewPick(pick) {
-            // Add to drafted corps
-            draftedCorps.get(pick.caption).add(pick.corps_name);
-            
-            // If it's my pick, add to my team
-            if (pick.user_id === currentUser.id) {
-                // Ensure the myTeam map has the caption initialized
-                if (!myTeam.has(pick.caption)) {
-                    myTeam.set(pick.caption, []);
-                }
-                myTeam.get(pick.caption).push(pick.corps_name);
-                updateMyTeamDisplay();
-            }
-            
-            // Reload the draft state to get updated current user
-            await loadDraftState();
-            
-            // Reload picks to update recent picks display
-            await loadAllPicks();
-            
-            // Reload available corps if we're on the same caption
-            if (pick.caption === currentCaption) {
-                await loadAvailableCorps();
-            }
+            // We now reload everything in the subscription handler
         }
 
         // Show browser notification
