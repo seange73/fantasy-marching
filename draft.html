@@ -1069,6 +1069,12 @@
                 return;
             }
             
+            // Clear existing data
+            ['brass', 'percussion', 'guard', 'ge', 'visual', 'music'].forEach(caption => {
+                draftedCorps.get(caption).clear();
+                myTeam.get(caption).length = 0; // Clear array while keeping reference
+            });
+            
             // Update drafted corps sets and my team
             picks?.forEach(pick => {
                 draftedCorps.get(pick.caption).add(pick.corps_name);
@@ -1186,6 +1192,12 @@
 
         // Timer functions
         function startTimer() {
+            // TEMPORARILY DISABLED - Timer removed for testing
+            const timerDiv = document.getElementById('pickTimer');
+            timerDiv.style.display = 'none';
+            return;
+            
+            /*
             const timerDiv = document.getElementById('pickTimer');
             timerDiv.style.display = 'block';
             
@@ -1204,6 +1216,7 @@
                 
                 timeLeft--;
             }, 1000);
+            */
         }
 
         function hideTimer() {
@@ -1303,6 +1316,11 @@
                 
                 if (error) throw error;
                 
+                // Immediately update local state while waiting for subscription
+                draftedCorps.get(currentCaption).add(corpsName);
+                myTeam.get(currentCaption).push(corpsName);
+                updateMyTeamDisplay();
+                
                 // Update will come through real-time subscription
                 hideTimer();
                 showAlert(`Successfully drafted ${corpsName} for ${formatCaption(currentCaption)}!`, 'success');
@@ -1362,6 +1380,10 @@
             
             // If it's my pick, add to my team
             if (pick.user_id === currentUser.id) {
+                // Ensure the myTeam map has the caption initialized
+                if (!myTeam.has(pick.caption)) {
+                    myTeam.set(pick.caption, []);
+                }
                 myTeam.get(pick.caption).push(pick.corps_name);
                 updateMyTeamDisplay();
             }
