@@ -693,6 +693,127 @@
             color: white;
         }
 
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: rgba(26, 26, 46, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4ecdc4;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-message {
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 0.875rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            margin: 1rem 0;
+            transition: all 0.2s ease;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .modal-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 0.95rem;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+        }
+
+        .modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
         @media (max-width: 968px) {
             .header-content {
                 padding: 1rem;
@@ -891,6 +1012,20 @@
     <!-- Notification Container -->
     <div id="notificationContainer" class="notification-container"></div>
 
+    <!-- Modal Overlay -->
+    <div id="modalOverlay" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Title</h3>
+                <p class="modal-message" id="modalMessage">Message</p>
+            </div>
+            <input type="text" id="modalInput" class="modal-input" style="display: none;" />
+            <div class="modal-buttons" id="modalButtons">
+                <!-- Buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script>
@@ -954,6 +1089,55 @@
             }
         `;
         document.head.appendChild(style);
+
+        // Modal functions
+        function showModal(title, message, buttons, showInput = false) {
+            const overlay = document.getElementById('modalOverlay');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalInput = document.getElementById('modalInput');
+            const modalButtons = document.getElementById('modalButtons');
+            
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            
+            // Show/hide input
+            if (showInput) {
+                modalInput.style.display = 'block';
+                modalInput.value = '';
+                modalInput.focus();
+            } else {
+                modalInput.style.display = 'none';
+            }
+            
+            // Clear and add buttons
+            modalButtons.innerHTML = '';
+            buttons.forEach(button => {
+                const btn = document.createElement('button');
+                btn.className = `modal-btn ${button.primary ? 'modal-btn-primary' : 'modal-btn-secondary'}`;
+                btn.textContent = button.text;
+                btn.onclick = () => {
+                    const inputValue = showInput ? modalInput.value : null;
+                    closeModal();
+                    if (button.callback) {
+                        button.callback(inputValue);
+                    }
+                };
+                modalButtons.appendChild(btn);
+            });
+            
+            overlay.classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
+        }
+
+        function closeModalOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeModal();
+            }
+        }
 
         // Get league ID from URL
         function getLeagueIdFromUrl() {
@@ -1188,73 +1372,89 @@
                 return;
             }
             
-            if (!confirm('Are you sure you want to start the draft now? All members will be notified.')) {
-                return;
-            }
-            
-            try {
-                // First, create league teams for all members if they don't exist
-                const { data: members } = await supabaseClient
-                    .from('league_members')
-                    .select('user_id')
-                    .eq('league_id', leagueId)
-                    .eq('status', 'active');
-                
-                // Create teams for each member
-                for (const member of members) {
-                    const { error: teamError } = await supabaseClient
-                        .from('league_teams')
-                        .upsert({
-                            league_id: leagueId,
-                            user_id: member.user_id,
-                            team_name: `Team ${member.user_id.substring(0, 8)}`
-                        }, {
-                            onConflict: 'league_id,user_id'
-                        });
-                    
-                    if (teamError) {
-                        console.error('Error creating team:', teamError);
+            // Show confirmation modal instead of browser confirm
+            showModal(
+                'Start Draft',
+                'Are you sure you want to start the draft now? All members will be notified.',
+                [
+                    {
+                        text: 'Cancel',
+                        primary: false,
+                        callback: null
+                    },
+                    {
+                        text: 'Start Draft',
+                        primary: true,
+                        callback: async () => {
+                            try {
+                                // First, create league teams using the secure function
+                                const { error: teamsError } = await supabaseClient.rpc('create_league_teams_for_draft', {
+                                    p_league_id: leagueId
+                                });
+                                
+                                if (teamsError) {
+                                    console.error('Error creating teams:', teamsError);
+                                }
+                                
+                                // Now initialize the draft
+                                const { error } = await supabaseClient.rpc('initialize_draft', {
+                                    p_league_id: leagueId
+                                });
+                                
+                                if (error) throw error;
+                                
+                                showNotification('Draft Started!', 'Redirecting to draft room...', 'success');
+                                
+                                // Redirect to draft room
+                                setTimeout(() => {
+                                    window.location.href = `/draft.html?leagueId=${leagueId}`;
+                                }, 1500);
+                                
+                            } catch (error) {
+                                console.error('Error starting draft:', error);
+                                showNotification('Error Starting Draft', error.message, 'error');
+                            }
+                        }
                     }
-                }
-                
-                // Now initialize the draft
-                const { error } = await supabaseClient.rpc('initialize_draft', {
-                    p_league_id: leagueId
-                });
-                
-                if (error) throw error;
-                
-                showNotification('Draft Started!', 'Redirecting to draft room...', 'success');
-                
-                // Redirect to draft room
-                setTimeout(() => {
-                    window.location.href = `/draft.html?leagueId=${leagueId}`;
-                }, 1500);
-                
-            } catch (error) {
-                console.error('Error starting draft:', error);
-                showNotification('Error Starting Draft', error.message, 'error');
-            }
+                ]
+            );
         }
 
-        // Schedule draft (simplified - would open a modal in real implementation)
+        // Schedule draft
         function scheduleDraft() {
-            const dateTime = prompt('Enter draft date and time (YYYY-MM-DD HH:MM):');
-            if (!dateTime) return;
-            
-            // Basic validation
-            const draftDate = new Date(dateTime);
-            if (isNaN(draftDate.getTime())) {
-                showNotification('Invalid Date', 'Please enter a valid date format', 'error');
-                return;
-            }
-            
-            if (draftDate <= new Date()) {
-                showNotification('Invalid Date', 'Draft time must be in the future', 'error');
-                return;
-            }
-            
-            updateDraftTime(draftDate.toISOString());
+            showModal(
+                'Schedule Draft',
+                'Enter draft date and time (YYYY-MM-DD HH:MM):',
+                [
+                    {
+                        text: 'Cancel',
+                        primary: false,
+                        callback: null
+                    },
+                    {
+                        text: 'Schedule',
+                        primary: true,
+                        callback: (dateTime) => {
+                            if (!dateTime) return;
+                            
+                            // Basic validation
+                            const draftDate = new Date(dateTime);
+                            if (isNaN(draftDate.getTime())) {
+                                showNotification('Invalid Date', 'Please enter a valid date format', 'error');
+                                return;
+                            }
+                            
+                            if (draftDate <= new Date()) {
+                                showNotification('Invalid Date', 'Draft time must be in the future', 'error');
+                                return;
+                            }
+                            
+                            updateDraftTime(draftDate.toISOString());
+                        }
+                    }
+                ],
+                true // Show input field
+            );
         }
 
         // Update draft time
