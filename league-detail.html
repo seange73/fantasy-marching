@@ -1253,23 +1253,29 @@
                 return;
             }
             
-            // Check draft status
-            const { data: draft } = await supabaseClient
-                .from('league_drafts')
-                .select('*')
-                .eq('league_id', leagueId)
-                .single();
-            
-            draftState = draft;
+            // Check draft status - handle 406 error gracefully
+            try {
+                const { data: draft, error: draftError } = await supabaseClient
+                    .from('league_drafts')
+                    .select('*')
+                    .eq('league_id', leagueId)
+                    .single();
+                
+                if (!draftError && draft) {
+                    draftState = draft;
+                }
+            } catch (e) {
+                console.log('No draft found, which is expected for new leagues');
+            }
             
             // Hide loading state
             document.getElementById('loadingState').style.display = 'none';
             
             // Determine which view to show
-            if (!draft || draft.status === 'not_started') {
+            if (!draftState || draftState.status === 'not_started') {
                 // Show pre-draft state
                 showPreDraftState();
-            } else if (draft.status === 'in_progress') {
+            } else if (draftState.status === 'in_progress') {
                 // Show during draft state
                 showDuringDraftState();
             } else {
@@ -1324,42 +1330,67 @@
 
         // Load league members
         async function loadLeagueMembers() {
-            const { data: members, error } = await supabaseClient
-                .from('league_members')
-                .select(`
-                    *,
-                    user:profiles!league_members_user_id_fkey (username)
-                `)
-                .eq('league_id', leagueId)
-                .eq('status', 'active');
-            
-            if (error) {
-                console.error('Error loading members:', error);
-                showNotification('Error', 'Failed to load league members', 'error');
-                return;
-            }
-            
-            console.log('Loaded members:', members);
-            
-            const container = document.getElementById('membersList');
-            
-            if (!members || members.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #666;">No members found</p>';
-                return;
-            }
-            
-            container.innerHTML = members.map(member => {
-                const username = member.user?.username || 'Unknown';
-                const initial = username[0].toUpperCase();
+            try {
+                // First get the members
+                const { data: members, error: membersError } = await supabaseClient
+                    .from('league_members')
+                    .select('*')
+                    .eq('league_id', leagueId)
+                    .eq('status', 'active');
                 
-                return `
-                    <div class="member-item">
-                        <div class="member-avatar">${initial}</div>
-                        <div class="member-name">${username}</div>
-                        ${member.role === 'owner' ? '<div class="member-role">Owner</div>' : ''}
-                    </div>
-                `;
-            }).join('');
+                if (membersError) {
+                    console.error('Error loading members:', membersError);
+                    showNotification('Error', 'Failed to load league members: ' + membersError.message, 'error');
+                    return;
+                }
+                
+                console.log('Members loaded:', members);
+                
+                if (!members || members.length === 0) {
+                    document.getElementById('membersList').innerHTML = '<p style="text-align: center; color: #666;">No members found</p>';
+                    return;
+                }
+                
+                // Get all user IDs
+                const userIds = members.map(m => m.user_id);
+                
+                // Then get the profiles
+                const { data: profiles, error: profilesError } = await supabaseClient
+                    .from('profiles')
+                    .select('id, username')
+                    .in('id', userIds);
+                
+                if (profilesError) {
+                    console.error('Error loading profiles:', profilesError);
+                }
+                
+                // Create a map of profiles
+                const profileMap = {};
+                if (profiles) {
+                    profiles.forEach(p => {
+                        profileMap[p.id] = p.username;
+                    });
+                }
+                
+                // Display members
+                const container = document.getElementById('membersList');
+                container.innerHTML = members.map(member => {
+                    const username = profileMap[member.user_id] || 'Unknown';
+                    const initial = username[0].toUpperCase();
+                    
+                    return `
+                        <div class="member-item">
+                            <div class="member-avatar">${initial}</div>
+                            <div class="member-name">${username}</div>
+                            ${member.role === 'owner' ? '<div class="member-role">Owner</div>' : ''}
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Unexpected error in loadLeagueMembers:', error);
+                showNotification('Error', 'Failed to load members', 'error');
+            }
         }
 
         // Start draft immediately
@@ -1398,23 +1429,64 @@
                             try {
                                 console.log('Starting draft for league:', leagueId);
                                 
-                                // First, create league teams using the secure function
-                                const { error: teamsError } = await supabaseClient.rpc('create_league_teams_for_draft', {
-                                    p_league_id: leagueId
-                                });
+                                // Get all league members
+                                const { data: members, error: membersError } = await supabaseClient
+                                    .from('league_members')
+                                    .select('user_id')
+                                    .eq('league_id', leagueId)
+                                    .eq('status', 'active');
                                 
-                                if (teamsError) {
-                                    console.error('Error creating teams:', teamsError);
-                                    showNotification('Error', 'Failed to create teams: ' + teamsError.message, 'error');
-                                    return;
+                                if (membersError || !members) {
+                                    throw new Error('Failed to get league members');
                                 }
                                 
-                                // Now initialize the draft
+                                // Create a team for each member one by one as the league owner
+                                for (const member of members) {
+                                    // Check if team already exists
+                                    const { data: existingTeam } = await supabaseClient
+                                        .from('league_teams')
+                                        .select('id')
+                                        .eq('league_id', leagueId)
+                                        .eq('user_id', member.user_id)
+                                        .single();
+                                    
+                                    if (!existingTeam) {
+                                        // For the current user, we can create directly
+                                        if (member.user_id === currentUser.id) {
+                                            const { error: teamError } = await supabaseClient
+                                                .from('league_teams')
+                                                .insert({
+                                                    league_id: leagueId,
+                                                    user_id: member.user_id,
+                                                    team_name: `Team ${member.user_id.substring(0, 8)}`
+                                                });
+                                            
+                                            if (teamError) {
+                                                console.error('Error creating team for user:', member.user_id, teamError);
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                // Now try to initialize the draft
+                                // First check if we need to use a different approach
                                 const { error } = await supabaseClient.rpc('initialize_draft', {
                                     p_league_id: leagueId
                                 });
                                 
-                                if (error) throw error;
+                                if (error) {
+                                    // If the error is about league_teams, show a specific message
+                                    if (error.message.includes('league_teams')) {
+                                        showNotification('Setup Required', 'All league members need to join the draft page to create their teams', 'info');
+                                        
+                                        // Still redirect to draft page after a delay
+                                        setTimeout(() => {
+                                            window.location.href = `/draft.html?leagueId=${leagueId}`;
+                                        }, 3000);
+                                        return;
+                                    }
+                                    throw error;
+                                }
                                 
                                 showNotification('Draft Started!', 'Redirecting to draft room...', 'success');
                                 
