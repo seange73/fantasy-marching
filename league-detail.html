@@ -1285,7 +1285,9 @@
         }
 
         // Show pre-draft state
+                // Show pre-draft state
         async function showPreDraftState() {
+            console.log('Showing pre-draft state');
             document.getElementById('preDraftContent').style.display = 'block';
             document.getElementById('leagueName').textContent = currentLeague.name;
             
@@ -1315,6 +1317,7 @@
             }
             
             // Load and display members
+            console.log('About to load league members');
             await loadLeagueMembers();
         }
 

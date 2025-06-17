@@ -1052,54 +1052,70 @@
         }
 
         // Load all previous picks
-        async function loadAllPicks() {
-            const { data: picks, error } = await supabaseClient
-                .from('draft_picks')
-                .select(`
-                    *,
-                    profiles:user_id (username)
-                `)
-                .eq('league_id', leagueId)
-                .order('round', { ascending: true })
-                .order('pick_number', { ascending: true });
-            
-            if (error) {
-                console.error('Error loading picks:', error);
-                return;
-            }
-            
-            console.log('All picks loaded:', picks);
-            
-            // Clear existing data
-            ['brass', 'percussion', 'guard', 'ge', 'visual', 'music'].forEach(caption => {
-                draftedCorps.get(caption).clear();
-                myTeam.set(caption, []);
-            });
-            
-            // Update drafted corps sets and my team
-            picks?.forEach(pick => {
-                draftedCorps.get(pick.caption).add(pick.corps_name);
-                
-                // If it's my pick, add to my team
-                if (pick.user_id === currentUser.id) {
-                    const captionArray = myTeam.get(pick.caption);
-                    
-                    // Only add if within limits
-                    const limits = { brass: 2, percussion: 2, guard: 2, ge: 1, visual: 1, music: 1 };
-                    if (captionArray.length < limits[pick.caption]) {
-                        captionArray.push(pick.corps_name);
-                    }
-                }
-            });
-            
-            console.log('My team after loading:', Object.fromEntries(myTeam));
-            
-            // Display recent picks (show in reverse order)
-            displayRecentPicks(picks ? [...picks].reverse() : []);
-            
-            // Update my team display
-            updateMyTeamDisplay();
+async function loadAllPicks() {
+    const { data: picks, error } = await supabaseClient
+        .from('draft_picks')
+        .select('*')
+        .eq('league_id', leagueId)
+        .order('round', { ascending: true })
+        .order('pick_number', { ascending: true });
+    
+    if (error) {
+        console.error('Error loading picks:', error);
+        return;
+    }
+    
+    // Get usernames separately
+    if (picks && picks.length > 0) {
+        const userIds = [...new Set(picks.map(p => p.user_id))];
+        const { data: profiles } = await supabaseClient
+            .from('profiles')
+            .select('id, username')
+            .in('id', userIds);
+        
+        const profileMap = {};
+        if (profiles) {
+            profiles.forEach(p => profileMap[p.id] = p.username);
         }
+        
+        // Add username to each pick
+        picks.forEach(pick => {
+            pick.profiles = { username: profileMap[pick.user_id] || 'Unknown' };
+        });
+    }
+
+    console.log('All picks loaded:', picks);
+    
+    // Clear existing data
+    ['brass', 'percussion', 'guard', 'ge', 'visual', 'music'].forEach(caption => {
+        draftedCorps.get(caption).clear();
+        myTeam.set(caption, []);
+    });
+    
+    // Update drafted corps sets and my team
+    picks?.forEach(pick => {
+        draftedCorps.get(pick.caption).add(pick.corps_name);
+        
+        // If it's my pick, add to my team
+        if (pick.user_id === currentUser.id) {
+            const captionArray = myTeam.get(pick.caption);
+            
+            // Only add if within limits
+            const limits = { brass: 2, percussion: 2, guard: 2, ge: 1, visual: 1, music: 1 };
+            if (captionArray.length < limits[pick.caption]) {
+                captionArray.push(pick.corps_name);
+            }
+        }
+    });
+    
+    console.log('My team after loading:', Object.fromEntries(myTeam));
+    
+    // Display recent picks (show in reverse order)
+    displayRecentPicks(picks ? [...picks].reverse() : []);
+    
+    // Update my team display
+    updateMyTeamDisplay();
+}
 
         // Display recent picks
         function displayRecentPicks(picks) {
@@ -1323,7 +1339,10 @@
                 if (error) throw error;
                 
                 showAlert(`Successfully drafted ${corpsName} for ${formatCaption(currentCaption)}!`, 'success');
-                
+                // Immediately update the UI optimistically
+				myTeam.get(currentCaption).push(corpsName);
+				draftedCorps.get(currentCaption).add(corpsName);
+				updateMyTeamDisplay();
                 // Add a small delay before reloading to ensure database has updated
                 await new Promise(resolve => setTimeout(resolve, 500));
                 
