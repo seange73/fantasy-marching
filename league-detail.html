@@ -1328,19 +1328,28 @@
                 .from('league_members')
                 .select(`
                     *,
-                    profiles!league_members_user_id_fkey (username)
+                    user:profiles!league_members_user_id_fkey (username)
                 `)
                 .eq('league_id', leagueId)
                 .eq('status', 'active');
             
             if (error) {
                 console.error('Error loading members:', error);
+                showNotification('Error', 'Failed to load league members', 'error');
                 return;
             }
             
+            console.log('Loaded members:', members);
+            
             const container = document.getElementById('membersList');
+            
+            if (!members || members.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">No members found</p>';
+                return;
+            }
+            
             container.innerHTML = members.map(member => {
-                const username = member.profiles?.username || 'Unknown';
+                const username = member.user?.username || 'Unknown';
                 const initial = username[0].toUpperCase();
                 
                 return `
@@ -1387,6 +1396,8 @@
                         primary: true,
                         callback: async () => {
                             try {
+                                console.log('Starting draft for league:', leagueId);
+                                
                                 // First, create league teams using the secure function
                                 const { error: teamsError } = await supabaseClient.rpc('create_league_teams_for_draft', {
                                     p_league_id: leagueId
@@ -1394,6 +1405,8 @@
                                 
                                 if (teamsError) {
                                     console.error('Error creating teams:', teamsError);
+                                    showNotification('Error', 'Failed to create teams: ' + teamsError.message, 'error');
+                                    return;
                                 }
                                 
                                 // Now initialize the draft
