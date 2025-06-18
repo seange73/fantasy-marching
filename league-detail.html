@@ -549,6 +549,20 @@
             color: #ff6b6b;
         }
 
+        .bench-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bench-label {
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         .section-title {
             font-size: 1.6rem;
             font-weight: 700;
@@ -560,72 +574,6 @@
 
         .hidden {
             display: none;
-        }
-
-        /* Free Agent Styles */
-        .free-agents-grid {
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .caption-free-agents {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 16px;
-            padding: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .caption-free-agents-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #45b7d1;
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .free-agent-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 0.75rem;
-        }
-
-        .free-agent-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .free-agent-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateX(4px);
-        }
-
-        .free-agent-name {
-            font-weight: 700;
-            font-size: 1rem;
-        }
-
-        .add-btn {
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.85rem;
-        }
-
-        .add-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.3);
         }
 
         /* Loading state */
@@ -960,6 +908,24 @@
             <!-- Draft actions for owner -->
             <div id="ownerActions" style="display: none;">
                 <div class="action-buttons">
+                    <button class="btn btn-success" onclick="startDraft()">
+                        Start Draft Now
+                    </button>
+                    <button class="btn btn-secondary" onclick="scheduleDraft()">
+                        Schedule Draft
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Member list -->
+            <div class="league-members-list">
+                <h3 class="members-title">League Members</h3>
+                <div id="membersList">
+                    <!-- Members will be populated here -->
+                </div>
+            </div>
+            
+            <div class="action-buttons">
                 <a href="/league.html" class="btn btn-secondary">Back to Leagues</a>
             </div>
         </div>
@@ -1070,16 +1036,6 @@
         let leagueId = null;
         let isOwner = false;
         let draftState = null;
-
-        // All available corps
-        const ALL_CORPS = [
-            'Blue Devils', 'Blue Knights', 'Blue Stars', 'Bluecoats', 
-            'Boston Crusaders', 'Carolina Crown', 'Colts', 'Crossmen', 
-            'Genesis', 'Madison Scouts', 'Mandarins', 'Music City', 
-            'Pacific Crest', 'Phantom Regiment', 'Santa Clara Vanguard', 
-            'Seattle Cascades', 'Spirit of Atlanta', 'The Academy', 
-            'The Cavaliers', 'Troopers'
-        ];
 
         // Notification functions
         function showNotification(title, message, type = 'info') {
@@ -1297,18 +1253,19 @@
                 return;
             }
             
-            // Check draft status
-            const { data: draft, error: draftError } = await supabaseClient
-                .from('league_drafts')
-                .select('*')
-                .eq('league_id', leagueId)
-                .maybeSingle();
-            
-            if (!draftError && draft) {
-                draftState = draft;
-                console.log('Draft state loaded:', draftState);
-            } else {
-                console.log('No draft found or error:', draftError);
+            // Check draft status - handle 406 error gracefully
+            try {
+                const { data: draft, error: draftError } = await supabaseClient
+                    .from('league_drafts')
+                    .select('*')
+                    .eq('league_id', leagueId)
+                    .single();
+                
+                if (!draftError && draft) {
+                    draftState = draft;
+                }
+            } catch (e) {
+                console.log('No draft found, which is expected for new leagues');
             }
             
             // Hide loading state
@@ -1328,6 +1285,7 @@
         }
 
         // Show pre-draft state
+                // Show pre-draft state
         async function showPreDraftState() {
             console.log('Showing pre-draft state');
             document.getElementById('preDraftContent').style.display = 'block';
@@ -1375,7 +1333,6 @@
 
         // Load league members
         async function loadLeagueMembers() {
-            console.log('loadLeagueMembers called');
             try {
                 // First get the members
                 const { data: members, error: membersError } = await supabaseClient
@@ -1383,8 +1340,6 @@
                     .select('*')
                     .eq('league_id', leagueId)
                     .eq('status', 'active');
-                
-                console.log('Members query result:', { members, membersError });
                 
                 if (membersError) {
                     console.error('Error loading members:', membersError);
@@ -1401,15 +1356,12 @@
                 
                 // Get all user IDs
                 const userIds = members.map(m => m.user_id);
-                console.log('User IDs:', userIds);
                 
                 // Then get the profiles
                 const { data: profiles, error: profilesError } = await supabaseClient
                     .from('profiles')
                     .select('id, username')
                     .in('id', userIds);
-                
-                console.log('Profiles query result:', { profiles, profilesError });
                 
                 if (profilesError) {
                     console.error('Error loading profiles:', profilesError);
@@ -1423,17 +1375,8 @@
                     });
                 }
                 
-                console.log('Profile map:', profileMap);
-                
                 // Display members
                 const container = document.getElementById('membersList');
-                console.log('Members list container:', container);
-                
-                if (!container) {
-                    console.error('membersList element not found!');
-                    return;
-                }
-                
                 container.innerHTML = members.map(member => {
                     const username = profileMap[member.user_id] || 'Unknown';
                     const initial = username[0].toUpperCase();
@@ -1446,8 +1389,6 @@
                         </div>
                     `;
                 }).join('');
-                
-                console.log('Members displayed successfully');
                 
             } catch (error) {
                 console.error('Unexpected error in loadLeagueMembers:', error);
@@ -1934,133 +1875,11 @@
         // Load free agents
         async function loadFreeAgents() {
             const container = document.getElementById('freeAgentsContainer');
-            
-            try {
-                // Get all corps that have been drafted in this league by caption
-                const { data: allTeams } = await supabaseClient
-                    .from('league_teams')
-                    .select('id')
-                    .eq('league_id', leagueId);
-                
-                if (!allTeams || allTeams.length === 0) {
-                    container.innerHTML = `
-                        <div style="text-align: center; padding: 3rem;">
-                            <p style="color: #666; font-size: 1.2rem;">No teams found in league</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                const teamIds = allTeams.map(t => t.id);
-                
-                // Get all drafted corps by caption
-                const { data: draftedCorps, error: draftedError } = await supabaseClient
-                    .from('league_team_roster')
-                    .select('corps_name, caption')
-                    .in('team_id', teamIds);
-                
-                if (draftedError) {
-                    console.error('Error loading drafted corps:', draftedError);
-                    container.innerHTML = `
-                        <div style="text-align: center; padding: 3rem;">
-                            <p style="color: #666; font-size: 1.2rem;">Error loading free agents</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // Create a map of caption -> Set of drafted corps
-                const draftedByCaption = {
-                    brass: new Set(),
-                    percussion: new Set(),
-                    guard: new Set(),
-                    ge: new Set(),
-                    visual: new Set(),
-                    music: new Set()
-                };
-                
-                if (draftedCorps) {
-                    draftedCorps.forEach(dc => {
-                        draftedByCaption[dc.caption].add(dc.corps_name);
-                    });
-                }
-                
-                // Find free agents for each caption
-                const freeAgentsByCaption = {};
-                const captions = ['brass', 'percussion', 'guard', 'ge', 'visual', 'music'];
-                
-                captions.forEach(caption => {
-                    freeAgentsByCaption[caption] = ALL_CORPS.filter(corps => 
-                        !draftedByCaption[caption].has(corps)
-                    );
-                });
-                
-                // Display free agents organized by caption
-                container.innerHTML = `
-                    <div class="free-agents-grid">
-                        ${captions.map(caption => {
-                            const freeAgents = freeAgentsByCaption[caption];
-                            const captionNames = {
-                                brass: 'Brass',
-                                percussion: 'Percussion',
-                                guard: 'Color Guard',
-                                ge: 'General Effect',
-                                visual: 'Visual',
-                                music: 'Music'
-                            };
-                            
-                            if (freeAgents.length === 0) {
-                                return `
-                                    <div class="caption-free-agents">
-                                        <h3 class="caption-free-agents-title">${captionNames[caption]}</h3>
-                                        <p style="text-align: center; color: #666; padding: 1rem;">
-                                            No free agents available for ${captionNames[caption]}
-                                        </p>
-                                    </div>
-                                `;
-                            }
-                            
-                            return `
-                                <div class="caption-free-agents">
-                                    <h3 class="caption-free-agents-title">${captionNames[caption]}</h3>
-                                    <div class="free-agent-list">
-                                        ${freeAgents.map(corps => `
-                                            <div class="free-agent-card">
-                                                <div>
-                                                    <div class="free-agent-name">${corps}</div>
-                                                    <div style="font-size: 0.85rem; color: #666;">Available</div>
-                                                </div>
-                                                <button class="add-btn" onclick="claimCorps('${corps}', '${caption}')">
-                                                    Add
-                                                </button>
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                `;
-                
-            } catch (error) {
-                console.error('Error in loadFreeAgents:', error);
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 3rem;">
-                        <p style="color: #666; font-size: 1.2rem;">Error loading free agents</p>
-                    </div>
-                `;
-            }
-        }
-        
-        // Claim a corps from free agents
-        async function claimCorps(corpsName, caption) {
-            showNotification('Coming Soon', `The free agent claim system for ${corpsName} (${caption}) will be implemented soon!`, 'info');
-            // TODO: Implement the logic to add a corps to your team
-            // This would involve:
-            // 1. Checking roster limits for the specific caption
-            // 2. Adding to league_team_roster with the correct caption
-            // 3. Possibly implementing waiver/claim priority
-            // 4. Updating the UI to reflect the change
+            container.innerHTML = `
+                <div style="text-align: center; padding: 3rem;">
+                    <p style="color: #666; font-size: 1.2rem;">Free agent system will be available soon</p>
+                </div>
+            `;
         }
 
         // Initialize on load
@@ -2068,21 +1887,3 @@
     </script>
 </body>
 </html>
-                    <button class="btn btn-success" onclick="startDraft()">
-                        Start Draft Now
-                    </button>
-                    <button class="btn btn-secondary" onclick="scheduleDraft()">
-                        Schedule Draft
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Member list -->
-            <div class="league-members-list">
-                <h3 class="members-title">League Members</h3>
-                <div id="membersList">
-                    <!-- Members will be populated here -->
-                </div>
-            </div>
-            
-            <div class="action-buttons">
