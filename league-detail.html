@@ -1297,19 +1297,18 @@
                 return;
             }
             
-            // Check draft status - handle 406 error gracefully
-            try {
-                const { data: draft, error: draftError } = await supabaseClient
-                    .from('league_drafts')
-                    .select('*')
-                    .eq('league_id', leagueId)
-                    .single();
-                
-                if (!draftError && draft) {
-                    draftState = draft;
-                }
-            } catch (e) {
-                console.log('No draft found, which is expected for new leagues');
+            // Check draft status
+            const { data: draft, error: draftError } = await supabaseClient
+                .from('league_drafts')
+                .select('*')
+                .eq('league_id', leagueId)
+                .maybeSingle();
+            
+            if (!draftError && draft) {
+                draftState = draft;
+                console.log('Draft state loaded:', draftState);
+            } else {
+                console.log('No draft found or error:', draftError);
             }
             
             // Hide loading state
