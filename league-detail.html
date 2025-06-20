@@ -1886,24 +1886,10 @@
             console.log('League ID:', leagueId);
             
             try {
-                // Get the matchup for this week
+                // Get the matchup for this week - simplified query
                 const { data: matchup, error } = await supabaseClient
                     .from('league_matchups')
-                    .select(`
-                        *,
-                        team1:team1_id (
-                            id,
-                            team_name,
-                            user_id,
-                            user:profiles!league_teams_user_id_fkey (username)
-                        ),
-                        team2:team2_id (
-                            id,
-                            team_name,
-                            user_id,
-                            user:profiles!league_teams_user_id_fkey (username)
-                        )
-                    `)
+                    .select('*')
                     .eq('league_id', leagueId)
                     .eq('week_number', week)
                     .or(`team1_id.eq.${currentTeam.id},team2_id.eq.${currentTeam.id}`)
@@ -1931,6 +1917,29 @@
                     `;
                     return;
                 }
+                
+                // Now get team details separately
+                const { data: team1Data } = await supabaseClient
+                    .from('league_teams')
+                    .select(`
+                        *,
+                        profiles (username)
+                    `)
+                    .eq('id', matchup.team1_id)
+                    .single();
+                    
+                const { data: team2Data } = await supabaseClient
+                    .from('league_teams')
+                    .select(`
+                        *,
+                        profiles (username)
+                    `)
+                    .eq('id', matchup.team2_id)
+                    .single();
+                
+                // Merge the data
+                matchup.team1 = team1Data;
+                matchup.team2 = team2Data;
                 
                 // Determine which team is the user's and which is the opponent
                 const isTeam1 = matchup.team1_id === currentTeam.id;
@@ -1961,7 +1970,7 @@
                                 color: #4ecdc4;
                                 margin-bottom: 1rem;
                             ">
-                                ${userTeam.user?.username || 'Unknown'}'s Team
+                                ${userTeam.profiles?.username || 'Unknown'}'s Team
                                 ${matchup.winner_id === userTeam.id ? '👑' : ''}
                             </div>
                             <div style="
@@ -1996,7 +2005,7 @@
                                 color: #e74c3c;
                                 margin-bottom: 1rem;
                             ">
-                                ${opponentTeam.user?.username || 'Unknown'}'s Team
+                                ${opponentTeam.profiles?.username || 'Unknown'}'s Team
                                 ${matchup.winner_id === opponentTeam.id ? '👑' : ''}
                             </div>
                             <div style="
