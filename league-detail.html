@@ -1880,6 +1880,11 @@
             
             const container = document.getElementById('matchupContainer');
             
+            // Debug logging
+            console.log('Loading matchup for week:', week);
+            console.log('Current team:', currentTeam);
+            console.log('League ID:', leagueId);
+            
             try {
                 // Get the matchup for this week
                 const { data: matchup, error } = await supabaseClient
@@ -1904,10 +1909,24 @@
                     .or(`team1_id.eq.${currentTeam.id},team2_id.eq.${currentTeam.id}`)
                     .single();
                 
+                console.log('Matchup query result:', { data: matchup, error });
+                
                 if (error || !matchup) {
+                    // Let's also try to see ALL matchups for debugging
+                    const { data: allMatchups } = await supabaseClient
+                        .from('league_matchups')
+                        .select('*')
+                        .eq('league_id', leagueId)
+                        .eq('week_number', week);
+                    
+                    console.log('All matchups for this week:', allMatchups);
+                    
                     container.innerHTML = `
                         <div style="text-align: center; padding: 3rem;">
                             <p style="color: #666; font-size: 1.2rem;">No matchup scheduled for this week</p>
+                            <p style="color: #666; font-size: 0.9rem; margin-top: 1rem;">
+                                Debug: Week ${week}, Team ID: ${currentTeam?.id || 'No team'}
+                            </p>
                         </div>
                     `;
                     return;
