@@ -2123,19 +2123,34 @@
             const container = document.getElementById('standingsContainer');
             
             try {
-                // Get all teams with their records
+                // Get all teams first
                 const { data: teams } = await supabaseClient
                     .from('league_teams')
-                    .select(`
-                        *,
-                        profiles!league_teams_user_id_fkey (username)
-                    `)
+                    .select('*')
                     .eq('league_id', leagueId);
                 
                 if (!teams || teams.length === 0) {
                     container.innerHTML = '<p style="text-align: center; color: #666;">No teams found</p>';
                     return;
                 }
+                
+                // Get usernames separately
+                const userIds = teams.map(t => t.user_id);
+                const { data: profiles } = await supabaseClient
+                    .from('profiles')
+                    .select('id, username')
+                    .in('id', userIds);
+                
+                // Create a map of user_id to username
+                const usernameMap = {};
+                profiles?.forEach(p => {
+                    usernameMap[p.id] = p.username;
+                });
+                
+                // Add usernames to teams
+                teams.forEach(team => {
+                    team.username = usernameMap[team.user_id] || 'Unknown';
+                });
                 
                 // Get all matchups to calculate records
                 const { data: matchups } = await supabaseClient
@@ -2206,7 +2221,7 @@
                                     text-align: center;
                                 ">${index + 1}</span>
                                 <span style="font-weight: 600;">
-                                    ${team.profiles?.username || 'Unknown'}'s Team
+                                    ${team.username}'s Team
                                     ${team.id === currentTeam?.id ? ' (You)' : ''}
                                 </span>
                                 <span style="color: #a0a0a0;">${team.wins}-${team.losses}</span>
@@ -2261,19 +2276,7 @@
                 // Get all matchups
                 const { data: matchups } = await supabaseClient
                     .from('league_matchups')
-                    .select(`
-                        *,
-                        team1:team1_id (
-                            id,
-                            user_id,
-                            user:profiles!league_teams_user_id_fkey (username)
-                        ),
-                        team2:team2_id (
-                            id,
-                            user_id,
-                            user:profiles!league_teams_user_id_fkey (username)
-                        )
-                    `)
+                    .select('*')
                     .eq('league_id', leagueId)
                     .order('week_number')
                     .order('id');
@@ -2282,6 +2285,40 @@
                     container.innerHTML = '<p style="text-align: center; color: #666;">No schedule available</p>';
                     return;
                 }
+                
+                // Get all teams
+                const { data: teams } = await supabaseClient
+                    .from('league_teams')
+                    .select('*')
+                    .eq('league_id', leagueId);
+                
+                // Get all profiles
+                const userIds = teams.map(t => t.user_id);
+                const { data: profiles } = await supabaseClient
+                    .from('profiles')
+                    .select('id, username')
+                    .in('id', userIds);
+                
+                // Create maps
+                const teamMap = {};
+                const usernameMap = {};
+                
+                teams?.forEach(t => {
+                    teamMap[t.id] = t;
+                });
+                
+                profiles?.forEach(p => {
+                    usernameMap[p.id] = p.username;
+                });
+                
+                // Add team info to matchups
+                matchups.forEach(matchup => {
+                    const team1 = teamMap[matchup.team1_id];
+                    const team2 = teamMap[matchup.team2_id];
+                    
+                    matchup.team1Username = team1 ? (usernameMap[team1.user_id] || 'Unknown') : 'Unknown';
+                    matchup.team2Username = team2 ? (usernameMap[team2.user_id] || 'Unknown') : 'Unknown';
+                });
                 
                 // Group by week
                 const weeklyMatchups = {};
@@ -2329,7 +2366,7 @@
                                                 font-weight: ${matchup.winner_id === matchup.team1_id ? '700' : '500'};
                                                 color: ${matchup.winner_id === matchup.team1_id ? '#4ecdc4' : '#e0e0e0'};
                                             ">
-                                                ${matchup.team1?.user?.username || 'Unknown'}
+                                                ${matchup.team1Username}
                                                 ${matchup.winner_id === matchup.team1_id ? ' 👑' : ''}
                                             </span>
                                             ${matchup.team1_score !== null ? `
@@ -2346,7 +2383,7 @@
                                                 font-weight: ${matchup.winner_id === matchup.team2_id ? '700' : '500'};
                                                 color: ${matchup.winner_id === matchup.team2_id ? '#4ecdc4' : '#e0e0e0'};
                                             ">
-                                                ${matchup.team2?.user?.username || 'Unknown'}
+                                                ${matchup.team2Username}
                                                 ${matchup.winner_id === matchup.team2_id ? ' 👑' : ''}
                                             </span>
                                             ${matchup.team2_score !== null ? `
