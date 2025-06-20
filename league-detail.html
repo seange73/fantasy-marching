@@ -1918,28 +1918,44 @@
                     return;
                 }
                 
-                // Now get team details separately
+                // Now get team details separately with a simpler approach
                 const { data: team1Data } = await supabaseClient
                     .from('league_teams')
-                    .select(`
-                        *,
-                        profiles (username)
-                    `)
+                    .select('*')
                     .eq('id', matchup.team1_id)
                     .single();
                     
                 const { data: team2Data } = await supabaseClient
                     .from('league_teams')
-                    .select(`
-                        *,
-                        profiles (username)
-                    `)
+                    .select('*')
                     .eq('id', matchup.team2_id)
                     .single();
                 
-                // Merge the data
-                matchup.team1 = team1Data;
-                matchup.team2 = team2Data;
+                // Get usernames separately
+                let team1Username = 'Unknown';
+                let team2Username = 'Unknown';
+                
+                if (team1Data) {
+                    const { data: profile1 } = await supabaseClient
+                        .from('profiles')
+                        .select('username')
+                        .eq('id', team1Data.user_id)
+                        .single();
+                    if (profile1) team1Username = profile1.username;
+                }
+                
+                if (team2Data) {
+                    const { data: profile2 } = await supabaseClient
+                        .from('profiles')
+                        .select('username')
+                        .eq('id', team2Data.user_id)
+                        .single();
+                    if (profile2) team2Username = profile2.username;
+                }
+                
+                // Create the team objects with username
+                matchup.team1 = { ...team1Data, username: team1Username };
+                matchup.team2 = { ...team2Data, username: team2Username };
                 
                 // Determine which team is the user's and which is the opponent
                 const isTeam1 = matchup.team1_id === currentTeam.id;
@@ -1970,7 +1986,7 @@
                                 color: #4ecdc4;
                                 margin-bottom: 1rem;
                             ">
-                                ${userTeam.profiles?.username || 'Unknown'}'s Team
+                                ${userTeam.username || 'Unknown'}'s Team
                                 ${matchup.winner_id === userTeam.id ? '👑' : ''}
                             </div>
                             <div style="
@@ -2005,7 +2021,7 @@
                                 color: #e74c3c;
                                 margin-bottom: 1rem;
                             ">
-                                ${opponentTeam.profiles?.username || 'Unknown'}'s Team
+                                ${opponentTeam.username || 'Unknown'}'s Team
                                 ${matchup.winner_id === opponentTeam.id ? '👑' : ''}
                             </div>
                             <div style="
