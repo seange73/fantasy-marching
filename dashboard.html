@@ -665,104 +665,105 @@
             }
         }
 
-        // Load reminders based on real data
-        async function loadReminders() {
-            const reminders = [];
+// Load reminders based on real data
+async function loadReminders() {
+    const reminders = [];
+    
+    // Check for league join requests (for league owners)
+    const { data: ownedLeagues } = await supabaseClient
+        .from('leagues')
+        .select('id, name')
+        .eq('owner_id', currentUser.id);
+    
+    if (ownedLeagues && ownedLeagues.length > 0) {
+        const leagueIds = ownedLeagues.map(l => l.id);
+        const { data: joinRequests } = await supabaseClient
+            .from('league_join_requests')
+            .select(`
+                id,
+                league_id,
+                user_id,
+                profiles!league_join_requests_user_id_fkey (username)
+            `)
+            .in('league_id', leagueIds)
+            .eq('status', 'pending');
+        
+        if (joinRequests && joinRequests.length > 0) {
+            const leagueMap = {};
+            ownedLeagues.forEach(l => leagueMap[l.id] = l.name);
             
-            // Check for league join requests (for league owners)
-            const { data: ownedLeagues } = await supabaseClient
-                .from('leagues')
-                .select('id, name')
-                .eq('owner_id', currentUser.id);
-            
-            if (ownedLeagues && ownedLeagues.length > 0) {
-                const leagueIds = ownedLeagues.map(l => l.id);
-                const { data: joinRequests } = await supabaseClient
-                    .from('league_join_requests')
-                    .select(`
-                        id,
-                        league_id,
-                        user_id,
-                        profiles!league_join_requests_user_id_fkey (username)
-                    `)
-                    .in('league_id', leagueIds)
-                    .eq('status', 'pending');
-                
-                if (joinRequests && joinRequests.length > 0) {
-                    const leagueMap = {};
-                    ownedLeagues.forEach(l => leagueMap[l.id] = l.name);
-                    
-                    joinRequests.forEach(request => {
-                        reminders.push({
-                            icon: '👥',
-                            title: 'League Join Request',
-                            text: `${request.profiles?.username || 'A user'} wants to join ${leagueMap[request.league_id]}`,
-                            action: 'Review Request',
-                            link: `/league-requests.html?league=${request.league_id}`
-                        });
-                    });
-                }
-            }
-            
-            // Check for upcoming events without predictions
-            const { data: upcomingEvents } = await supabaseClient
-                .from('events')
-                .select('*')
-                .gte('date', new Date().toISOString())
-                .order('date', { ascending: true })
-                .limit(3);
-            
-            if (upcomingEvents && upcomingEvents.length > 0) {
-                // Check which events user hasn't predicted on
-                for (const event of upcomingEvents) {
-                    const { data: prediction } = await supabaseClient
-                        .from('predictions')
-                        .select('id')
-                        .eq('user_id', currentUser.id)
-                        .eq('event_id', event.id)
-                        .single();
-                    
-                    if (!prediction) {
-                        const daysUntil = Math.ceil((new Date(event.date) - new Date()) / (1000 * 60 * 60 * 24));
-                        reminders.push({
-                            icon: '🎯',
-                            title: 'Predictions Due Soon',
-                            text: `${event.name} predictions close in ${daysUntil} days`,
-                            action: 'Make Predictions',
-                            link: `/predictions.html?eventId=${event.id}`
-                        });
-                    }
-                }
-            }
-            
-            // Check for completed events with results
-            const { data: completedEvents } = await supabaseClient
-                .from('events')
-                .select('*')
-                .eq('is_completed', true)
-                .order('date', { ascending: false })
-                .limit(1);
-            
-            if (completedEvents && completedEvents.length > 0) {
+            joinRequests.forEach(request => {
                 reminders.push({
-                    icon: '📊',
-                    title: 'Results Available',
-                    text: `Check how your predictions did for ${completedEvents[0].name}`,
-                    action: 'View Results',
-                    link: `/results.html?eventId=${completedEvents[0].id}`
+                    icon: '👥',
+                    title: 'League Join Request',
+                    text: `${request.profiles?.username || 'A user'} wants to join ${leagueMap[request.league_id]}`,
+                    action: 'Review Request',
+                    link: '#',
+                    onclick: `handleJoinRequest('${request.id}', '${request.league_id}', '${request.user_id}', '${request.profiles?.username || 'Unknown'}', '${leagueMap[request.league_id]}')`
+                });
+            });
+        }
+    }
+    
+    // Check for upcoming events without predictions
+    const { data: upcomingEvents } = await supabaseClient
+        .from('events')
+        .select('*')
+        .gte('date', new Date().toISOString())
+        .order('date', { ascending: true })
+        .limit(3);
+    
+    if (upcomingEvents && upcomingEvents.length > 0) {
+        // Check which events user hasn't predicted on
+        for (const event of upcomingEvents) {
+            const { data: prediction } = await supabaseClient
+                .from('predictions')
+                .select('id')
+                .eq('user_id', currentUser.id)
+                .eq('event_id', event.id)
+                .single();
+            
+            if (!prediction) {
+                const daysUntil = Math.ceil((new Date(event.date) - new Date()) / (1000 * 60 * 60 * 24));
+                reminders.push({
+                    icon: '🎯',
+                    title: 'Predictions Due Soon',
+                    text: `${event.name} predictions close in ${daysUntil} days`,
+                    action: 'Make Predictions',
+                    link: `/predictions.html?eventId=${event.id}`
                 });
             }
-            
-            const grid = document.getElementById('remindersGrid');
-            grid.innerHTML = reminders.map(reminder => `
-                <div class="reminder-card" onclick="window.location.href='${reminder.link}'">
-                    <div class="reminder-icon">${reminder.icon}</div>
-                    <h3 class="reminder-title">${reminder.title}</h3>
-                    <p class="reminder-text">${reminder.text}</p>
-                    <div class="reminder-action">${reminder.action} →</div>
-                </div>
-            `).join('');
         }
+    }
+    
+    // Check for completed events with results
+    const { data: completedEvents } = await supabaseClient
+        .from('events')
+        .select('*')
+        .eq('is_completed', true)
+        .order('date', { ascending: false })
+        .limit(1);
+    
+    if (completedEvents && completedEvents.length > 0) {
+        reminders.push({
+            icon: '📊',
+            title: 'Results Available',
+            text: `Check how your predictions did for ${completedEvents[0].name}`,
+            action: 'View Results',
+            link: `/results.html?eventId=${completedEvents[0].id}`
+        });
+    }
+    
+    const grid = document.getElementById('remindersGrid');
+    grid.innerHTML = reminders.map(reminder => `
+        <div class="reminder-card" ${reminder.onclick ? `onclick="${reminder.onclick}"` : `onclick="window.location.href='${reminder.link}'"`}>
+            <div class="reminder-icon">${reminder.icon}</div>
+            <h3 class="reminder-title">${reminder.title}</h3>
+            <p class="reminder-text">${reminder.text}</p>
+            <div class="reminder-action">${reminder.action} →</div>
+        </div>
+    `).join('');
+}
 
         // Load predictions leaderboard
         async function loadPredictionsLeaderboard() {
@@ -895,5 +896,171 @@
         // Initialize on load
         document.addEventListener('DOMContentLoaded', initDashboard);
     </script>
+	<!-- Join Request Modal -->
+<div id="joinRequestModal" style="
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+">
+    <div style="
+        background: rgba(26, 26, 46, 0.98);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    ">
+        <h2 style="
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4ecdc4;
+            margin-bottom: 1.5rem;
+        ">League Join Request</h2>
+        
+        <div id="requestDetails" style="margin-bottom: 2rem;">
+            <!-- Details will be populated here -->
+        </div>
+        
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button onclick="closeJoinRequestModal()" style="
+                padding: 0.75rem 1.5rem;
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 12px;
+                cursor: pointer;
+                font-weight: 600;
+            ">Cancel</button>
+            <button onclick="rejectJoinRequest()" style="
+                padding: 0.75rem 1.5rem;
+                background: rgba(255, 107, 107, 0.2);
+                color: #ff6b6b;
+                border: 1px solid rgba(255, 107, 107, 0.3);
+                border-radius: 12px;
+                cursor: pointer;
+                font-weight: 600;
+            ">Reject</button>
+            <button onclick="approveJoinRequest()" style="
+                padding: 0.75rem 1.5rem;
+                background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                cursor: pointer;
+                font-weight: 600;
+            ">Approve</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Join request handling
+let currentRequestId = null;
+let currentRequestLeagueId = null;
+let currentRequestUserId = null;
+
+function handleJoinRequest(requestId, leagueId, userId, username, leagueName) {
+    currentRequestId = requestId;
+    currentRequestLeagueId = leagueId;
+    currentRequestUserId = userId;
+    
+    document.getElementById('requestDetails').innerHTML = `
+        <p style="color: #e0e0e0; font-size: 1.1rem; margin-bottom: 1rem;">
+            <strong>${username}</strong> wants to join your league:
+        </p>
+        <p style="
+            color: #4ecdc4;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 1rem;
+            background: rgba(78, 205, 196, 0.1);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        ">${leagueName}</p>
+        <p style="color: #a0a0a0; font-size: 0.9rem;">
+            Approving this request will add them to your league immediately.
+        </p>
+    `;
+    
+    document.getElementById('joinRequestModal').style.display = 'flex';
+}
+
+function closeJoinRequestModal() {
+    document.getElementById('joinRequestModal').style.display = 'none';
+    currentRequestId = null;
+    currentRequestLeagueId = null;
+    currentRequestUserId = null;
+}
+
+async function approveJoinRequest() {
+    if (!currentRequestId) return;
+    
+    try {
+        // Update request status
+        const { error: updateError } = await supabaseClient
+            .from('league_join_requests')
+            .update({ status: 'approved' })
+            .eq('id', currentRequestId);
+        
+        if (updateError) throw updateError;
+        
+        // Add user to league
+        const { error: memberError } = await supabaseClient
+            .from('league_members')
+            .insert({
+                league_id: currentRequestLeagueId,
+                user_id: currentRequestUserId,
+                role: 'member',
+                status: 'active'
+            });
+        
+        if (memberError) {
+            // If already a member, just update the request
+            console.log('User might already be a member');
+        }
+        
+        alert('Request approved! The user has been added to your league.');
+        closeJoinRequestModal();
+        loadReminders(); // Refresh reminders
+        
+    } catch (error) {
+        console.error('Error approving request:', error);
+        alert('Error approving request: ' + error.message);
+    }
+}
+
+async function rejectJoinRequest() {
+    if (!currentRequestId) return;
+    
+    try {
+        const { error } = await supabaseClient
+            .from('league_join_requests')
+            .update({ status: 'rejected' })
+            .eq('id', currentRequestId);
+        
+        if (error) throw error;
+        
+        alert('Request rejected.');
+        closeJoinRequestModal();
+        loadReminders(); // Refresh reminders
+        
+    } catch (error) {
+        console.error('Error rejecting request:', error);
+        alert('Error rejecting request: ' + error.message);
+    }
+}
+</script>
 </body>
 </html>
