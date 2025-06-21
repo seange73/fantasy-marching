@@ -986,11 +986,10 @@
 
         // Load available leagues
         async function loadAvailableLeagues() {
-            // Get all public/global leagues
+            // Get all active leagues (including private ones with passwords)
             const { data: leagues, error } = await supabaseClient
                 .from('leagues')
                 .select('*')
-                .or('is_global.eq.true,password.is.null')
                 .eq('is_active', true)
                 .order('is_global', { ascending: false })
                 .order('created_at', { ascending: false });
