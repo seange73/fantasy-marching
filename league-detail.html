@@ -1424,41 +1424,51 @@
             }
         }
 
-        // Show pre-draft state
-        async function showPreDraftState() {
-            console.log('Showing pre-draft state');
-            document.getElementById('preDraftContent').style.display = 'block';
-            document.getElementById('leagueName').textContent = currentLeague.name;
-            
-            const draftInfoEl = document.getElementById('draftInfo');
-            
-            if (currentLeague.draft_time) {
-                const draftDate = new Date(currentLeague.draft_time);
-                const now = new Date();
-                const timeDiff = draftDate - now;
-                const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-                
-                draftInfoEl.innerHTML = `
-                    <p>Draft scheduled for:</p>
-                    <div class="draft-countdown">${draftDate.toLocaleDateString()} at ${draftDate.toLocaleTimeString()}</div>
-                    <p style="color: #666; font-size: 1rem;">${daysDiff} days until draft</p>
-                `;
-            } else {
-                draftInfoEl.innerHTML = `
-                    <p style="color: #666;">Draft time has not been set yet</p>
-                    <p style="color: #666; font-size: 1rem;">The league owner will schedule the draft soon</p>
-                `;
-            }
-            
-            // Show owner actions if user is owner
-            if (isOwner) {
-                document.getElementById('ownerActions').style.display = 'block';
-            }
-            
-            // Load and display members
-            console.log('About to load league members');
-            await loadLeagueMembers();
+// Show pre-draft state
+async function showPreDraftState() {
+    console.log('Showing pre-draft state');
+    document.getElementById('preDraftContent').style.display = 'block';
+    document.getElementById('leagueName').textContent = currentLeague.name;
+    
+    const draftInfoEl = document.getElementById('draftInfo');
+    
+    if (currentLeague.draft_time) {
+        const draftDate = new Date(currentLeague.draft_time);
+        const now = new Date();
+        const timeDiff = draftDate - now;
+        const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+        
+        if (timeDiff < 0) {
+            // Draft time has passed
+            draftInfoEl.innerHTML = `
+                <p>Draft planned for:</p>
+                <div class="draft-countdown">${draftDate.toLocaleDateString()} at ${draftDate.toLocaleTimeString()}</div>
+                <p style="color: #ffd700; font-size: 1rem;">Waiting for owner to start draft</p>
+            `;
+        } else {
+            // Draft time is in the future
+            draftInfoEl.innerHTML = `
+                <p>Draft planned for:</p>
+                <div class="draft-countdown">${draftDate.toLocaleDateString()} at ${draftDate.toLocaleTimeString()}</div>
+                <p style="color: #666; font-size: 1rem;">${daysDiff} days until draft</p>
+            `;
         }
+    } else {
+        draftInfoEl.innerHTML = `
+            <p style="color: #666;">Draft time has not been set yet</p>
+            <p style="color: #666; font-size: 1rem;">The league owner will schedule the draft soon</p>
+        `;
+    }
+    
+    // Show owner actions if user is owner
+    if (isOwner) {
+        document.getElementById('ownerActions').style.display = 'block';
+    }
+    
+    // Load and display members
+    console.log('About to load league members');
+    await loadLeagueMembers();
+}
 
         // Show during draft state
         function showDuringDraftState() {
