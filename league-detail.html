@@ -3034,7 +3034,120 @@ async function loadFreeAgents() {
             };
             return names[caption] || caption;
         }
-        
+// Kick member from league
+async function kickMember(userId, username) {
+    showModal(
+        'Kick Member',
+        `Are you sure you want to remove ${username} from the league?`,
+        [
+            {
+                text: 'Cancel',
+                primary: false,
+                callback: null
+            },
+            {
+                text: 'Kick Member',
+                primary: true,
+                callback: async () => {
+                    try {
+                        // Remove from league_members
+                        const { error } = await supabaseClient
+                            .from('league_members')
+                            .delete()
+                            .eq('league_id', leagueId)
+                            .eq('user_id', userId);
+                        
+                        if (error) throw error;
+                        
+                        // If draft exists, might need to handle draft picks/teams
+                        // For now, we'll just remove from members
+                        
+                        showNotification('Success', `${username} has been removed from the league`, 'success');
+                        
+                        // Reload members list if in pre-draft state
+                        if (document.getElementById('preDraftContent').style.display !== 'none') {
+                            await loadLeagueMembers();
+                        }
+                        
+                        // Reload standings if in post-draft state
+                        if (document.getElementById('standings-content') && !document.getElementById('standings-content').classList.contains('hidden')) {
+                            await loadStandings();
+                        }
+                        
+                    } catch (error) {
+                        console.error('Error kicking member:', error);
+                        showNotification('Error', 'Failed to remove member: ' + error.message, 'error');
+                    }
+                }
+            }
+        ]
+    );
+}
+
+// Delete league
+async function deleteLeague() {
+    showModal(
+        'Delete League',
+        'Are you sure you want to delete this league? This action cannot be undone and will remove all associated data including drafts, matchups, and member rosters.',
+        [
+            {
+                text: 'Cancel',
+                primary: false,
+                callback: null
+            },
+            {
+                text: 'Delete League',
+                primary: true,
+                callback: async () => {
+                    // Second confirmation
+                    showModal(
+                        'Final Confirmation',
+                        `Type "${currentLeague.name}" to confirm deletion:`,
+                        [
+                            {
+                                text: 'Cancel',
+                                primary: false,
+                                callback: null
+                            },
+                            {
+                                text: 'Delete',
+                                primary: true,
+                                callback: async (inputValue) => {
+                                    if (inputValue !== currentLeague.name) {
+                                        showNotification('Error', 'League name does not match', 'error');
+                                        return;
+                                    }
+                                    
+                                    try {
+                                        // Delete the league (cascades will handle related data)
+                                        const { error } = await supabaseClient
+                                            .from('leagues')
+                                            .delete()
+                                            .eq('id', leagueId);
+                                        
+                                        if (error) throw error;
+                                        
+                                        showNotification('Success', 'League deleted successfully', 'success');
+                                        
+                                        // Redirect to leagues page
+                                        setTimeout(() => {
+                                            window.location.href = '/league.html';
+                                        }, 1500);
+                                        
+                                    } catch (error) {
+                                        console.error('Error deleting league:', error);
+                                        showNotification('Error', 'Failed to delete league: ' + error.message, 'error');
+                                    }
+                                }
+                            }
+                        ],
+                        true // Show input field
+                    );
+                }
+            }
+        ]
+    );
+}        
         // Generate matchups for the league (owner only)
         async function generateMatchups() {
             if (!isOwner) {
