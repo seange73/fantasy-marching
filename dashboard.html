@@ -679,27 +679,35 @@ async function loadReminders() {
         const leagueIds = ownedLeagues.map(l => l.id);
         const { data: joinRequests } = await supabaseClient
             .from('league_join_requests')
-            .select(`
-                id,
-                league_id,
-                user_id,
-                profiles!league_join_requests_user_id_fkey (username)
-            `)
+            .select('*')
             .in('league_id', leagueIds)
             .eq('status', 'pending');
         
         if (joinRequests && joinRequests.length > 0) {
+            // Get usernames separately
+            const userIds = joinRequests.map(r => r.user_id);
+            const { data: profiles } = await supabaseClient
+                .from('profiles')
+                .select('id, username')
+                .in('id', userIds);
+            
+            const usernameMap = {};
+            profiles?.forEach(p => {
+                usernameMap[p.id] = p.username;
+            });
+            
             const leagueMap = {};
             ownedLeagues.forEach(l => leagueMap[l.id] = l.name);
             
             joinRequests.forEach(request => {
+                const username = usernameMap[request.user_id] || 'Unknown';
                 reminders.push({
                     icon: '👥',
                     title: 'League Join Request',
-                    text: `${request.profiles?.username || 'A user'} wants to join ${leagueMap[request.league_id]}`,
+                    text: `${username} wants to join ${leagueMap[request.league_id]}`,
                     action: 'Review Request',
                     link: '#',
-                    onclick: `handleJoinRequest('${request.id}', '${request.league_id}', '${request.user_id}', '${request.profiles?.username || 'Unknown'}', '${leagueMap[request.league_id]}')`
+                    onclick: `handleJoinRequest('${request.id}', '${request.league_id}', '${request.user_id}', '${username}', '${leagueMap[request.league_id]}')`
                 });
             });
         }
@@ -721,7 +729,7 @@ async function loadReminders() {
                 .select('id')
                 .eq('user_id', currentUser.id)
                 .eq('event_id', event.id)
-                .single();
+                .maybeSingle();  // Use maybeSingle() instead of single() to avoid 406 errors
             
             if (!prediction) {
                 const daysUntil = Math.ceil((new Date(event.date) - new Date()) / (1000 * 60 * 60 * 24));
