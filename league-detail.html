@@ -2266,7 +2266,13 @@ function switchTab(tabName) {
     // Load content for the selected tab
     switch(tabName) {
         case 'matchup':
-            updateMatchupScores().then(() => loadMatchup());
+            // First update scores, then load matchup
+            updateMatchupScores().then(() => {
+                loadMatchup();
+            }).catch(error => {
+                console.error('Error in matchup tab:', error);
+                loadMatchup(); // Try to load anyway
+            });
             break;
         case 'standings':
             loadStandings();
