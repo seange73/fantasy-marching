@@ -2480,29 +2480,29 @@ function switchTab(tabName) {
                         </div>
                         
                         <!-- Opponent's Team -->
-                        <div style="text-align: center;">
-                            <div style="
-                                font-size: 1.2rem;
-                                font-weight: 600;
-                                color: #e74c3c;
-                                margin-bottom: 1rem;
-                            ">
-                                ${opponentTeam.username || 'Unknown'}'s Team
-                                ${matchup.winner_id === opponentTeam.id ? '👑' : ''}
-                            </div>
-                            <div style="
-                                font-size: 3rem;
-                                font-weight: 800;
-                                color: #e74c3c;
-                            ">
-                                ${opponentScore !== null ? opponentScore.toFixed(2) : '--'}
-                            </div>
-                            ${hasScores ? `
-                                <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="viewTeamLineup('${opponentTeam.id}')">
-                                    View Lineup
-                                </button>
-                            ` : ''}
-                        </div>
+<div style="text-align: center;">
+    <div style="
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #e74c3c;
+        margin-bottom: 1rem;
+    ">
+        ${opponentTeam.username || 'Unknown'}'s Team
+        ${matchup.winner_id === opponentTeam.id ? '👑' : ''}
+    </div>
+    <div style="
+        font-size: 3rem;
+        font-weight: 800;
+        color: #e74c3c;
+    ">
+        ${opponentScore !== null && opponentScore !== undefined ? parseFloat(opponentScore).toFixed(2) : '--'}
+    </div>
+    ${hasScores ? `
+        <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="viewTeamLineup('${opponentTeam.id}')">
+            View Lineup
+        </button>
+    ` : ''}
+</div>
                     </div>
                     
                     <!-- Week's competitions -->
@@ -3224,85 +3224,187 @@ async function loadFreeAgents() {
             }
         }
         
-        // View a team's lineup (for matchup comparison)
-        async function viewTeamLineup(teamId) {
-            try {
-                // Get team info
-                const { data: team } = await supabaseClient
-                    .from('league_teams')
-                    .select(`
-                        *,
-                        user:profiles!league_teams_user_id_fkey (username)
-                    `)
-                    .eq('id', teamId)
-                    .single();
-                
-                if (!team) {
-                    showNotification('Error', 'Team not found', 'error');
-                    return;
+// View a team's lineup (for matchup comparison)
+async function viewTeamLineup(teamId) {
+    try {
+        // Get team info
+        const { data: team } = await supabaseClient
+            .from('league_teams')
+            .select('*')
+            .eq('id', teamId)
+            .single();
+        
+        if (!team) {
+            showNotification('Error', 'Team not found', 'error');
+            return;
+        }
+        
+        // Get username
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('username')
+            .eq('id', team.user_id)
+            .single();
+        
+        const username = profile?.username || 'Unknown';
+        
+        // Get team's roster
+        const { data: roster } = await supabaseClient
+            .from('league_team_roster')
+            .select('*')
+            .eq('team_id', teamId)
+            .order('caption')
+            .order('position');
+        
+        if (!roster || roster.length === 0) {
+            showNotification('Error', 'No roster found for this team', 'error');
+            return;
+        }
+        
+        // Get current week scores
+        const currentWeek = await getCurrentWeekFromDB();
+        const seasonStart = new Date('2025-06-28');
+        const weekStart = new Date(seasonStart);
+        weekStart.setDate(weekStart.getDate() + (currentWeek - 1) * 7);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        
+        const { data: weekEvents } = await supabaseClient
+            .from('events')
+            .select('id')
+            .gte('date', weekStart.toISOString().split('T')[0])
+            .lte('date', weekEnd.toISOString().split('T')[0])
+            .eq('is_completed', true);
+        
+        const eventIds = weekEvents?.map(e => e.id) || [];
+        let weekScores = {};
+        
+        if (eventIds.length > 0) {
+            const { data: scores } = await supabaseClient
+                .from('event_scores')
+                .select('*')
+                .in('event_id', eventIds);
+            
+            scores?.forEach(score => {
+                if (!weekScores[score.corps_name]) {
+                    weekScores[score.corps_name] = {
+                        brass: [],
+                        percussion: [],
+                        guard: [],
+                        ge: [],
+                        visual: [],
+                        music: []
+                    };
                 }
                 
-                // Get team's roster
-                const { data: roster } = await supabaseClient
-                    .from('league_team_roster')
-                    .select('*')
-                    .eq('team_id', teamId)
-                    .order('caption')
-                    .order('position');
-                
-                // Show in modal
-                showModal(
-                    `${team.user?.username || 'Unknown'}'s Lineup`,
-                    '',
-                    [
-                        {
-                            text: 'Close',
-                            primary: true,
-                            callback: null
-                        }
-                    ]
-                );
-                
-                // Custom content for lineup display
-                const modalMessage = document.getElementById('modalMessage');
-                modalMessage.innerHTML = `
-                    <div style="
-                        display: grid;
-                        gap: 1rem;
-                        margin-top: 1rem;
-                    ">
-                        ${['brass', 'percussion', 'guard', 'ge', 'visual', 'music'].map(caption => {
-                            const captionRoster = roster.filter(r => r.caption === caption);
-                            return `
-                                <div style="
-                                    background: rgba(255, 255, 255, 0.03);
-                                    border-radius: 12px;
-                                    padding: 1rem;
-                                    border-left: 3px solid ${getCaptionColor(caption)};
-                                ">
-                                    <div style="
-                                        font-weight: 600;
-                                        color: ${getCaptionColor(caption)};
-                                        margin-bottom: 0.5rem;
-                                        text-transform: capitalize;
-                                    ">${caption === 'guard' ? 'Color Guard' : caption === 'ge' ? 'General Effect' : caption}</div>
-                                    ${captionRoster.map(r => `
-                                        <div style="
-                                            padding: 0.5rem 0;
-                                            color: #e0e0e0;
-                                        ">${r.corps_name}</div>
-                                    `).join('') || '<div style="color: #666;">No selection</div>'}
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                `;
-                
-            } catch (error) {
-                console.error('Error viewing team lineup:', error);
-                showNotification('Error', 'Failed to load team lineup', 'error');
-            }
+                if (score.brass_score !== null) weekScores[score.corps_name].brass.push(score.brass_score);
+                if (score.percussion_score !== null) weekScores[score.corps_name].percussion.push(score.percussion_score);
+                if (score.color_guard_score !== null) weekScores[score.corps_name].guard.push(score.color_guard_score);
+                if (score.general_effect_score !== null) weekScores[score.corps_name].ge.push(score.general_effect_score);
+                if (score.visual_score !== null) weekScores[score.corps_name].visual.push(score.visual_score);
+                if (score.music_score !== null) weekScores[score.corps_name].music.push(score.music_score);
+            });
         }
+        
+        // Calculate total score
+        let totalScore = 0;
+        
+        // Show in modal
+        showModal(
+            `${username}'s Lineup - Week ${currentWeek}`,
+            '',
+            [
+                {
+                    text: 'Close',
+                    primary: true,
+                    callback: null
+                }
+            ]
+        );
+        
+        // Custom content for lineup display with scores
+        const modalMessage = document.getElementById('modalMessage');
+        modalMessage.innerHTML = `
+            <div style="
+                display: grid;
+                gap: 1rem;
+                margin-top: 1rem;
+            ">
+                ${['brass', 'percussion', 'guard', 'ge', 'visual', 'music'].map(caption => {
+                    const captionRoster = roster.filter(r => r.caption === caption);
+                    let captionTotal = 0;
+                    
+                    const rosterWithScores = captionRoster.map(r => {
+                        const corpsScores = weekScores[r.corps_name];
+                        let avgScore = 0;
+                        
+                        if (corpsScores && corpsScores[caption].length > 0) {
+                            avgScore = corpsScores[caption].reduce((sum, score) => sum + score, 0) / corpsScores[caption].length;
+                            captionTotal += avgScore;
+                            totalScore += avgScore;
+                        }
+                        
+                        return { ...r, avgScore };
+                    });
+                    
+                    return `
+                        <div style="
+                            background: rgba(255, 255, 255, 0.03);
+                            border-radius: 12px;
+                            padding: 1rem;
+                            border-left: 3px solid ${getCaptionColor(caption)};
+                        ">
+                            <div style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                margin-bottom: 0.5rem;
+                            ">
+                                <div style="
+                                    font-weight: 600;
+                                    color: ${getCaptionColor(caption)};
+                                    text-transform: capitalize;
+                                ">${caption === 'guard' ? 'Color Guard' : caption === 'ge' ? 'General Effect' : caption}</div>
+                                <div style="
+                                    font-weight: 700;
+                                    color: #4ecdc4;
+                                ">${captionTotal > 0 ? captionTotal.toFixed(2) : '0.00'}</div>
+                            </div>
+                            ${rosterWithScores.map(r => `
+                                <div style="
+                                    padding: 0.5rem 0;
+                                    color: #e0e0e0;
+                                    display: flex;
+                                    justify-content: space-between;
+                                ">${r.corps_name}
+                                    <span style="color: ${r.avgScore > 0 ? '#4ecdc4' : '#666'};">
+                                        ${r.avgScore > 0 ? r.avgScore.toFixed(3) : 'No score'}
+                                    </span>
+                                </div>
+                            `).join('') || '<div style="color: #666;">No selection</div>'}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            <div style="
+                margin-top: 1.5rem;
+                padding: 1rem;
+                background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+                border-radius: 12px;
+                text-align: center;
+            ">
+                <div style="color: rgba(255, 255, 255, 0.9); font-size: 0.9rem;">Total Score</div>
+                <div style="color: white; font-size: 2rem; font-weight: 800;">
+                    ${totalScore.toFixed(3)}
+                </div>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Error viewing team lineup:', error);
+        showNotification('Error', 'Failed to load team lineup', 'error');
+    }
+}
         
         // Get caption color
         function getCaptionColor(caption) {
