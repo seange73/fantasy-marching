@@ -2058,101 +2058,116 @@ function displayLineup(lineup) {
     }).join('');
 }
 
+
+// Calculate team's total score for the current week
+async function calculateTeamWeeklyScore(teamId) {
+    // Get team roster
+    const { data: roster } = await supabaseClient
+        .from('league_team_roster')
+        .select('*')
+        .eq('team_id', teamId);
+    
+    if (!roster || roster.length === 0) return 0;
+    
+    // Get current week
+    const currentWeek = await getCurrentWeekFromDB();
+    
+    // Calculate week date range
+    const seasonStart = new Date('2025-06-28');
+    const weekStart = new Date(seasonStart);
+    weekStart.setDate(weekStart.getDate() + (currentWeek - 1) * 7);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    
+    // Get events for this week
+    const { data: weekEvents } = await supabaseClient
+        .from('events')
+        .select('id')
+        .gte('date', weekStart.toISOString().split('T')[0])
+        .lte('date', weekEnd.toISOString().split('T')[0])
+        .eq('is_completed', true);
+    
+    if (!weekEvents || weekEvents.length === 0) return 0;
+    
+    const eventIds = weekEvents.map(e => e.id);
+    
+    // Get all scores for these events
+    const { data: scores } = await supabaseClient
+        .from('event_scores')
+        .select('*')
+        .in('event_id', eventIds);
+    
+    if (!scores) return 0;
+    
+    let totalScore = 0;
+    let scoreCount = 0;
+    
+    // Calculate total score
+    roster.forEach(rosterItem => {
+        const corpsScores = scores.filter(s => s.corps_name === rosterItem.corps_name);
+        
+        corpsScores.forEach(score => {
+            let captionScore = 0;
+            switch(rosterItem.caption) {
+                case 'brass': captionScore = score.brass_score || 0; break;
+                case 'percussion': captionScore = score.percussion_score || 0; break;
+                case 'guard': captionScore = score.color_guard_score || 0; break;
+                case 'ge': captionScore = score.general_effect_score || 0; break;
+                case 'visual': captionScore = score.visual_score || 0; break;
+                case 'music': captionScore = score.music_score || 0; break;
+            }
+            if (captionScore > 0) {
+                totalScore += captionScore;
+                scoreCount++;
+            }
+        });
+    });
+    
+    return totalScore;
+}
+
 // Calculate and update matchup scores for the current week
 async function updateMatchupScores() {
     if (!currentTeam) return;
     
-    const currentWeek = await getCurrentWeekFromDB();
-    
-    // Get the matchup for this week
-    const { data: matchup } = await supabaseClient
-        .from('league_matchups')
-        .select('*')
-        .eq('league_id', leagueId)
-        .eq('week_number', currentWeek)
-        .or(`team1_id.eq.${currentTeam.id},team2_id.eq.${currentTeam.id}`)
-        .single();
-    
-    if (!matchup) return;
-    
-    // Calculate scores for both teams
-    const teams = [
-        { id: matchup.team1_id, field: 'team1_score' },
-        { id: matchup.team2_id, field: 'team2_score' }
-    ];
-    
-    for (const team of teams) {
-        // Get team roster
-        const { data: roster } = await supabaseClient
-            .from('league_team_roster')
+    try {
+        const currentWeek = await getCurrentWeekFromDB();
+        
+        // Get the matchup for this week
+        const { data: matchup } = await supabaseClient
+            .from('league_matchups')
             .select('*')
-            .eq('team_id', team.id);
+            .eq('league_id', leagueId)
+            .eq('week_number', currentWeek)
+            .or(`team1_id.eq.${currentTeam.id},team2_id.eq.${currentTeam.id}`)
+            .maybeSingle();
         
-        if (!roster) continue;
-        
-        // Get week's events and scores (similar to loadLineupFromDraft)
-        const seasonStart = new Date('2025-06-28');
-        const weekStart = new Date(seasonStart);
-        weekStart.setDate(weekStart.getDate() + (currentWeek - 1) * 7);
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekEnd.getDate() + 6);
-        
-        const { data: weekEvents } = await supabaseClient
-            .from('events')
-            .select('id')
-            .gte('date', weekStart.toISOString().split('T')[0])
-            .lte('date', weekEnd.toISOString().split('T')[0])
-            .eq('is_completed', true);
-        
-        const eventIds = weekEvents?.map(e => e.id) || [];
-        let totalScore = 0;
-        
-        if (eventIds.length > 0) {
-            const { data: scores } = await supabaseClient
-                .from('event_scores')
-                .select('*')
-                .in('event_id', eventIds);
-            
-            // Calculate total score for this team
-            roster.forEach(rosterItem => {
-                const corpsScores = scores?.filter(s => s.corps_name === rosterItem.corps_name) || [];
-                
-                corpsScores.forEach(score => {
-                    switch(rosterItem.caption) {
-                        case 'brass': totalScore += score.brass_score || 0; break;
-                        case 'percussion': totalScore += score.percussion_score || 0; break;
-                        case 'guard': totalScore += score.color_guard_score || 0; break;
-                        case 'ge': totalScore += score.general_effect_score || 0; break;
-                        case 'visual': totalScore += score.visual_score || 0; break;
-                        case 'music': totalScore += score.music_score || 0; break;
-                    }
-                });
-            });
-            
-            // If multiple events, average the score
-            if (corpsScores.length > roster.length) {
-                totalScore = totalScore / (corpsScores.length / roster.length);
-            }
+        if (!matchup) {
+            console.log('No matchup found for week', currentWeek);
+            return;
         }
         
-        // Update the matchup with the calculated score
-        const updateData = {};
-        updateData[team.field] = totalScore;
+        // Calculate scores for both teams
+        const team1Score = await calculateTeamWeeklyScore(matchup.team1_id);
+        const team2Score = await calculateTeamWeeklyScore(matchup.team2_id);
         
-        await supabaseClient
-            .from('league_matchups')
-            .update(updateData)
-            .eq('id', matchup.id);
-    }
-    
-    // Determine winner if both scores are set
-    if (matchup.team1_score !== null && matchup.team2_score !== null) {
-        const winnerId = matchup.team1_score > matchup.team2_score ? matchup.team1_id : matchup.team2_id;
+        console.log('Calculated scores - Team1:', team1Score, 'Team2:', team2Score);
         
-        await supabaseClient
+        // Update the matchup with the calculated scores
+        const { error } = await supabaseClient
             .from('league_matchups')
-            .update({ winner_id: winnerId })
+            .update({
+                team1_score: team1Score,
+                team2_score: team2Score,
+                winner_id: team1Score > team2Score ? matchup.team1_id : matchup.team2_id
+            })
             .eq('id', matchup.id);
+        
+        if (error) {
+            console.error('Error updating matchup:', error);
+        }
+    } catch (error) {
+        console.error('Error in updateMatchupScores:', error);
     }
 }
         // Calculate stats
