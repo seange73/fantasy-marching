@@ -916,73 +916,219 @@
             displayMyLeagues();
         }
 
-        // Display user's leagues
-        async function displayMyLeagues() {
-            const container = document.getElementById('myLeaguesContent');
-            
-            if (myLeagues.length === 0) {
-                container.innerHTML = `
-                    <div class="no-leagues">
-                        <h3>You're not in any leagues yet</h3>
-                        <p>Join a league below to start competing!</p>
-                        <a href="#join-section" class="btn" onclick="document.getElementById('join-section').scrollIntoView({behavior: 'smooth'}); return false;">Join a League</a>
-                    </div>
-                `;
-                return;
-            }
-
-            // Get member counts for each league
-            const leagueIds = myLeagues.map(l => l.leagues.id);
-            const { data: memberCounts } = await supabaseClient
-                .from('league_members')
-                .select('league_id')
-                .in('league_id', leagueIds)
-                .eq('status', 'active');
-
-            const memberCountMap = {};
-            if (memberCounts) {
-                memberCounts.forEach(m => {
-                    memberCountMap[m.league_id] = (memberCountMap[m.league_id] || 0) + 1;
-                });
-            }
-
-            container.innerHTML = `
-                <div class="leagues-grid">
-                    ${myLeagues.map(item => {
-                        const league = item.leagues;
-                        const memberCount = memberCountMap[league.id] || 1;
-                        const isOwner = item.role === 'owner';
-                        
-                        return `
-                            <div class="league-card" onclick="goToLeague('${league.id}')">
-                                <div class="league-name">
-                                    ${league.name}
-                                    ${league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
-                                </div>
-                                <div class="league-info">
-                                    <div class="league-members">${memberCount} / ${league.max_members} members</div>
-                                    ${isOwner ? '<div class="league-rank" style="background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #000;">Owner</div>' : '<div class="league-rank">Rank #3</div>'}
-                                </div>
-                                <div class="league-stats">
-                                    <div class="stat">
-                                        <div class="stat-value">5-3</div>
-                                        <div class="stat-label">Record</div>
-                                    </div>
-                                    <div class="stat">
-                                        <div class="stat-value">847.2</div>
-                                        <div class="stat-label">Avg Score</div>
-                                    </div>
-                                    <div class="stat">
-                                        <div class="stat-value">3rd</div>
-                                        <div class="stat-label">Position</div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
+// Display user's leagues
+async function displayMyLeagues() {
+    const container = document.getElementById('myLeaguesContent');
+    
+    if (myLeagues.length === 0) {
+        container.innerHTML = `
+            <div class="no-leagues">
+                <h3>You're not in any leagues yet</h3>
+                <p>Join a league below to start competing!</p>
+                <a href="#join-section" class="btn" onclick="document.getElementById('join-section').scrollIntoView({behavior: 'smooth'}); return false;">Join a League</a>
+            </div>
+        `;
+        return;
+    }
+    
+    // Get member counts for each league
+    const leagueIds = myLeagues.map(l => l.leagues.id);
+    const { data: memberCounts } = await supabaseClient
+        .from('league_members')
+        .select('league_id')
+        .in('league_id', leagueIds)
+        .eq('status', 'active');
+    
+    const memberCountMap = {};
+    if (memberCounts) {
+        memberCounts.forEach(m => {
+            memberCountMap[m.league_id] = (memberCountMap[m.league_id] || 0) + 1;
+        });
+    }
+    
+    // Get real stats for each league
+    const leagueCardsPromises = myLeagues.map(async (item) => {
+        const league = item.leagues;
+        const memberCount = memberCountMap[league.id] || 1;
+        const isOwner = item.role === 'owner';
+        
+        // Check if draft has happened
+        const { data: draftData } = await supabaseClient
+            .from('league_drafts')
+            .select('status')
+            .eq('league_id', league.id)
+            .maybeSingle();
+        
+        let statsHtml = '';
+        let rankDisplay = isOwner ? '<div class="league-rank" style="background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #000;">Owner</div>' : '<div class="league-rank">Member</div>';
+        
+        if (!draftData || draftData.status !== 'completed') {
+            // Pre-draft - no stats yet
+            statsHtml = `
+                <div class="stat">
+                    <div class="stat-value">-</div>
+                    <div class="stat-label">Record</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">-</div>
+                    <div class="stat-label">Avg Score</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">-</div>
+                    <div class="stat-label">Position</div>
                 </div>
             `;
+        } else {
+            // Post-draft - get real stats
+            const { data: team } = await supabaseClient
+                .from('league_teams')
+                .select('id')
+                .eq('league_id', league.id)
+                .eq('user_id', currentUser.id)
+                .maybeSingle();
+            
+            if (team) {
+                // Get matchups
+                const { data: matchups } = await supabaseClient
+                    .from('league_matchups')
+                    .select('*')
+                    .eq('league_id', league.id)
+                    .or(`team1_id.eq.${team.id},team2_id.eq.${team.id}`);
+                
+                let wins = 0, losses = 0, totalScore = 0, gamesPlayed = 0;
+                
+                if (matchups) {
+                    matchups.forEach(matchup => {
+                        if (matchup.winner_id) {
+                            gamesPlayed++;
+                            if (matchup.winner_id === team.id) {
+                                wins++;
+                            } else {
+                                losses++;
+                            }
+                            
+                            if (matchup.team1_id === team.id) {
+                                totalScore += matchup.team1_score || 0;
+                            } else {
+                                totalScore += matchup.team2_score || 0;
+                            }
+                        }
+                    });
+                }
+                
+                // Get rank
+                const { data: allTeams } = await supabaseClient
+                    .from('league_teams')
+                    .select('id')
+                    .eq('league_id', league.id);
+                
+                const { data: allMatchups } = await supabaseClient
+                    .from('league_matchups')
+                    .select('*')
+                    .eq('league_id', league.id)
+                    .not('winner_id', 'is', null);
+                
+                const teamRecords = [];
+                if (allTeams) {
+                    for (const t of allTeams) {
+                        let teamWins = 0;
+                        let teamGames = 0;
+                        let teamTotal = 0;
+                        
+                        allMatchups?.forEach(m => {
+                            if (m.team1_id === t.id || m.team2_id === t.id) {
+                                teamGames++;
+                                if (m.winner_id === t.id) teamWins++;
+                                if (m.team1_id === t.id) {
+                                    teamTotal += m.team1_score || 0;
+                                } else {
+                                    teamTotal += m.team2_score || 0;
+                                }
+                            }
+                        });
+                        
+                        teamRecords.push({
+                            id: t.id,
+                            wins: teamWins,
+                            winPct: teamGames > 0 ? teamWins / teamGames : 0,
+                            avgScore: teamGames > 0 ? teamTotal / teamGames : 0
+                        });
+                    }
+                }
+                
+                teamRecords.sort((a, b) => {
+                    if (b.winPct !== a.winPct) return b.winPct - a.winPct;
+                    return b.avgScore - a.avgScore;
+                });
+                
+                const rank = teamRecords.findIndex(t => t.id === team.id) + 1;
+                const position = rank === 1 ? '1st' : rank === 2 ? '2nd' : rank === 3 ? '3rd' : `${rank}th`;
+                const avgScore = gamesPlayed > 0 ? (totalScore / gamesPlayed).toFixed(1) : '0.0';
+                
+                // Update rank display to show actual rank
+                if (!isOwner) {
+                    rankDisplay = `<div class="league-rank">Rank #${rank}</div>`;
+                }
+                
+                statsHtml = `
+                    <div class="stat">
+                        <div class="stat-value">${wins}-${losses}</div>
+                        <div class="stat-label">Record</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${avgScore}</div>
+                        <div class="stat-label">Avg Score</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${position}</div>
+                        <div class="stat-label">Position</div>
+                    </div>
+                `;
+            } else {
+                // No team found
+                statsHtml = `
+                    <div class="stat">
+                        <div class="stat-value">-</div>
+                        <div class="stat-label">Record</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">-</div>
+                        <div class="stat-label">Avg Score</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">-</div>
+                        <div class="stat-label">Position</div>
+                    </div>
+                `;
+            }
         }
+        
+        return `
+            <div class="league-card" onclick="goToLeague('${league.id}')">
+                <div class="league-name">
+                    ${league.name}
+                    ${league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
+                </div>
+                <div class="league-info">
+                    <div class="league-members">${memberCount} / ${league.max_members} members</div>
+                    ${rankDisplay}
+                </div>
+                <div class="league-stats">
+                    ${statsHtml}
+                </div>
+            </div>
+        `;
+    });
+    
+    // Wait for all league cards to be generated
+    const leagueCards = await Promise.all(leagueCardsPromises);
+    
+    container.innerHTML = `
+        <div class="leagues-grid">
+            ${leagueCards.join('')}
+        </div>
+    `;
+}
 
         // Load available leagues
         async function loadAvailableLeagues() {
