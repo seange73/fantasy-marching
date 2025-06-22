@@ -2437,31 +2437,29 @@ function switchTab(tabName) {
                         border: 1px solid rgba(255, 255, 255, 0.1);
                     ">
                         <!-- User's Team -->
-                        <div style="text-align: center;">
-                            <div style="
-                                font-size: 1.2rem;
-                                font-weight: 600;
-                                color: #4ecdc4;
-                                margin-bottom: 1rem;
-                            ">
-                                ${userTeam.username || 'Unknown'}'s Team
-                                ${matchup.winner_id === userTeam.id ? '👑' : ''}
-                            </div>
-                            <div style="
-                                font-size: 3rem;
-                                font-weight: 800;
-                                background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-                                -webkit-background-clip: text;
-                                -webkit-text-fill-color: transparent;
-                                background-clip: text;
-                            ">
-                                ${userScore !== null && userScore !== undefined ? parseFloat(userScore).toFixed(2) : '--'}
-                            </div>
-                            ${hasScores ? `
-                                <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="viewTeamLineup('${userTeam.id}')">
-                                    View Lineup
-                                </button>
-                            ` : ''}
+<div style="text-align: center;">
+    <div style="
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #4ecdc4;
+        margin-bottom: 1rem;
+    ">
+        ${userTeam.username || 'Unknown'}'s Team
+        ${matchup.winner_id === userTeam.id ? '👑' : ''}
+    </div>
+    <div style="
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    ">
+        ${userScore !== null && userScore !== undefined ? parseFloat(userScore).toFixed(2) : '--'}
+    </div>
+    <!-- Remove the button here - no button for current user -->
+</div>
+
                         </div>
                         
                         <!-- VS -->
@@ -2483,28 +2481,28 @@ function switchTab(tabName) {
                         
                         <!-- Opponent's Team -->
                         <div style="text-align: center;">
-                            <div style="
-                                font-size: 1.2rem;
-                                font-weight: 600;
-                                color: #e74c3c;
-                                margin-bottom: 1rem;
-                            ">
-                                ${opponentTeam.username || 'Unknown'}'s Team
-                                ${matchup.winner_id === opponentTeam.id ? '👑' : ''}
-                            </div>
-                            <div style="
-                                font-size: 3rem;
-                                font-weight: 800;
-                                color: #e74c3c;
-                            ">
-                                ${opponentScore !== null ? opponentScore.toFixed(2) : '--'}
-                            </div>
-                            ${hasScores ? `
-                                <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="viewTeamLineup('${opponentTeam.id}')">
-                                    View Lineup
-                                </button>
-                            ` : ''}
-                        </div>
+    <div style="
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #e74c3c;
+        margin-bottom: 1rem;
+    ">
+        ${opponentTeam.username || 'Unknown'}'s Team
+        ${matchup.winner_id === opponentTeam.id ? '👑' : ''}
+    </div>
+    <div style="
+        font-size: 3rem;
+        font-weight: 800;
+        color: #e74c3c;
+    ">
+        ${opponentScore !== null && opponentScore !== undefined ? parseFloat(opponentScore).toFixed(2) : '--'}
+    </div>
+    ${hasScores ? `
+        <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="viewTeamLineup('${opponentTeam.id}')">
+            View Lineup
+        </button>
+    ` : ''}
+</div>
                     </div>
                     
                     <!-- Week's competitions -->
