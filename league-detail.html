@@ -2332,6 +2332,8 @@ function switchTab(tabName) {
                     .single();
                 
                 console.log('Matchup query result:', { data: matchup, error });
+				console.log('Full matchup data:', matchup);
+				console.log('Team1 score:', matchup?.team1_score, 'Team2 score:', matchup?.team2_score);
                 
                 if (error || !matchup) {
                     // Let's also try to see ALL matchups for debugging
@@ -2399,7 +2401,8 @@ function switchTab(tabName) {
                 const opponentTeam = isTeam1 ? matchup.team2 : matchup.team1;
                 const userScore = isTeam1 ? matchup.team1_score : matchup.team2_score;
                 const opponentScore = isTeam1 ? matchup.team2_score : matchup.team1_score;
-                
+                console.log('Display scores - User:', userScore, 'Opponent:', opponentScore);
+				console.log('Score check - User !== null?', userScore !== null, 'Opponent !== null?', opponentScore !== null);
                 // Check if there's been any scoring this week
                 const hasScores = userScore !== null || opponentScore !== null;
                 const isTiedScore = hasScores && Math.abs(userScore - opponentScore) < 0.001;
