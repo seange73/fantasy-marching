@@ -2147,6 +2147,8 @@ async function updateMatchupScores() {
             return;
         }
         
+        console.log('Found matchup to update:', matchup.id);
+        
         // Calculate scores for both teams
         const team1Score = await calculateTeamWeeklyScore(matchup.team1_id);
         const team2Score = await calculateTeamWeeklyScore(matchup.team2_id);
@@ -2154,17 +2156,32 @@ async function updateMatchupScores() {
         console.log('Calculated scores - Team1:', team1Score, 'Team2:', team2Score);
         
         // Update the matchup with the calculated scores
+        const updateData = {
+            team1_score: team1Score,
+            team2_score: team2Score,
+            winner_id: team1Score > team2Score ? matchup.team1_id : matchup.team2_id
+        };
+        
+        console.log('Updating matchup with:', updateData);
+        
         const { error } = await supabaseClient
             .from('league_matchups')
-            .update({
-                team1_score: team1Score,
-                team2_score: team2Score,
-                winner_id: team1Score > team2Score ? matchup.team1_id : matchup.team2_id
-            })
+            .update(updateData)
             .eq('id', matchup.id);
         
         if (error) {
             console.error('Error updating matchup:', error);
+        } else {
+            console.log('Update successful');
+            
+            // Verify the update
+            const { data: updatedMatchup } = await supabaseClient
+                .from('league_matchups')
+                .select('team1_score, team2_score')
+                .eq('id', matchup.id)
+                .single();
+                
+            console.log('Verified updated scores:', updatedMatchup);
         }
     } catch (error) {
         console.error('Error in updateMatchupScores:', error);
