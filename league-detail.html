@@ -2481,28 +2481,28 @@ function switchTab(tabName) {
                         
                         <!-- Opponent's Team -->
                         <div style="text-align: center;">
-    <div style="
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #e74c3c;
-        margin-bottom: 1rem;
-    ">
-        ${opponentTeam.username || 'Unknown'}'s Team
-        ${matchup.winner_id === opponentTeam.id ? '👑' : ''}
-    </div>
-    <div style="
-        font-size: 3rem;
-        font-weight: 800;
-        color: #e74c3c;
-    ">
-        ${opponentScore !== null && opponentScore !== undefined ? parseFloat(opponentScore).toFixed(2) : '--'}
-    </div>
-    ${hasScores ? `
-        <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="viewTeamLineup('${opponentTeam.id}')">
-            View Lineup
-        </button>
-    ` : ''}
-</div>
+                            <div style="
+                                font-size: 1.2rem;
+                                font-weight: 600;
+                                color: #e74c3c;
+                                margin-bottom: 1rem;
+                            ">
+                                ${opponentTeam.username || 'Unknown'}'s Team
+                                ${matchup.winner_id === opponentTeam.id ? '👑' : ''}
+                            </div>
+                            <div style="
+                                font-size: 3rem;
+                                font-weight: 800;
+                                color: #e74c3c;
+                            ">
+                                ${opponentScore !== null ? opponentScore.toFixed(2) : '--'}
+                            </div>
+                            ${hasScores ? `
+                                <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="viewTeamLineup('${opponentTeam.id}')">
+                                    View Lineup
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                     
                     <!-- Week's competitions -->
