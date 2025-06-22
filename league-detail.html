@@ -2128,7 +2128,7 @@ async function calculateTeamWeeklyScore(teamId) {
 
 // Calculate and update matchup scores for the current week
 async function updateMatchupScores() {
-    if (!currentTeam) return null;
+    if (!currentTeam) return;
     
     try {
         const currentWeek = await getCurrentWeekFromDB();
@@ -2144,7 +2144,7 @@ async function updateMatchupScores() {
         
         if (!matchup) {
             console.log('No matchup found for week', currentWeek);
-            return null;
+            return;
         }
         
         // Calculate scores for both teams
@@ -2153,27 +2153,21 @@ async function updateMatchupScores() {
         
         console.log('Calculated scores - Team1:', team1Score, 'Team2:', team2Score);
         
-        // Update the matchup with the calculated scores and return the updated data
-        const { data: updatedMatchup, error } = await supabaseClient
+        // Update the matchup with the calculated scores
+        const { error } = await supabaseClient
             .from('league_matchups')
             .update({
                 team1_score: team1Score,
                 team2_score: team2Score,
                 winner_id: team1Score > team2Score ? matchup.team1_id : matchup.team2_id
             })
-            .eq('id', matchup.id)
-            .select()
-            .single();
+            .eq('id', matchup.id);
         
         if (error) {
             console.error('Error updating matchup:', error);
-            return null;
         }
-        
-        return updatedMatchup;
     } catch (error) {
         console.error('Error in updateMatchupScores:', error);
-        return null;
     }
 }
         // Calculate stats
