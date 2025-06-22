@@ -2164,10 +2164,11 @@ async function updateMatchupScores() {
         
         console.log('Updating matchup with:', updateData);
         
-        const { error } = await supabaseClient
-            .from('league_matchups')
-            .update(updateData)
-            .eq('id', matchup.id);
+const { error } = await supabaseClient.rpc('update_matchup_scores', {
+    p_matchup_id: matchup.id,
+    p_team1_score: team1Score,
+    p_team2_score: team2Score
+});
         
         if (error) {
             console.error('Error updating matchup:', error);
