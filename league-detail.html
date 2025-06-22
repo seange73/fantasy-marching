@@ -1986,43 +1986,45 @@ async function loadLineupFromDraft() {
             displayLineup(mockLineup);
         }
 
-        // Display lineup
-        function displayLineup(lineup) {
-            const grid = document.getElementById('lineupGrid');
-            const captions = [
-                { key: 'brass', title: 'Brass', class: 'brass' },
-                { key: 'percussion', title: 'Percussion', class: 'percussion' },
-                { key: 'guard', title: 'Color Guard', class: 'guard' },
-                { key: 'ge', title: 'General Effect', class: 'ge' },
-                { key: 'visual', title: 'Visual', class: 'visual' },
-                { key: 'music', title: 'Music', class: 'music' }
-            ];
-            
-            grid.innerHTML = captions.map(caption => {
-                const corps = lineup[caption.key] || [];
-                const total = corps.reduce((sum, c) => sum + c.score, 0);
-                
-                return `
-                    <div class="caption-section ${caption.class}">
-                        <div class="caption-header">
-                            <div class="caption-title">${caption.title}</div>
-                            <div class="caption-total">${total.toFixed(2)}</div>
+// Display lineup
+function displayLineup(lineup) {
+    const grid = document.getElementById('lineupGrid');
+    const captions = [
+        { key: 'brass', title: 'Brass', class: 'brass' },
+        { key: 'percussion', title: 'Percussion', class: 'percussion' },
+        { key: 'guard', title: 'Color Guard', class: 'guard' },
+        { key: 'ge', title: 'General Effect', class: 'ge' },
+        { key: 'visual', title: 'Visual', class: 'visual' },
+        { key: 'music', title: 'Music', class: 'music' }
+    ];
+    
+    grid.innerHTML = captions.map(caption => {
+        const corps = lineup[caption.key] || [];
+        const total = corps.reduce((sum, c) => sum + c.score, 0);
+        
+        return `
+            <div class="caption-section ${caption.class}">
+                <div class="caption-header">
+                    <div class="caption-title">${caption.title}</div>
+                    <div class="caption-total">${total > 0 ? total.toFixed(2) : '0.00'}</div>
+                </div>
+                ${corps.map(c => `
+                    <div class="corps-card" data-score="${c.score}">
+                        <div class="corps-name">${c.name}</div>
+                        <div class="corps-stats">
+                            <span>${c.hasScore ? `Score: ${c.score.toFixed(3)}` : 'No score yet'}</span>
+                            ${c.hasScore && c.improvement !== 0 ? `
+                                <span class="improvement ${c.improvement >= 0 ? 'positive' : 'negative'}">
+                                    ${c.improvement >= 0 ? '+' : ''}${c.improvement.toFixed(3)}
+                                </span>
+                            ` : ''}
                         </div>
-                        ${corps.map(c => `
-                            <div class="corps-card" data-score="${c.score}">
-                                <div class="corps-name">${c.name}</div>
-                                <div class="corps-stats">
-                                    <span>Score: ${c.score.toFixed(2)}</span>
-                                    <span class="improvement ${c.improvement >= 0 ? 'positive' : 'negative'}">
-                                        ${c.improvement >= 0 ? '+' : ''}${c.improvement.toFixed(2)}
-                                    </span>
-                                </div>
-                            </div>
-                        `).join('')}
                     </div>
-                `;
-            }).join('');
-        }
+                `).join('')}
+            </div>
+        `;
+    }).join('');
+}
 
         // Calculate stats
         async function calculateStats() {
