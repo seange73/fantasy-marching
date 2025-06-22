@@ -1013,17 +1013,31 @@
                 <!-- Draft time info will be inserted here -->
             </div>
             
-            <!-- Draft actions for owner -->
-            <div id="ownerActions" style="display: none;">
-                <div class="action-buttons">
-                    <button class="btn btn-success" onclick="startDraft()">
-                        Start Draft Now
-                    </button>
-                    <button class="btn btn-secondary" onclick="scheduleDraft()">
-                        Schedule Draft
-                    </button>
-                </div>
-            </div>
+<!-- Draft actions for owner -->
+<div id="ownerActions" style="display: none;">
+    <div class="action-buttons">
+        <button class="btn btn-success" onclick="startDraft()">
+            Start Draft Now
+        </button>
+        <button class="btn btn-secondary" onclick="scheduleDraft()">
+            Schedule Draft
+        </button>
+    </div>
+    <div style="
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: center;
+    ">
+        <button class="btn" style="
+            background: rgba(255, 59, 48, 0.2);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            color: #ff6b6b;
+        " onclick="deleteLeague()">
+            Delete League
+        </button>
+    </div>
+</div>
             
             <!-- Member list -->
             <div class="league-members-list">
