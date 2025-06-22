@@ -1998,7 +1998,39 @@ function displayLineup(lineup) {
         { key: 'music', title: 'Music', class: 'music' }
     ];
     
-    grid.innerHTML = captions.map(caption => {
+    // Calculate grand total
+    let grandTotal = 0;
+    captions.forEach(caption => {
+        const corps = lineup[caption.key] || [];
+        const captionTotal = corps.reduce((sum, c) => sum + c.score, 0);
+        grandTotal += captionTotal;
+    });
+    
+    // Add total score display at the top
+    const totalDisplay = `
+        <div style="
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        ">
+            <div style="
+                font-size: 1.2rem;
+                font-weight: 600;
+                color: rgba(255, 255, 255, 0.9);
+                margin-bottom: 0.5rem;
+            ">Total Score - Week ${document.getElementById('currentWeek')?.textContent || '1'}</div>
+            <div style="
+                font-size: 3rem;
+                font-weight: 800;
+                color: white;
+            ">${grandTotal.toFixed(3)}</div>
+        </div>
+    `;
+    
+    grid.innerHTML = totalDisplay + captions.map(caption => {
         const corps = lineup[caption.key] || [];
         const total = corps.reduce((sum, c) => sum + c.score, 0);
         
@@ -2026,6 +2058,103 @@ function displayLineup(lineup) {
     }).join('');
 }
 
+// Calculate and update matchup scores for the current week
+async function updateMatchupScores() {
+    if (!currentTeam) return;
+    
+    const currentWeek = await getCurrentWeekFromDB();
+    
+    // Get the matchup for this week
+    const { data: matchup } = await supabaseClient
+        .from('league_matchups')
+        .select('*')
+        .eq('league_id', leagueId)
+        .eq('week_number', currentWeek)
+        .or(`team1_id.eq.${currentTeam.id},team2_id.eq.${currentTeam.id}`)
+        .single();
+    
+    if (!matchup) return;
+    
+    // Calculate scores for both teams
+    const teams = [
+        { id: matchup.team1_id, field: 'team1_score' },
+        { id: matchup.team2_id, field: 'team2_score' }
+    ];
+    
+    for (const team of teams) {
+        // Get team roster
+        const { data: roster } = await supabaseClient
+            .from('league_team_roster')
+            .select('*')
+            .eq('team_id', team.id);
+        
+        if (!roster) continue;
+        
+        // Get week's events and scores (similar to loadLineupFromDraft)
+        const seasonStart = new Date('2025-06-28');
+        const weekStart = new Date(seasonStart);
+        weekStart.setDate(weekStart.getDate() + (currentWeek - 1) * 7);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        
+        const { data: weekEvents } = await supabaseClient
+            .from('events')
+            .select('id')
+            .gte('date', weekStart.toISOString().split('T')[0])
+            .lte('date', weekEnd.toISOString().split('T')[0])
+            .eq('is_completed', true);
+        
+        const eventIds = weekEvents?.map(e => e.id) || [];
+        let totalScore = 0;
+        
+        if (eventIds.length > 0) {
+            const { data: scores } = await supabaseClient
+                .from('event_scores')
+                .select('*')
+                .in('event_id', eventIds);
+            
+            // Calculate total score for this team
+            roster.forEach(rosterItem => {
+                const corpsScores = scores?.filter(s => s.corps_name === rosterItem.corps_name) || [];
+                
+                corpsScores.forEach(score => {
+                    switch(rosterItem.caption) {
+                        case 'brass': totalScore += score.brass_score || 0; break;
+                        case 'percussion': totalScore += score.percussion_score || 0; break;
+                        case 'guard': totalScore += score.color_guard_score || 0; break;
+                        case 'ge': totalScore += score.general_effect_score || 0; break;
+                        case 'visual': totalScore += score.visual_score || 0; break;
+                        case 'music': totalScore += score.music_score || 0; break;
+                    }
+                });
+            });
+            
+            // If multiple events, average the score
+            if (corpsScores.length > roster.length) {
+                totalScore = totalScore / (corpsScores.length / roster.length);
+            }
+        }
+        
+        // Update the matchup with the calculated score
+        const updateData = {};
+        updateData[team.field] = totalScore;
+        
+        await supabaseClient
+            .from('league_matchups')
+            .update(updateData)
+            .eq('id', matchup.id);
+    }
+    
+    // Determine winner if both scores are set
+    if (matchup.team1_score !== null && matchup.team2_score !== null) {
+        const winnerId = matchup.team1_score > matchup.team2_score ? matchup.team1_id : matchup.team2_id;
+        
+        await supabaseClient
+            .from('league_matchups')
+            .update({ winner_id: winnerId })
+            .eq('id', matchup.id);
+    }
+}
         // Calculate stats
         async function calculateStats() {
             // Get matchups for this team
@@ -2116,37 +2245,37 @@ function displayLineup(lineup) {
                 : '0.0';
         }
 
-        // Tab switching
-        function switchTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected tab content
-            document.getElementById(tabName + '-content').classList.remove('hidden');
-            
-            // Add active class to clicked tab
-            event.target.classList.add('active');
-            
-            // Load content for the selected tab
-            switch(tabName) {
-                case 'matchup':
-                    loadMatchup();
-                    break;
-                case 'standings':
-                    loadStandings();
-                    break;
-                case 'recruitment':
-                    loadFreeAgents();
-                    break;
-            }
-        }
+// Tab switching
+function switchTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    document.getElementById(tabName + '-content').classList.remove('hidden');
+    
+    // Add active class to clicked tab
+    event.target.classList.add('active');
+    
+    // Load content for the selected tab
+    switch(tabName) {
+        case 'matchup':
+            updateMatchupScores().then(() => loadMatchup());
+            break;
+        case 'standings':
+            loadStandings();
+            break;
+        case 'recruitment':
+            loadFreeAgents();
+            break;
+    }
+}
 
         // Load matchup
         async function loadMatchup() {
