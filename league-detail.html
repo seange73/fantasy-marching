@@ -1849,46 +1849,113 @@ async function loadLeagueMembers() {
             }
         }
 
-        // Load lineup from draft picks
-        async function loadLineupFromDraft() {
-            if (!currentTeam) return;
-            
-            // Get roster from draft picks
-            const { data: roster, error } = await supabaseClient
-                .from('league_team_roster')
-                .select('*')
-                .eq('team_id', currentTeam.id)
-                .order('caption')
-                .order('position');
-            
-            if (error || !roster || roster.length === 0) {
-                // Use mock data if no draft data
-                loadMockLineup();
-                return;
+// Load lineup from draft picks
+async function loadLineupFromDraft() {
+    if (!currentTeam) return;
+    
+    // Get roster from draft picks
+    const { data: roster, error } = await supabaseClient
+        .from('league_team_roster')
+        .select('*')
+        .eq('team_id', currentTeam.id)
+        .order('caption')
+        .order('position');
+    
+    if (error || !roster || roster.length === 0) {
+        // Use mock data if no draft data
+        loadMockLineup();
+        return;
+    }
+    
+    // Get current week
+    const currentWeek = await getCurrentWeekFromDB();
+    
+    // Calculate week date range
+    const seasonStart = new Date('2025-06-28');
+    const weekStart = new Date(seasonStart);
+    weekStart.setDate(weekStart.getDate() + (currentWeek - 1) * 7);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    
+    // Get events for this week
+    const { data: weekEvents } = await supabaseClient
+        .from('events')
+        .select('id')
+        .gte('date', weekStart.toISOString().split('T')[0])
+        .lte('date', weekEnd.toISOString().split('T')[0])
+        .eq('is_completed', true);
+    
+    const eventIds = weekEvents?.map(e => e.id) || [];
+    
+    // Get all scores for this week
+    let weekScores = {};
+    if (eventIds.length > 0) {
+        const { data: scores } = await supabaseClient
+            .from('event_scores')
+            .select('*')
+            .in('event_id', eventIds);
+        
+        // Process scores by corps and caption
+        scores?.forEach(score => {
+            if (!weekScores[score.corps_name]) {
+                weekScores[score.corps_name] = {
+                    brass: [],
+                    percussion: [],
+                    guard: [],
+                    ge: [],
+                    visual: [],
+                    music: []
+                };
             }
             
-            // Group by caption
-            const lineup = {
-                brass: [],
-                percussion: [],
-                guard: [],
-                ge: [],
-                visual: [],
-                music: []
-            };
+            if (score.brass_score !== null) weekScores[score.corps_name].brass.push(score.brass_score);
+            if (score.percussion_score !== null) weekScores[score.corps_name].percussion.push(score.percussion_score);
+            if (score.color_guard_score !== null) weekScores[score.corps_name].guard.push(score.color_guard_score);
+            if (score.general_effect_score !== null) weekScores[score.corps_name].ge.push(score.general_effect_score);
+            if (score.visual_score !== null) weekScores[score.corps_name].visual.push(score.visual_score);
+            if (score.music_score !== null) weekScores[score.corps_name].music.push(score.music_score);
+        });
+    }
+    
+    // Calculate averages and build lineup
+    const lineup = {
+        brass: [],
+        percussion: [],
+        guard: [],
+        ge: [],
+        visual: [],
+        music: []
+    };
+    
+    roster.forEach(item => {
+        const corpsScores = weekScores[item.corps_name];
+        let avgScore = 0;
+        let improvement = 0;
+        
+        if (corpsScores && corpsScores[item.caption].length > 0) {
+            // Calculate average for this week
+            avgScore = corpsScores[item.caption].reduce((sum, score) => sum + score, 0) / corpsScores[item.caption].length;
             
-            roster.forEach(item => {
-                // Mock scores for now - would come from real event data
-                lineup[item.caption].push({
-                    name: item.corps_name,
-                    position: item.position,
-                    score: 18 + Math.random() * 2,
-                    improvement: (Math.random() - 0.5) * 1.5
-                });
-            });
-            
-            displayLineup(lineup);
+            // For improvement, we'd need to compare with previous week
+            // For now, let's just show 0 or calculate based on variance within the week
+            if (corpsScores[item.caption].length > 1) {
+                const lastScore = corpsScores[item.caption][corpsScores[item.caption].length - 1];
+                const firstScore = corpsScores[item.caption][0];
+                improvement = lastScore - firstScore;
+            }
         }
+        
+        lineup[item.caption].push({
+            name: item.corps_name,
+            position: item.position,
+            score: avgScore,
+            improvement: improvement,
+            hasScore: avgScore > 0
+        });
+    });
+    
+    displayLineup(lineup);
+}
 
         // Load mock lineup (fallback)
         function loadMockLineup() {
@@ -1919,43 +1986,45 @@ async function loadLeagueMembers() {
             displayLineup(mockLineup);
         }
 
-        // Display lineup
-        function displayLineup(lineup) {
-            const grid = document.getElementById('lineupGrid');
-            const captions = [
-                { key: 'brass', title: 'Brass', class: 'brass' },
-                { key: 'percussion', title: 'Percussion', class: 'percussion' },
-                { key: 'guard', title: 'Color Guard', class: 'guard' },
-                { key: 'ge', title: 'General Effect', class: 'ge' },
-                { key: 'visual', title: 'Visual', class: 'visual' },
-                { key: 'music', title: 'Music', class: 'music' }
-            ];
-            
-            grid.innerHTML = captions.map(caption => {
-                const corps = lineup[caption.key] || [];
-                const total = corps.reduce((sum, c) => sum + c.score, 0);
-                
-                return `
-                    <div class="caption-section ${caption.class}">
-                        <div class="caption-header">
-                            <div class="caption-title">${caption.title}</div>
-                            <div class="caption-total">${total.toFixed(2)}</div>
+// Display lineup
+function displayLineup(lineup) {
+    const grid = document.getElementById('lineupGrid');
+    const captions = [
+        { key: 'brass', title: 'Brass', class: 'brass' },
+        { key: 'percussion', title: 'Percussion', class: 'percussion' },
+        { key: 'guard', title: 'Color Guard', class: 'guard' },
+        { key: 'ge', title: 'General Effect', class: 'ge' },
+        { key: 'visual', title: 'Visual', class: 'visual' },
+        { key: 'music', title: 'Music', class: 'music' }
+    ];
+    
+    grid.innerHTML = captions.map(caption => {
+        const corps = lineup[caption.key] || [];
+        const total = corps.reduce((sum, c) => sum + c.score, 0);
+        
+        return `
+            <div class="caption-section ${caption.class}">
+                <div class="caption-header">
+                    <div class="caption-title">${caption.title}</div>
+                    <div class="caption-total">${total > 0 ? total.toFixed(2) : '0.00'}</div>
+                </div>
+                ${corps.map(c => `
+                    <div class="corps-card" data-score="${c.score}">
+                        <div class="corps-name">${c.name}</div>
+                        <div class="corps-stats">
+                            <span>${c.hasScore ? `Score: ${c.score.toFixed(3)}` : 'No score yet'}</span>
+                            ${c.hasScore && c.improvement !== 0 ? `
+                                <span class="improvement ${c.improvement >= 0 ? 'positive' : 'negative'}">
+                                    ${c.improvement >= 0 ? '+' : ''}${c.improvement.toFixed(3)}
+                                </span>
+                            ` : ''}
                         </div>
-                        ${corps.map(c => `
-                            <div class="corps-card" data-score="${c.score}">
-                                <div class="corps-name">${c.name}</div>
-                                <div class="corps-stats">
-                                    <span>Score: ${c.score.toFixed(2)}</span>
-                                    <span class="improvement ${c.improvement >= 0 ? 'positive' : 'negative'}">
-                                        ${c.improvement >= 0 ? '+' : ''}${c.improvement.toFixed(2)}
-                                    </span>
-                                </div>
-                            </div>
-                        `).join('')}
                     </div>
-                `;
-            }).join('');
-        }
+                `).join('')}
+            </div>
+        `;
+    }).join('');
+}
 
         // Calculate stats
         async function calculateStats() {
