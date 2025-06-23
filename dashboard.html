@@ -751,7 +751,7 @@ async function loadReminders() {
                     text: `${username} wants to join ${leagueMap[request.league_id]}`,
                     action: 'Review Request',
                     link: '#',
-                    onclick: `handleJoinRequest('${request.id}', '${request.league_id}', '${request.user_id}', '${username}', '${leagueMap[request.league_id]}')`
+                    onclick: `handleJoinRequest('${request.id}', '${request.league_id}', '${request.user_id}', ${JSON.stringify(username)}, ${JSON.stringify(leagueMap[request.league_id])})`
                 });
             });
         }
