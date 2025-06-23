@@ -71,115 +71,6 @@
             color: white;
             background: rgba(255, 255, 255, 0.05                            );
         }
-        
-        // Load transaction history
-        async function loadTransactionHistory() {
-            const container = document.getElementById('transactionHistory');
-            
-            try {
-                // Get all transactions for this league
-                const { data: transactions } = await supabaseClient
-                    .from('free_agent_transactions')
-                    .select(`
-                        *,
-                        league_teams (
-                            id,
-                            user_id
-                        )
-                    `)
-                    .eq('league_id', leagueId)
-                    .order('transaction_date', { ascending: false });
-                
-                if (!transactions || transactions.length === 0) {
-                    container.innerHTML = `
-                        <p style="color: #666; text-align: center;">
-                            No transactions yet this season
-                        </p>
-                    `;
-                    return;
-                }
-                
-                // Get usernames
-                const userIds = [...new Set(transactions.map(t => t.league_teams?.user_id).filter(Boolean))];
-                const { data: profiles } = await supabaseClient
-                    .from('profiles')
-                    .select('id, username')
-                    .in('id', userIds);
-                
-                const usernameMap = {};
-                profiles?.forEach(p => {
-                    usernameMap[p.id] = p.username;
-                });
-                
-                // Group by week
-                const transactionsByWeek = {};
-                transactions.forEach(t => {
-                    if (!transactionsByWeek[t.week_number]) {
-                        transactionsByWeek[t.week_number] = [];
-                    }
-                    t.username = usernameMap[t.league_teams?.user_id] || 'Unknown';
-                    transactionsByWeek[t.week_number].push(t);
-                });
-                
-                container.innerHTML = Object.entries(transactionsByWeek)
-                    .sort((a, b) => b[0] - a[0]) // Sort by week descending
-                    .map(([week, weekTransactions]) => `
-                        <div style="margin-bottom: 2rem;">
-                            <h4 style="
-                                font-size: 1rem;
-                                font-weight: 600;
-                                color: #a0a0a0;
-                                margin-bottom: 0.75rem;
-                            ">Week ${week}</h4>
-                            <div style="display: grid; gap: 0.5rem;">
-                                ${weekTransactions.map(t => `
-                                    <div style="
-                                        padding: 1rem;
-                                        background: rgba(255, 255, 255, 0.03);
-                                        border-radius: 8px;
-                                        border: 1px solid rgba(255, 255, 255, 0.1);
-                                        display: flex;
-                                        justify-content: space-between;
-                                        align-items: center;
-                                    ">
-                                        <div>
-                                            <span style="font-weight: 600; color: #e0e0e0;">
-                                                ${t.username}
-                                            </span>
-                                            <div style="
-                                                font-size: 0.85rem;
-                                                color: #a0a0a0;
-                                                margin-top: 0.25rem;
-                                            ">
-                                                ${new Date(t.transaction_date).toLocaleDateString()}
-                                            </div>
-                                        </div>
-                                        <div style="
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 1rem;
-                                            font-size: 0.9rem;
-                                        ">
-                                            <span style="color: #ff6b6b;">
-                                                - ${t.dropped_corps} (${formatCaption(t.dropped_caption)})
-                                            </span>
-                                            <span style="color: #666;">→</span>
-                                            <span style="color: #4ecdc4;">
-                                                + ${t.added_corps} (${formatCaption(t.added_caption)})
-                                            </span>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `).join('');
-                
-            } catch (error) {
-                console.error('Error loading transaction history:', error);
-                container.innerHTML = '<p style="color: #ff6b6b;">Error loading transactions</p>';
-            }
-        }
-
         .nav-tab.active {
             color: #4ecdc4;
         }
@@ -1345,7 +1236,113 @@ if (window.DEBUG_OVERRIDE_DATE) {
             // Load league data
             await loadLeagueData();
         }
-
+// Load transaction history
+async function loadTransactionHistory() {
+    const container = document.getElementById('transactionHistory');
+    
+    try {
+        // Get all transactions for this league
+        const { data: transactions } = await supabaseClient
+            .from('free_agent_transactions')
+            .select(`
+                *,
+                league_teams (
+                    id,
+                    user_id
+                )
+            `)
+            .eq('league_id', leagueId)
+            .order('transaction_date', { ascending: false });
+        
+        if (!transactions || transactions.length === 0) {
+            container.innerHTML = `
+                <p style="color: #666; text-align: center;">
+                    No transactions yet this season
+                </p>
+            `;
+            return;
+        }
+        
+        // Get usernames
+        const userIds = [...new Set(transactions.map(t => t.league_teams?.user_id).filter(Boolean))];
+        const { data: profiles } = await supabaseClient
+            .from('profiles')
+            .select('id, username')
+            .in('id', userIds);
+        
+        const usernameMap = {};
+        profiles?.forEach(p => {
+            usernameMap[p.id] = p.username;
+        });
+        
+        // Group by week
+        const transactionsByWeek = {};
+        transactions.forEach(t => {
+            if (!transactionsByWeek[t.week_number]) {
+                transactionsByWeek[t.week_number] = [];
+            }
+            t.username = usernameMap[t.league_teams?.user_id] || 'Unknown';
+            transactionsByWeek[t.week_number].push(t);
+        });
+        
+        container.innerHTML = Object.entries(transactionsByWeek)
+            .sort((a, b) => b[0] - a[0]) // Sort by week descending
+            .map(([week, weekTransactions]) => `
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="
+                        font-size: 1rem;
+                        font-weight: 600;
+                        color: #a0a0a0;
+                        margin-bottom: 0.75rem;
+                    ">Week ${week}</h4>
+                    <div style="display: grid; gap: 0.5rem;">
+                        ${weekTransactions.map(t => `
+                            <div style="
+                                padding: 1rem;
+                                background: rgba(255, 255, 255, 0.03);
+                                border-radius: 8px;
+                                border: 1px solid rgba(255, 255, 255, 0.1);
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                            ">
+                                <div>
+                                    <span style="font-weight: 600; color: #e0e0e0;">
+                                        ${t.username}
+                                    </span>
+                                    <div style="
+                                        font-size: 0.85rem;
+                                        color: #a0a0a0;
+                                        margin-top: 0.25rem;
+                                    ">
+                                        ${new Date(t.transaction_date).toLocaleDateString()}
+                                    </div>
+                                </div>
+                                <div style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 1rem;
+                                    font-size: 0.9rem;
+                                ">
+                                    <span style="color: #ff6b6b;">
+                                        - ${t.dropped_corps} (${formatCaption(t.dropped_caption)})
+                                    </span>
+                                    <span style="color: #666;">→</span>
+                                    <span style="color: #4ecdc4;">
+                                        + ${t.added_corps} (${formatCaption(t.added_caption)})
+                                    </span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        
+    } catch (error) {
+        console.error('Error loading transaction history:', error);
+        container.innerHTML = '<p style="color: #ff6b6b;">Error loading transactions</p>';
+    }
+}
         // Load user profile
         async function loadUserProfile() {
             const { data: profile } = await supabaseClient
