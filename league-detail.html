@@ -1274,7 +1274,7 @@ if (window.DEBUG_OVERRIDE_DATE) {
             });
         }
 // Update function for custom time
-async function updateCustomPickTimer() {
+async function updatePickTimer() {
     const hours = parseInt(document.getElementById('timerHours').value) || 0;
     const minutes = parseInt(document.getElementById('timerMinutes').value) || 0;
     const seconds = parseInt(document.getElementById('timerSeconds').value) || 0;
@@ -1469,7 +1469,7 @@ if (isOwner) {
                         text-align: center;
                     ">
                     <span style="color: #666;">s</span>
-                    <button onclick="updateCustomPickTimer()" style="
+                    <button onclick="updatePickTimer()" style="
                         padding: 0.5rem 1rem;
                         background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
                         color: white;
