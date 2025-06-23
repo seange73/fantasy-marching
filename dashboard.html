@@ -1231,7 +1231,7 @@ async function loadUserLeagues() {
                 console.log('User might already be a member');
             }
             
-            showNotification('Request Approved', `${currentRequestUsername} has been added to your league!`, 'success');
+            showNotification('Request Approved', 'The user has been added to your league!', 'success');
             closeJoinRequestModal();
             loadReminders(); // Refresh reminders
             
@@ -1252,7 +1252,7 @@ async function loadUserLeagues() {
             
             if (error) throw error;
             
-			showNotification('Request Approved', `${username} has been added to your league!`, 'success');
+			showNotification('Request Denied', `Request Rejected`, 'success');
 
             closeJoinRequestModal();
             loadReminders(); // Refresh reminders
