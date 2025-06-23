@@ -1909,6 +1909,7 @@ async function loadLineupFromDraft() {
 
 // Display lineup
 function displayLineup(lineup) {
+	const currentWeek = await getCurrentWeekFromDB();
     const grid = document.getElementById('lineupGrid');
     const captions = [
         { key: 'brass', title: 'Brass', class: 'brass' },
@@ -1942,7 +1943,7 @@ function displayLineup(lineup) {
                 font-weight: 600;
                 color: rgba(255, 255, 255, 0.9);
                 margin-bottom: 0.5rem;
-            ">Total Score - Week ${document.getElementById('currentWeek')?.textContent || '1'}</div>
+                ">Total Score - Week ${currentWeek}</div>
             <div style="
                 font-size: 3rem;
                 font-weight: 800;
