@@ -1874,8 +1874,8 @@ async function loadLineupFromDraft() {
             hasScore: avgScore > 0
         });
     });
-    
-    displayLineup(lineup);
+    const currentWeek = await getCurrentWeekFromDB();
+    displayLineup(lineup, currentWeek);
 }
 
         // Load mock lineup (fallback)
@@ -1908,7 +1908,7 @@ async function loadLineupFromDraft() {
         }
 
 // Display lineup
-function displayLineup(lineup) {
+function displayLineup(lineup, currentWeek=1) {
 	const currentWeek = await getCurrentWeekFromDB();
     const grid = document.getElementById('lineupGrid');
     const captions = [
@@ -1943,7 +1943,7 @@ function displayLineup(lineup) {
                 font-weight: 600;
                 color: rgba(255, 255, 255, 0.9);
                 margin-bottom: 0.5rem;
-                ">Total Score - Week ${currentWeek}</div>
+            			    ">Total Score - Week ${currentWeek}</div>
             <div style="
                 font-size: 3rem;
                 font-weight: 800;
