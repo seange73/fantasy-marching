@@ -1152,7 +1152,8 @@ async function loadUserLeagues() {
     let currentRequestId = null;
     let currentRequestLeagueId = null;
     let currentRequestUserId = null;
-
+	let currentRequestUsername = null; // Add this line
+	
     function handleJoinRequest(requestId, leagueId, userId, username, leagueName) {
         currentRequestId = requestId;
         currentRequestLeagueId = leagueId;
@@ -1185,6 +1186,7 @@ async function loadUserLeagues() {
         currentRequestId = null;
         currentRequestLeagueId = null;
         currentRequestUserId = null;
+		currentRequestUsername = null; 
     }
 
     async function approveJoinRequest() {
@@ -1214,7 +1216,7 @@ async function loadUserLeagues() {
                 console.log('User might already be a member');
             }
             
-            showNotification('Request Approved', `${username} has been added to your league!`, 'success');
+            showNotification('Request Approved', `${currentRequestUsername} has been added to your league!`, 'success');
             closeJoinRequestModal();
             loadReminders(); // Refresh reminders
             
