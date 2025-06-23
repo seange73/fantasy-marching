@@ -1176,56 +1176,110 @@ async function loadAllPicks() {
                 }
             });
         }
-
-        // Update draft UI based on state
-        function updateDraftUI() {
-            if (!draftState) return;
-            
-            isMyTurn = draftState.current_user_id === currentUser.id;
-            
-            // Update status display
-            const statusDiv = document.getElementById('draftStatus');
-            const currentPick = `Round ${draftState.current_round}, Pick ${draftState.current_pick}`;
-            
-            if (draftState.status === 'completed') {
-                statusDiv.className = 'draft-status';
-                statusDiv.innerHTML = `
-                    <div class="current-pick">Draft Complete!</div>
-                    <div>All picks have been made</div>
-                `;
-                hideTimer();
-            } else if (isMyTurn) {
-                statusDiv.className = 'draft-status your-turn';
-                statusDiv.innerHTML = `
-                    <div class="current-pick">${currentPick}</div>
-                    <div>It's your turn to pick!</div>
-                `;
-                startTimer();
-            } else {
-                const currentUser = draftMembers.find(m => m.userId === draftState.current_user_id);
-                statusDiv.className = 'draft-status';
-                statusDiv.innerHTML = `
-                    <div class="current-pick">${currentPick}</div>
-                    <div>Waiting for ${currentUser?.username || 'Unknown'}</div>
-                `;
-                hideTimer();
-            }
-            
-            // Update draft order display
-            displayDraftOrder();
-        }
-
-        // Timer functions (TEMPORARILY DISABLED)
-        function startTimer() {
-            const timerDiv = document.getElementById('pickTimer');
-            timerDiv.style.display = 'none';
+// Start timer for current player
+function startTimer(deadline) {
+    const timerDiv = document.getElementById('pickTimer');
+    timerDiv.style.display = 'block';
+    
+    if (timerInterval) clearInterval(timerInterval);
+    
+    timerInterval = setInterval(() => {
+        const now = new Date();
+        const deadlineTime = new Date(deadline);
+        const remaining = Math.max(0, Math.floor((deadlineTime - now) / 1000));
+        
+        if (remaining <= 0) {
+            clearInterval(timerInterval);
+            timerDiv.textContent = '0:00';
+            // Auto-pick will be handled by server
             return;
         }
-
-        function hideTimer() {
-            document.getElementById('pickTimer').style.display = 'none';
-            clearInterval(timerInterval);
+        
+        const minutes = Math.floor(remaining / 60);
+        const seconds = remaining % 60;
+        timerDiv.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Change color based on time remaining
+        if (remaining <= 10) {
+            timerDiv.style.color = '#ff6b6b';
+        } else if (remaining <= 30) {
+            timerDiv.style.color = '#ffd700';
+        } else {
+            timerDiv.style.color = '#4ecdc4';
         }
+    }, 1000);
+}
+function showOtherPlayerTimer(deadline) {
+    const timerDiv = document.getElementById('pickTimer');
+    timerDiv.style.display = 'block';
+    timerDiv.style.color = '#666';  // Gray for other players
+    
+    if (timerInterval) clearInterval(timerInterval);
+    
+    timerInterval = setInterval(() => {
+        const now = new Date();
+        const deadlineTime = new Date(deadline);
+        const remaining = Math.max(0, Math.floor((deadlineTime - now) / 1000));
+        
+        if (remaining <= 0) {
+            clearInterval(timerInterval);
+            timerDiv.textContent = '0:00';
+            return;
+        }
+        
+        const minutes = Math.floor(remaining / 60);
+        const seconds = remaining % 60;
+        timerDiv.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+function hideTimer() {
+    document.getElementById('pickTimer').style.display = 'none';
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+        // Update draft UI based on state
+function updateDraftUI() {
+    if (!draftState) return;
+    
+	console.log('Draft state in updateDraftUI:', draftState);
+    console.log('Pick deadline:', draftState.pick_deadline);
+    isMyTurn = draftState.current_user_id === currentUser.id;
+    
+    // Update status display
+    const statusDiv = document.getElementById('draftStatus');
+    const currentPick = `Round ${draftState.current_round}, Pick ${draftState.current_pick}`;
+    
+    if (draftState.status === 'completed') {
+        statusDiv.className = 'draft-status';
+        statusDiv.innerHTML = `
+            <div class="current-pick">Draft Complete!</div>
+            <div>All picks have been made</div>
+        `;
+        hideTimer();
+    } else if (isMyTurn) {
+        statusDiv.className = 'draft-status your-turn';
+        statusDiv.innerHTML = `
+            <div class="current-pick">${currentPick}</div>
+            <div>It's your turn to pick!</div>
+        `;
+        startTimer(draftState.pick_deadline);  // Pass the deadline
+    } else {
+        const currentUser = draftMembers.find(m => m.userId === draftState.current_user_id);
+        statusDiv.className = 'draft-status';
+        statusDiv.innerHTML = `
+            <div class="current-pick">${currentPick}</div>
+            <div>Waiting for ${currentUser?.username || 'Unknown'}</div>
+        `;
+        showOtherPlayerTimer(draftState.pick_deadline);  // Show timer for other players too
+    }
+    
+    // Update draft order display
+    displayDraftOrder();
+}
+
+
 
         // Load available corps for current caption
         async function loadAvailableCorps() {
@@ -1370,92 +1424,96 @@ async function loadAllPicks() {
                 window.isDrafting = false;
             }
         }
-
+async function handleNewPickDisplay(pick) {
+    // Get username
+    const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('username')
+        .eq('id', pick.user_id)
+        .single();
+    
+    const username = profile?.username || 'Unknown';
+    
+    // Update recent picks
+    const container = document.getElementById('recentPicksList');
+    const newPickHtml = `
+        <div class="pick-item" style="animation: fadeInScale 0.4s ease forwards;">
+            <div class="pick-round">Round ${pick.round}, Pick ${pick.pick_number}</div>
+            <div class="pick-details">
+                <span class="pick-corps">${pick.corps_name}</span>
+                <span class="pick-caption">${formatCaption(pick.caption)}</span>
+            </div>
+            <div class="pick-user">by ${username}</div>
+        </div>
+    `;
+    
+    // Update display
+    if (container.innerHTML.includes('No picks yet')) {
+        container.innerHTML = newPickHtml;
+    } else {
+        container.innerHTML = newPickHtml + container.innerHTML;
+        
+        // Keep only last 10
+        const picks = container.querySelectorAll('.pick-item');
+        if (picks.length > 10) {
+            picks[picks.length - 1].remove();
+        }
+    }
+}
         // Set up real-time subscriptions (ENHANCED)
-        // In setupRealtimeSubscriptions() in draft.html
+// In setupRealtimeSubscriptions()
 function setupRealtimeSubscriptions() {
     // Subscribe to draft state changes
-    supabaseClient
-        .channel('draft-state')
+    const draftChannel = supabaseClient
+        .channel(`draft-${leagueId}`)
         .on('postgres_changes', 
             { event: '*', schema: 'public', table: 'league_drafts', filter: `league_id=eq.${leagueId}` },
             async (payload) => {
                 console.log('Draft state changed:', payload);
-                // Store the old state to compare
-                const oldUserId = draftState?.current_user_id;
                 
-                await loadDraftState();
+                // Update draft state
+                draftState = payload.new;
                 
-                // If it's now our turn and wasn't before, refresh everything
-                if (draftState?.current_user_id === currentUser.id && oldUserId !== currentUser.id) {
+                // Update UI immediately
+                updateDraftUI();
+                
+                // If turn changed, reload everything
+                if (payload.old?.current_user_id !== payload.new?.current_user_id) {
+                    await loadDraftOrder();
                     await loadAvailableCorps();
                 }
             }
         )
         .subscribe();
     
-    // Subscribe to new picks with better handling
-    supabaseClient
-        .channel('draft-picks')
+    // Subscribe to new picks
+    const picksChannel = supabaseClient
+        .channel(`picks-${leagueId}`)
         .on('postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'draft_picks', filter: `league_id=eq.${leagueId}` },
             async (payload) => {
-                console.log('New pick:', payload);
+                console.log('New pick received:', payload);
                 
-                // If the pick wasn't made by us, we need to update our view
-                if (payload.new.user_id !== currentUser.id) {
-                    // Add the pick to our local state immediately
-                    const pick = payload.new;
-                    draftedCorps.get(pick.caption).add(pick.corps_name);
-                    
-                    // If it's the opponent's pick, add to their team for display
-                    if (pick.user_id !== currentUser.id) {
-                        // Update recent picks display
-                        const { data: profile } = await supabaseClient
-                            .from('profiles')
-                            .select('username')
-                            .eq('id', pick.user_id)
-                            .single();
-                        
-                        pick.profiles = { username: profile?.username || 'Unknown' };
-                        
-                        // Add to recent picks
-                        const container = document.getElementById('recentPicksList');
-                        const existingPicks = container.innerHTML;
-                        const newPickHtml = `
-                            <div class="pick-item" style="animation: fadeInScale 0.4s ease forwards;">
-                                <div class="pick-round">Round ${pick.round}, Pick ${pick.pick_number}</div>
-                                <div class="pick-details">
-                                    <span class="pick-corps">${pick.corps_name}</span>
-                                    <span class="pick-caption">${formatCaption(pick.caption)}</span>
-                                </div>
-                                <div class="pick-user">by ${pick.profiles?.username || 'Unknown'}</div>
-                            </div>
-                        `;
-                        
-                        // If there's a "no picks yet" message, replace it
-                        if (existingPicks.includes('No picks yet')) {
-                            container.innerHTML = newPickHtml;
-                        } else {
-                            // Add new pick at the top
-                            container.innerHTML = newPickHtml + existingPicks;
-                            
-                            // Keep only last 10 picks
-                            const picks = container.querySelectorAll('.pick-item');
-                            if (picks.length > 10) {
-                                picks[picks.length - 1].remove();
-                            }
-                        }
-                    }
-                    
-                    // Reload everything to ensure consistency
-                    await loadAllPicks();
-                    await loadDraftState();
-                    await loadAvailableCorps();
+                // Update local state immediately
+                const pick = payload.new;
+                draftedCorps.get(pick.caption).add(pick.corps_name);
+                
+                // Update my team if it's my pick
+                if (pick.user_id === currentUser.id) {
+                    myTeam.get(pick.caption).push(pick.corps_name);
+                    updateMyTeamDisplay();
                 }
+                
+                // Update recent picks display
+                await handleNewPickDisplay(pick);
+                
+                // Reload available corps for current caption
+                await loadAvailableCorps();
             }
         )
         .subscribe();
+    
+    console.log('Subscriptions set up');
 }
 
         // Handle new pick from subscription (NO LONGER USED - we reload everything instead)
