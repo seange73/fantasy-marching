@@ -1183,6 +1183,23 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script>
+// TESTING ONLY - Remove in production
+window.DEBUG_OVERRIDE_DATE = null; // Set to a Sunday date like '2024-12-22' to test
+// window.DEBUG_OVERRIDE_DATE = '2024-12-22'; // Uncomment this line to test
+
+// Override Date constructor for testing
+if (window.DEBUG_OVERRIDE_DATE) {
+    const OriginalDate = Date;
+    window.Date = function(...args) {
+        if (args.length === 0 && window.DEBUG_OVERRIDE_DATE) {
+            return new OriginalDate(window.DEBUG_OVERRIDE_DATE);
+        }
+        return new OriginalDate(...args);
+    };
+    // Copy static methods
+    Object.setPrototypeOf(window.Date, OriginalDate);
+    Object.setPrototypeOf(window.Date.prototype, OriginalDate.prototype);
+}
         let currentUser = null;
         let isAdmin = false;
         let currentLeague = null;
