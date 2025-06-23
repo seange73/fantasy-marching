@@ -1874,7 +1874,6 @@ async function loadLineupFromDraft() {
             hasScore: avgScore > 0
         });
     });
-    const currentWeek = await getCurrentWeekFromDB();
     displayLineup(lineup, currentWeek);
 }
 
