@@ -1908,7 +1908,6 @@ async function loadLineupFromDraft() {
 
 // Display lineup
 function displayLineup(lineup, currentWeek=1) {
-	const currentWeek = await getCurrentWeekFromDB();
     const grid = document.getElementById('lineupGrid');
     const captions = [
         { key: 'brass', title: 'Brass', class: 'brass' },
