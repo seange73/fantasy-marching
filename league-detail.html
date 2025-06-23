@@ -2975,7 +2975,7 @@ async function loadFreeAgents() {
             .select('*')
             .eq('team_id', currentTeam.id)
             .eq('week_number', currentWeek)
-            .single();
+            .maybeSingle();
         
         if (existingTransaction) {
             container.innerHTML = `
