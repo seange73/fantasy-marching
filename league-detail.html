@@ -1259,7 +1259,28 @@ if (window.DEBUG_OVERRIDE_DATE) {
                 }
             }
         }
-
+// This function updates the database
+async function updatePickTimer(seconds) {
+    try {
+        const { error } = await supabaseClient
+            .from('leagues')
+            .update({ pick_timer_seconds: parseInt(seconds) })
+            .eq('id', leagueId);
+        
+        if (error) throw error;
+        
+        // Show success indicator
+        const status = document.getElementById('timerUpdateStatus');
+        status.style.display = 'inline';
+        setTimeout(() => {
+            status.style.display = 'none';
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Error updating pick timer:', error);
+        showNotification('Error', 'Failed to update pick timer', 'error');
+    }
+}
         // Toggle user menu
         function toggleUserMenu() {
             const dropdown = document.getElementById('profileDropdown');
@@ -1274,7 +1295,7 @@ if (window.DEBUG_OVERRIDE_DATE) {
             });
         }
 // Update function for custom time
-async function updatePickTimer() {
+async function updateCustomPickTimer() {
     const hours = parseInt(document.getElementById('timerHours').value) || 0;
     const minutes = parseInt(document.getElementById('timerMinutes').value) || 0;
     const seconds = parseInt(document.getElementById('timerSeconds').value) || 0;
@@ -1469,7 +1490,7 @@ if (isOwner) {
                         text-align: center;
                     ">
                     <span style="color: #666;">s</span>
-                    <button onclick="updatePickTimer()" style="
+                    <button onclick="updateCustomPickTimer()" style="
                         padding: 0.5rem 1rem;
                         background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
                         color: white;
