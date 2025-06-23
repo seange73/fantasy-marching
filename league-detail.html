@@ -1663,10 +1663,19 @@ async function loadLeagueMembers() {
         // Get current week from database
         async function getCurrentWeekFromDB() {
             try {
+        // For testing with date override
+        if (window.DEBUG_OVERRIDE_DATE) {
+            const { data, error } = await supabaseClient.rpc('get_current_week_number_test', {
+                test_date: window.DEBUG_OVERRIDE_DATE
+            });
+            console.log('getCurrentWeekFromDB: Test mode, week:', data);
+            if (!error) return data || 1;
+        }
                 const { data, error } = await supabaseClient.rpc('get_current_week_number');
                 if (error) throw error;
                 return data || 1;
-            } catch (error) {
+            } 
+			catch (error) {
                 console.error('Error getting current week:', error);
                 // Fallback calculation
                 const seasonStart = new Date('2025-06-28');
