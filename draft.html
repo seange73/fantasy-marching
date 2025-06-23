@@ -1372,50 +1372,91 @@ async function loadAllPicks() {
         }
 
         // Set up real-time subscriptions (ENHANCED)
-        function setupRealtimeSubscriptions() {
-            // Subscribe to draft state changes
-            supabaseClient
-                .channel('draft-state')
-                .on('postgres_changes', 
-                    { event: '*', schema: 'public', table: 'league_drafts', filter: `league_id=eq.${leagueId}` },
-                    async (payload) => {
-                        console.log('Draft state changed:', payload);
-                        await loadDraftState();
-                        await loadAvailableCorps();
-                    }
-                )
-                .subscribe();
-            
-            // Subscribe to new picks
-            supabaseClient
-                .channel('draft-picks')
-                .on('postgres_changes',
-                    { event: 'INSERT', schema: 'public', table: 'draft_picks', filter: `league_id=eq.${leagueId}` },
-                    async (payload) => {
-                        console.log('New pick:', payload);
-                        await loadAllPicks();
-                        await loadDraftState();
-                        await loadAvailableCorps();
-                    }
-                )
-                .subscribe();
-            
-            // Subscribe to notifications for this user
-            supabaseClient
-                .channel('notifications')
-                .on('postgres_changes',
-                    { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${currentUser.id}` },
-                    (payload) => {
-                        console.log('New notification:', payload);
-                        if (payload.new.type === 'draft_turn') {
-                            // Show browser notification if permitted
-                            showNotification('Your turn to draft!', 'Make your pick in Fantasy Marching');
-                            loadDraftState();
+        // In setupRealtimeSubscriptions() in draft.html
+function setupRealtimeSubscriptions() {
+    // Subscribe to draft state changes
+    supabaseClient
+        .channel('draft-state')
+        .on('postgres_changes', 
+            { event: '*', schema: 'public', table: 'league_drafts', filter: `league_id=eq.${leagueId}` },
+            async (payload) => {
+                console.log('Draft state changed:', payload);
+                // Store the old state to compare
+                const oldUserId = draftState?.current_user_id;
+                
+                await loadDraftState();
+                
+                // If it's now our turn and wasn't before, refresh everything
+                if (draftState?.current_user_id === currentUser.id && oldUserId !== currentUser.id) {
+                    await loadAvailableCorps();
+                }
+            }
+        )
+        .subscribe();
+    
+    // Subscribe to new picks with better handling
+    supabaseClient
+        .channel('draft-picks')
+        .on('postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'draft_picks', filter: `league_id=eq.${leagueId}` },
+            async (payload) => {
+                console.log('New pick:', payload);
+                
+                // If the pick wasn't made by us, we need to update our view
+                if (payload.new.user_id !== currentUser.id) {
+                    // Add the pick to our local state immediately
+                    const pick = payload.new;
+                    draftedCorps.get(pick.caption).add(pick.corps_name);
+                    
+                    // If it's the opponent's pick, add to their team for display
+                    if (pick.user_id !== currentUser.id) {
+                        // Update recent picks display
+                        const { data: profile } = await supabaseClient
+                            .from('profiles')
+                            .select('username')
+                            .eq('id', pick.user_id)
+                            .single();
+                        
+                        pick.profiles = { username: profile?.username || 'Unknown' };
+                        
+                        // Add to recent picks
+                        const container = document.getElementById('recentPicksList');
+                        const existingPicks = container.innerHTML;
+                        const newPickHtml = `
+                            <div class="pick-item" style="animation: fadeInScale 0.4s ease forwards;">
+                                <div class="pick-round">Round ${pick.round}, Pick ${pick.pick_number}</div>
+                                <div class="pick-details">
+                                    <span class="pick-corps">${pick.corps_name}</span>
+                                    <span class="pick-caption">${formatCaption(pick.caption)}</span>
+                                </div>
+                                <div class="pick-user">by ${pick.profiles?.username || 'Unknown'}</div>
+                            </div>
+                        `;
+                        
+                        // If there's a "no picks yet" message, replace it
+                        if (existingPicks.includes('No picks yet')) {
+                            container.innerHTML = newPickHtml;
+                        } else {
+                            // Add new pick at the top
+                            container.innerHTML = newPickHtml + existingPicks;
+                            
+                            // Keep only last 10 picks
+                            const picks = container.querySelectorAll('.pick-item');
+                            if (picks.length > 10) {
+                                picks[picks.length - 1].remove();
+                            }
                         }
                     }
-                )
-                .subscribe();
-        }
+                    
+                    // Reload everything to ensure consistency
+                    await loadAllPicks();
+                    await loadDraftState();
+                    await loadAvailableCorps();
+                }
+            }
+        )
+        .subscribe();
+}
 
         // Handle new pick from subscription (NO LONGER USED - we reload everything instead)
         async function handleNewPick(pick) {
