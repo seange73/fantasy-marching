@@ -1170,13 +1170,13 @@ async function loadUserLeagues() {
                 console.log('User might already be a member');
             }
             
-            alert('Request approved! The user has been added to your league.');
+            showNotification('Request Approved', `${username} has been added to your league!`, 'success');
             closeJoinRequestModal();
             loadReminders(); // Refresh reminders
             
         } catch (error) {
             console.error('Error approving request:', error);
-            alert('Error approving request: ' + error.message);
+            showNotification('Error', 'Failed to process request: ' + error.message, 'error');
         }
     }
 
@@ -1191,13 +1191,14 @@ async function loadUserLeagues() {
             
             if (error) throw error;
             
-            alert('Request rejected.');
+			showNotification('Request Approved', `${username} has been added to your league!`, 'success');
+
             closeJoinRequestModal();
             loadReminders(); // Refresh reminders
             
         } catch (error) {
             console.error('Error rejecting request:', error);
-            alert('Error rejecting request: ' + error.message);
+            showNotification('Error', 'Failed to process request: ' + error.message, 'error');
         }
     }
     </script>
