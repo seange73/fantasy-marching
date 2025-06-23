@@ -1184,7 +1184,7 @@
     <script src="js/supabase.js"></script>
     <script>
 // TESTING ONLY - Remove in production
-window.DEBUG_OVERRIDE_DATE = null; // Set to a Sunday date like '2024-12-22' to test
+window.DEBUG_OVERRIDE_DATE = 2025-6-22; // Set to a Sunday date like '2024-12-22' to test
 // window.DEBUG_OVERRIDE_DATE = '2024-12-22'; // Uncomment this line to test
 
 // Override Date constructor for testing
@@ -2879,8 +2879,14 @@ async function loadFreeAgents() {
     const container = document.getElementById('freeAgentsContainer');
     
     try {
+        console.log('LoadFreeAgents: Starting...');
+        
         // Check if it's Sunday (free agent window)
+        const today = new Date();
+        console.log('LoadFreeAgents: Current date:', today, 'Day:', today.getDay());
+        
         const { data: isOpen } = await supabaseClient.rpc('is_free_agent_window_open');
+        console.log('LoadFreeAgents: Window open?', isOpen);
         
         if (!isOpen) {
             const today = new Date();
@@ -2958,7 +2964,7 @@ async function loadFreeAgents() {
             `;
             return;
         }
-        
+         console.log('LoadFreeAgents: Current team:', currentTeam);	
         // Get current week
         const currentWeek = await getCurrentWeekFromDB();
         
@@ -3010,7 +3016,7 @@ async function loadFreeAgents() {
         const { data: freeAgents, error } = await supabaseClient.rpc('get_free_agents', {
             p_league_id: leagueId
         });
-        
+        console.log('LoadFreeAgents: Free agents result:', { data: freeAgents, error });
         if (error) throw error;
         
         // Get user's current roster
@@ -3164,7 +3170,7 @@ async function loadFreeAgents() {
         await loadTransactionHistory();
         
     } catch (error) {
-        console.error('Error loading free agents:', error);
+        console.error('LoadFreeAgents: Caught error:', error);
         container.innerHTML = '<p style="text-align: center; color: #ff6b6b;">Error loading free agents</p>';
     }
 }
