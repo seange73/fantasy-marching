@@ -708,7 +708,15 @@ document.head.appendChild(style);
                 return [];
             }
         }
-
+function handleJoinRequestFromElement(element) {
+    const requestId = element.getAttribute('data-request-id');
+    const leagueId = element.getAttribute('data-league-id');
+    const userId = element.getAttribute('data-user-id');
+    const username = element.getAttribute('data-username');
+    const leagueName = element.getAttribute('data-league-name');
+    
+    handleJoinRequest(requestId, leagueId, userId, username, leagueName);
+}
 // Load reminders based on real data
 async function loadReminders() {
     const reminders = [];
@@ -748,14 +756,16 @@ async function loadReminders() {
             joinRequests.forEach(request => {
                 const username = usernameMap[request.user_id] || 'Unknown';
 				console.log('Request user_id:', request.user_id, 'Username:', username);
-                reminders.push({
-                    icon: '👥',
-                    title: 'League Join Request',
-                    text: `${username} wants to join ${leagueMap[request.league_id]}`,
-                    action: 'Review Request',
-                    link: '#',
-                    onclick: `handleJoinRequest('${request.id}', '${request.league_id}', '${request.user_id}', '${username || 'Unknown'}', '${(leagueMap[request.league_id] || 'Unknown').replace(/'/g, "\\'")}')`
-                });
+reminders.push({
+    icon: '👥',
+    title: 'League Join Request',
+    text: `${username} wants to join ${leagueMap[request.league_id]}`,
+    action: 'Review Request',
+    link: '#',
+    // Change from onclick to data attributes
+    dataAttrs: `data-request-id="${request.id}" data-league-id="${request.league_id}" data-user-id="${request.user_id}" data-username="${username}" data-league-name="${leagueMap[request.league_id]}"`,
+    onclick: `handleJoinRequestFromElement(this)`
+});
             });
         }
     }
@@ -809,15 +819,17 @@ async function loadReminders() {
         });
     }
     
-    const grid = document.getElementById('remindersGrid');
-    grid.innerHTML = reminders.map(reminder => `
-        <div class="reminder-card" ${reminder.onclick ? `onclick="${reminder.onclick}"` : `onclick="window.location.href='${reminder.link}'"`}>
-            <div class="reminder-icon">${reminder.icon}</div>
-            <h3 class="reminder-title">${reminder.title}</h3>
-            <p class="reminder-text">${reminder.text}</p>
-            <div class="reminder-action">${reminder.action} →</div>
-        </div>
-    `).join('');
+const grid = document.getElementById('remindersGrid');
+grid.innerHTML = reminders.map(reminder => `
+    <div class="reminder-card" 
+         ${reminder.dataAttrs || ''} 
+         ${reminder.onclick ? `onclick="${reminder.onclick}"` : `onclick="window.location.href='${reminder.link}'"`}>
+        <div class="reminder-icon">${reminder.icon}</div>
+        <h3 class="reminder-title">${reminder.title}</h3>
+        <p class="reminder-text">${reminder.text}</p>
+        <div class="reminder-action">${reminder.action} →</div>
+    </div>
+`).join('');
 }
 
         // Load predictions leaderboard
