@@ -611,7 +611,52 @@
                 }
             }
         }
+// Simple notification function for dashboard
+function showNotification(title, message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? 'rgba(78, 205, 196, 0.1)' : type === 'error' ? 'rgba(255, 107, 107, 0.1)' : 'rgba(69, 183, 209, 0.1)'};
+        border: 1px solid ${type === 'success' ? 'rgba(78, 205, 196, 0.3)' : type === 'error' ? 'rgba(255, 107, 107, 0.3)' : 'rgba(69, 183, 209, 0.3)'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        min-width: 300px;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    notification.innerHTML = `
+        <div style="font-weight: 700; margin-bottom: 0.25rem;">${title}</div>
+        <div style="font-size: 0.9rem; color: #e0e0e0;">${message}</div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
 
+// Add the animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
         // Toggle user menu
         function toggleUserMenu() {
             const dropdown = document.getElementById('profileDropdown');
