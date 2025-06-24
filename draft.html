@@ -862,7 +862,8 @@
         let myTeam = new Map(); // Map of caption -> array of corps
         let isMyTurn = false;
         let timerInterval = null;
-
+		let captionRankings = {};
+		
         // Initialize drafted corps map
         ['brass', 'percussion', 'guard', 'ge', 'visual', 'music'].forEach(caption => {
             draftedCorps.set(caption, new Set());
@@ -908,6 +909,8 @@
             
             // Load available corps for current caption
             await loadAvailableCorps();
+			//load caption rankings
+			await loadCaptionRankings();
         }
 
         // Load user profile
@@ -1229,15 +1232,37 @@ function startTimer(deadline) {
     
     if (timerInterval) clearInterval(timerInterval);
     
-    timerInterval = setInterval(() => {
+    let hasTriggeredAutopick = false; // Prevent multiple triggers
+    
+    timerInterval = setInterval(async () => {
         const now = new Date();
         const deadlineTime = new Date(deadline);
         const remaining = Math.max(0, Math.floor((deadlineTime - now) / 1000));
         
-        if (remaining <= 0) {
+        if (remaining <= 0 && !hasTriggeredAutopick) {
+            hasTriggeredAutopick = true;
             clearInterval(timerInterval);
-            timerDiv.textContent = '0:00';
-            // Auto-pick will be handled by server
+            timerDiv.textContent = 'Auto-picking...';
+            timerDiv.style.color = '#ffd700';
+            
+            // Only the player whose turn it is should trigger autopick
+            if (isMyTurn) {
+                console.log('Timer expired, triggering autopick...');
+                try {
+                    const { error } = await supabaseClient.rpc('trigger_autopick_for_current_user', {
+                        p_league_id: leagueId
+                    });
+                    
+                    if (error) {
+                        console.error('Autopick error:', error);
+                        // If autopick fails, show error
+                        timerDiv.textContent = 'Autopick failed!';
+                        timerDiv.style.color = '#ff6b6b';
+                    }
+                } catch (err) {
+                    console.error('Failed to trigger autopick:', err);
+                }
+            }
             return;
         }
         
@@ -1258,7 +1283,7 @@ function startTimer(deadline) {
 function showOtherPlayerTimer(deadline) {
     const timerDiv = document.getElementById('pickTimer');
     timerDiv.style.display = 'block';
-    timerDiv.style.color = '#666';  // Gray for other players
+    timerDiv.style.color = '#666';
     
     if (timerInterval) clearInterval(timerInterval);
     
@@ -1269,7 +1294,8 @@ function showOtherPlayerTimer(deadline) {
         
         if (remaining <= 0) {
             clearInterval(timerInterval);
-            timerDiv.textContent = '0:00';
+            timerDiv.textContent = 'Waiting for auto-pick...';
+            timerDiv.style.color = '#ffd700';
             return;
         }
         
@@ -1286,6 +1312,26 @@ function hideTimer() {
     }
 }
 
+async function loadCaptionRankings() {
+    const { data: rankings, error } = await supabaseClient
+        .from('caption_rankings_2024')
+        .select('*');
+    
+    if (error) {
+        console.error('Error loading rankings:', error);
+        return;
+    }
+    
+    // Organize rankings by caption and corps
+    rankings.forEach(ranking => {
+        if (!captionRankings[ranking.caption]) {
+            captionRankings[ranking.caption] = {};
+        }
+        captionRankings[ranking.caption][ranking.corps_name] = ranking.rank;
+    });
+    
+    console.log('Loaded caption rankings:', captionRankings);
+}
 
 
         // Load available corps for current caption
@@ -1299,27 +1345,27 @@ function hideTimer() {
                 return;
             }
             
-            container.innerHTML = ALL_CORPS.map(corps => {
-                const isDraftedForThisCaption = draftedInCaption.has(corps);
-                
-                return `
-                    <div class="corps-card ${isDraftedForThisCaption ? 'drafted' : ''}" 
-                         data-corps="${corps}"
-                         ${!isDraftedForThisCaption && isMyTurn ? `onclick="selectCorps('${corps}')"` : ''}>
-                        <div class="corps-name">${corps}</div>
-                        <div class="corps-stats">2024 Rank: ${Math.floor(Math.random() * 20) + 1}</div>
-                        ${!isDraftedForThisCaption && isMyTurn ? 
-                            `<button class="draft-button" onclick="event.stopPropagation(); draftCorps('${corps}')">
-                                Draft for ${formatCaption(currentCaption)}
-                            </button>` : 
-                            isDraftedForThisCaption ? 
-                                `<button class="draft-button" disabled>Already Drafted</button>` :
-                                `<button class="draft-button" disabled>Not Your Turn</button>`
-                        }
-                    </div>
-                `;
-            }).join('');
-        }
+container.innerHTML = ALL_CORPS.map(corps => {
+    const isDraftedForThisCaption = draftedInCaption.has(corps);
+    const rank = captionRankings[currentCaption]?.[corps] || 'N/A';
+    
+    return `
+        <div class="corps-card ${isDraftedForThisCaption ? 'drafted' : ''}" 
+             data-corps="${corps}"
+             ${!isDraftedForThisCaption && isMyTurn ? `onclick="selectCorps('${corps}')"` : ''}>
+            <div class="corps-name">${corps}</div>
+            <div class="corps-stats">2024 Rank: ${rank}</div>
+            ${!isDraftedForThisCaption && isMyTurn ? 
+                `<button class="draft-button" onclick="event.stopPropagation(); draftCorps('${corps}')">
+                    Draft for ${formatCaption(currentCaption)}
+                </button>` : 
+                isDraftedForThisCaption ? 
+                    `<button class="draft-button" disabled>Already Drafted</button>` :
+                    `<button class="draft-button" disabled>Not Your Turn</button>`
+            }
+        </div>
+    `;
+}).join('');
 
         // Switch caption tab
         function switchCaption(caption) {
