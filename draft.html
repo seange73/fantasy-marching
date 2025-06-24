@@ -1345,27 +1345,29 @@ async function loadCaptionRankings() {
                 return;
             }
             
-            container.innerHTML = ALL_CORPS.map(corps => {
-                const isDraftedForThisCaption = draftedInCaption.has(corps);
-                
-                return `
-                    <div class="corps-card ${isDraftedForThisCaption ? 'drafted' : ''}" 
-                         data-corps="${corps}"
-                         ${!isDraftedForThisCaption && isMyTurn ? `onclick="selectCorps('${corps}')"` : ''}>
-                        <div class="corps-name">${corps}</div>
-                        <div class="corps-stats">2024 Rank: ${Math.floor(Math.random() * 20) + 1}</div>
-                        ${!isDraftedForThisCaption && isMyTurn ? 
-                            `<button class="draft-button" onclick="event.stopPropagation(); draftCorps('${corps}')">
-                                Draft for ${formatCaption(currentCaption)}
-                            </button>` : 
-                            isDraftedForThisCaption ? 
-                                `<button class="draft-button" disabled>Already Drafted</button>` :
-                                `<button class="draft-button" disabled>Not Your Turn</button>`
-                        }
-                    </div>
-                `;
-            }).join('');
+container.innerHTML = ALL_CORPS.map(corps => {
+    const isDraftedForThisCaption = draftedInCaption.has(corps);
+    const rank = captionRankings[currentCaption]?.[corps] || 'N/A';
+    
+    return `
+        <div class="corps-card ${isDraftedForThisCaption ? 'drafted' : ''}" 
+             data-corps="${corps}"
+             ${!isDraftedForThisCaption && isMyTurn ? `onclick="selectCorps('${corps}')"` : ''}>
+            <div class="corps-name">${corps}</div>
+            <div class="corps-stats">2024 Rank: ${rank}</div>
+            ${!isDraftedForThisCaption && isMyTurn ? 
+                `<button class="draft-button" onclick="event.stopPropagation(); draftCorps('${corps}')">
+                    Draft for ${formatCaption(currentCaption)}
+                </button>` : 
+                isDraftedForThisCaption ? 
+                    `<button class="draft-button" disabled>Already Drafted</button>` :
+                    `<button class="draft-button" disabled>Not Your Turn</button>`
+            }
+        </div>
+    `;
+}).join('');
         }
+
 
         // Switch caption tab
         function switchCaption(caption) {
