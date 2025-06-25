@@ -1258,7 +1258,7 @@ function startTimer(deadline) {
                    timerDiv.textContent = 'Autopick failed!';
                    timerDiv.style.color = '#ff6b6b';
                }
-	if (!error) {
+			   if (!error) {
     console.log('Autopick triggered successfully');
     // Force reload the draft state and picks after a short delay
     setTimeout(async () => {
@@ -1293,13 +1293,14 @@ function showOtherPlayerTimer(deadline) {
     timerDiv.style.color = '#666';
     
     if (timerInterval) clearInterval(timerInterval);
-    
+    let hasTriggeredAutopick = false;
     timerInterval = setInterval(() => {
         const now = new Date();
         const deadlineTime = new Date(deadline);
         const remaining = Math.max(0, Math.floor((deadlineTime - now) / 1000));
         
-        if (remaining <= 0) {
+        if (remaining <= 0 && !hasTriggeredAutopick) {
+			hasTriggeredAutopick = true;
             clearInterval(timerInterval);
             timerDiv.textContent = 'Waiting for auto-pick...';
             timerDiv.style.color = '#ffd700';
@@ -1309,7 +1310,7 @@ function showOtherPlayerTimer(deadline) {
             .from('league_drafts')
             .select('current_user_id, current_pick')
             .eq('league_id', leagueId)
-            .single();
+            .single();										
         
         if (draft && draft.current_user_id !== draftState.current_user_id) {
             clearInterval(pollInterval);
