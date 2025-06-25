@@ -1607,8 +1607,8 @@ function setupRealtimeSubscriptions() {
 // Subscribe to draft state changes
     if (subscriptionsSetup) return;
     subscriptionsSetup = true;
-    const draftChannel = supabaseClient
 	const channelId = `${leagueId}-${currentUser.id}-${Date.now()}`;
+    const draftChannel = supabaseClient
         .channel(`draft-state-${channelId}`)
         .on('postgres_changes', 
             { event: 'UPDATE', schema: 'public', table: 'league_drafts', filter: `league_id=eq.${leagueId}` },
