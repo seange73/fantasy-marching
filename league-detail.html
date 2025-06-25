@@ -2467,6 +2467,7 @@ function switchTab(tabName) {
                 const isTeam1 = matchup.team1_id === currentTeam.id;
                 const userTeam = isTeam1 ? matchup.team1 : matchup.team2;
                 const opponentTeam = isTeam1 ? matchup.team2 : matchup.team1;
+				const opponentTeamId = isTeam1 ? matchup.team2_id : matchup.team1_id;  
                 const userScore = isTeam1 ? matchup.team1_score : matchup.team2_score;
                 const opponentScore = isTeam1 ? matchup.team2_score : matchup.team1_score;
                 console.log('Display scores - User:', userScore, 'Opponent:', opponentScore);
@@ -2544,11 +2545,11 @@ function switchTab(tabName) {
                             ">
                                 ${opponentScore !== null && opponentScore !== undefined ? parseFloat(opponentScore).toFixed(2) : '--'}
                             </div>
-                            ${hasScores ? `
-                                <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="viewTeamLineup('${opponentTeam.id}')">
-                                    View Lineup
-                                </button>
-                            ` : ''}
+${hasScores ? `
+    <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="viewTeamLineup('${opponentTeamId}')">
+        View Lineup
+    </button>
+` : ''}
                         </div>
                     </div>
                     
