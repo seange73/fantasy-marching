@@ -912,7 +912,6 @@
         let isMyTurn = false;
         let timerInterval = null;
 		let captionRankings = {};
-		let subscriptionsSetup = false;
 		
         // Initialize drafted corps map
         ['brass', 'percussion', 'guard', 'ge', 'visual', 'music'].forEach(caption => {
@@ -1605,11 +1604,8 @@ function showDraftCompleteOverlay() {
 // In setupRealtimeSubscriptions()
 function setupRealtimeSubscriptions() {
 // Subscribe to draft state changes
-    if (subscriptionsSetup) return;
-    subscriptionsSetup = true;
-	const channelId = `${leagueId}-${currentUser.id}-${Date.now()}`;
     const draftChannel = supabaseClient
-        .channel(`draft-state-${channelId}`)
+        .channel(`draft-state-${leagueId}`)
         .on('postgres_changes', 
             { event: 'UPDATE', schema: 'public', table: 'league_drafts', filter: `league_id=eq.${leagueId}` },
             async (payload) => {
@@ -1665,7 +1661,7 @@ function setupRealtimeSubscriptions() {
     
     // Subscribe to new picks
     const picksChannel = supabaseClient
-        .channel(`draft-picks-${channelId}`)
+        .channel(`draft-picks-${leagueId}`)
         .on('postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'draft_picks', filter: `league_id=eq.${leagueId}` },
             async (payload) => {
