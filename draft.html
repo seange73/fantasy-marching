@@ -1245,26 +1245,24 @@ function startTimer(deadline) {
             timerDiv.textContent = 'Auto-picking...';
             timerDiv.style.color = '#ffd700';
             
-            // Only the player whose turn it is should trigger autopick
-            if (isMyTurn) {
-                console.log('Timer expired, triggering autopick...');
-                try {
-                    const { error } = await supabaseClient.rpc('trigger_autopick_for_current_user', {
-                        p_league_id: leagueId
-                    });
-                    
-                    if (error) {
-                        console.error('Autopick error:', error);
-                        // If autopick fails, show error
-                        timerDiv.textContent = 'Autopick failed!';
-                        timerDiv.style.color = '#ff6b6b';
-                    }
-                } catch (err) {
-                    console.error('Failed to trigger autopick:', err);
-                }
-            }
-            return;
-        }
+           // ANY user viewing the page can trigger autopick for the current player
+           console.log('Timer expired, triggering autopick...');
+           try {
+               const { error } = await supabaseClient.rpc('trigger_autopick_for_current_user', {
+                   p_league_id: leagueId
+               });
+               
+               if (error) {
+                   console.error('Autopick error:', error);
+                   // If autopick fails, show error
+                   timerDiv.textContent = 'Autopick failed!';
+                   timerDiv.style.color = '#ff6b6b';
+               }
+           } catch (err) {
+               console.error('Failed to trigger autopick:', err);
+           }
+           return;
+       }
         
         const minutes = Math.floor(remaining / 60);
         const seconds = remaining % 60;
