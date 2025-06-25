@@ -1604,8 +1604,11 @@ function showDraftCompleteOverlay() {
 // In setupRealtimeSubscriptions()
 function setupRealtimeSubscriptions() {
 // Subscribe to draft state changes
+    if (subscriptionsSetup) return;
+    subscriptionsSetup = true;
     const draftChannel = supabaseClient
-        .channel(`draft-state-${leagueId}`)
+	const channelId = `${leagueId}-${currentUser.id}-${Date.now()}`;
+        .channel(`draft-state-${channelId}`)
         .on('postgres_changes', 
             { event: 'UPDATE', schema: 'public', table: 'league_drafts', filter: `league_id=eq.${leagueId}` },
             async (payload) => {
@@ -1661,7 +1664,7 @@ function setupRealtimeSubscriptions() {
     
     // Subscribe to new picks
     const picksChannel = supabaseClient
-        .channel(`draft-picks-${leagueId}`)
+        .channel(`draft-picks-${channelId}`)
         .on('postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'draft_picks', filter: `league_id=eq.${leagueId}` },
             async (payload) => {
