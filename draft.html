@@ -1258,6 +1258,15 @@ function startTimer(deadline) {
                    timerDiv.textContent = 'Autopick failed!';
                    timerDiv.style.color = '#ff6b6b';
                }
+	if (!error) {
+    console.log('Autopick triggered successfully');
+    // Force reload the draft state and picks after a short delay
+    setTimeout(async () => {
+        await loadDraftState();
+        await loadAllPicks();
+        await loadAvailableCorps();
+    }, 1000);
+}
            } catch (err) {
                console.error('Failed to trigger autopick:', err);
            }
@@ -1294,6 +1303,21 @@ function showOtherPlayerTimer(deadline) {
             clearInterval(timerInterval);
             timerDiv.textContent = 'Waiting for auto-pick...';
             timerDiv.style.color = '#ffd700';
+			 // Poll for changes every 2 seconds
+    const pollInterval = setInterval(async () => {
+        const { data: draft } = await supabaseClient
+            .from('league_drafts')
+            .select('current_user_id, current_pick')
+            .eq('league_id', leagueId)
+            .single();
+        
+        if (draft && draft.current_user_id !== draftState.current_user_id) {
+            clearInterval(pollInterval);
+            await loadDraftState();
+            await loadAllPicks();
+            await loadAvailableCorps();
+        }
+    }, 2000);
             return;
         }
         
