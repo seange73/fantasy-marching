@@ -1624,7 +1624,6 @@ function setupRealtimeSubscriptions() {
     
     // Show completion overlay
     showDraftCompleteOverlay();
-    
     // Redirect after 3 seconds
     setTimeout(() => {
         window.location.href = `/league-detail.html?id=${leagueId}`;
@@ -1657,7 +1656,17 @@ function setupRealtimeSubscriptions() {
                 }
             }
         )
-        .subscribe();
+ .subscribe((status) => {
+            console.log('Draft channel status:', status);
+            if (status === 'CHANNEL_ERROR') {
+                console.error('Draft channel error, attempting reconnect...');
+                setTimeout(() => {
+                    draftChannel.unsubscribe();
+                    subscriptionsSetup = false;
+                    setupRealtimeSubscriptions();
+                }, 3000);
+            }
+        });
     
     // Subscribe to new picks
     const picksChannel = supabaseClient
@@ -1722,7 +1731,17 @@ function setupRealtimeSubscriptions() {
                 await loadAvailableCorps();
             }
         )
-        .subscribe();
+        .subscribe((status) => {
+            console.log('Picks channel status:', status);
+            if (status === 'CHANNEL_ERROR') {
+                console.error('Picks channel error, attempting reconnect...');
+                setTimeout(() => {
+                    picksChannel.unsubscribe();
+                    subscriptionsSetup = false;
+                    setupRealtimeSubscriptions();
+                }, 3000);
+            }
+        });
     
     console.log('Realtime subscriptions set up');
 }
