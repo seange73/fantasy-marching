@@ -3590,11 +3590,56 @@ async function viewTeamLineup(teamId) {
             };
             return names[caption] || caption;
         }
+		
+async function kickUser(userId, username) {
+    try {
+        const { error } = await supabaseClient
+            .from('league_members')
+            .delete()
+            .eq('league_id', leagueId)
+            .eq('user_id', userId);
+        
+        if (error) throw error;
+        
+        showNotification('Success', `${username} has been kicked and can rejoin`, 'success');
+        await loadLeagueMembers();
+    } catch (error) {
+        showNotification('Error', 'Failed to kick member: ' + error.message, 'error');
+    }
+}
+async function banUser(userId, username) {
+    try {
+        // Add to banned list
+        const { error: banError } = await supabaseClient
+            .from('league_banned_users')
+            .insert({
+                league_id: leagueId,
+                user_id: userId,
+                banned_by: currentUser.id
+            });
+        
+        if (banError && banError.code !== '23505') throw banError;
+        
+        // Remove from league
+        const { error: removeError } = await supabaseClient
+            .from('league_members')
+            .delete()
+            .eq('league_id', leagueId)
+            .eq('user_id', userId);
+        
+        if (removeError) throw removeError;
+        
+        showNotification('Success', `${username} has been banned from the league`, 'success');
+        await loadLeagueMembers();
+    } catch (error) {
+        showNotification('Error', 'Failed to ban member: ' + error.message, 'error');
+    }
+}
 // Kick member from league
 async function kickMember(userId, username) {
     showModal(
-        'Kick Member',
-        `Are you sure you want to remove ${username} from the league?`,
+        'Remove Member',
+        `How would you like to remove ${username} from the league?`,
         [
             {
                 text: 'Cancel',
@@ -3602,39 +3647,14 @@ async function kickMember(userId, username) {
                 callback: null
             },
             {
-                text: 'Kick Member',
+                text: 'Kick (can rejoin)',
+                primary: false,
+                callback: () => kickUser(userId, username)
+            },
+            {
+                text: 'Ban (permanent)',
                 primary: true,
-                callback: async () => {
-                    try {
-                        // Remove from league_members
-                        const { error } = await supabaseClient
-                            .from('league_members')
-                            .delete()
-                            .eq('league_id', leagueId)
-                            .eq('user_id', userId);
-                        
-                        if (error) throw error;
-                        
-                        // If draft exists, might need to handle draft picks/teams
-                        // For now, we'll just remove from members
-                        
-                        showNotification('Success', `${username} has been removed from the league`, 'success');
-                        
-                        // Reload members list if in pre-draft state
-                        if (document.getElementById('preDraftContent').style.display !== 'none') {
-                            await loadLeagueMembers();
-                        }
-                        
-                        // Reload standings if in post-draft state
-                        if (document.getElementById('standings-content') && !document.getElementById('standings-content').classList.contains('hidden')) {
-                            await loadStandings();
-                        }
-                        
-                    } catch (error) {
-                        console.error('Error kicking member:', error);
-                        showNotification('Error', 'Failed to remove member: ' + error.message, 'error');
-                    }
-                }
+                callback: () => banUser(userId, username)
             }
         ]
     );
