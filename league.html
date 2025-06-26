@@ -1251,7 +1251,7 @@ async function displayMyLeagues() {
         .eq('user_id', currentUser.id)
         .maybeSingle();
 if (banCheck) {
-console.log('you were banned);
+    console.log('you were banned');
     showAlert('You have been banned from this league', 'error');
     return;
 }
