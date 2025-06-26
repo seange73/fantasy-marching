@@ -1808,27 +1808,21 @@ async function loadLeagueMembers() {
 			catch (error) {
                 console.error('Error getting current week:', error);
                 // Fallback calculation - calendar week based
-                const seasonStart = new Date('2025-06-28');
-                const now = new Date();
-                
-                // If before season start, return week 1
-                if (now < seasonStart) return 1;
-                
-                // Get the Monday of the season start week
-                const seasonStartMonday = new Date(seasonStart);
-                const dayOfWeek = seasonStart.getDay();
-                const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-                seasonStartMonday.setDate(seasonStart.getDate() + daysToMonday);
-                
-                // Get the Monday of the current week
-                const currentMonday = new Date(now);
-                const currentDayOfWeek = now.getDay();
-                const daysToCurrentMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
-                currentMonday.setDate(now.getDate() + daysToCurrentMonday);
-                
-                // Calculate weeks between Mondays
-                const weeksDiff = Math.floor((currentMonday - seasonStartMonday) / (7 * 24 * 60 * 60 * 1000)) + 1;
-                return Math.min(Math.max(1, weeksDiff), 6);
+// If before season start, return week 1
+if (now < new Date('2025-06-28')) return 1;
+
+// Week 1 is June 28-29
+if (now < new Date('2025-06-30')) return 1;
+
+// For week 2+, find which Monday-Sunday period we're in
+const week2Start = new Date('2025-06-30');
+const currentMonday = new Date(now);
+const currentDayOfWeek = now.getDay();
+const daysToCurrentMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
+currentMonday.setDate(now.getDate() + daysToCurrentMonday);
+
+const weeksDiff = Math.floor((currentMonday - week2Start) / (7 * 24 * 60 * 60 * 1000)) + 2;
+return Math.min(Math.max(1, weeksDiff), 6);
             }
         }
 
@@ -1842,7 +1836,23 @@ async function loadLeagueMembers() {
             });
             return 1; // Default value
         }
-
+function getWeekDateRange(weekNumber) {
+    if (weekNumber === 1) {
+        return {
+            start: new Date('2025-06-28'),
+            end: new Date('2025-06-29')
+        };
+    }
+    
+    const week2Start = new Date('2025-06-30');
+    const weekStart = new Date(week2Start);
+    weekStart.setDate(weekStart.getDate() + (weekNumber - 2) * 7);
+    
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    
+    return { start: weekStart, end: weekEnd };
+}
         // Show league content (post-draft)
         async function showLeagueContent() {
             document.getElementById('leagueContent').style.display = 'block';
