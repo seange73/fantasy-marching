@@ -3612,13 +3612,15 @@ async function banUser(userId, username) {
         // Add to banned list
         const { error: banError } = await supabaseClient
             .from('league_banned_users')
-            .insert({
+            .upsert({
                 league_id: leagueId,
                 user_id: userId,
                 banned_by: currentUser.id
+			}, {
+				onConflict: 'league_id,user_id'
             });
         
-        if (banError && banError.code !== '23505') throw banError;
+        if (banError) throw banError;
         
         // Remove from league
         const { error: removeError } = await supabaseClient

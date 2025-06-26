@@ -1249,7 +1249,7 @@ const { data: banCheck } = await supabaseClient
     .select('id')
     .eq('league_id', leagueId)
     .eq('user_id', currentUser.id)
-    .single();
+    .maybeSingle();
 
 if (banCheck) {
     showAlert('You have been banned from this league', 'error');
