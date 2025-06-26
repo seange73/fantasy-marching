@@ -1244,13 +1244,12 @@ async function displayMyLeagues() {
 
         // Join a league
         async function joinLeague(leagueId, requiresPassword) {
-const { data: banCheck } = await supabaseClient
-    .from('league_banned_users')
-    .select('id')
-    .eq('league_id', leagueId)
-    .eq('user_id', currentUser.id)
-    .maybeSingle();
-
+    const { data: banCheck } = await supabaseClient
+        .from('league_banned_users')
+        .select('id')
+        .eq('league_id', leagueId)
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
 if (banCheck) {
     showAlert('You have been banned from this league', 'error');
     return;
