@@ -3620,7 +3620,7 @@ async function banUser(userId, username) {
 				onConflict: 'league_id,user_id'
             });
         
-        if (banError) throw banError;
+        if (banError && banError.code !== '23505') throw banError;
         
         // Remove from league
         const { error: removeError } = await supabaseClient
