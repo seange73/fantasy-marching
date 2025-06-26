@@ -1812,17 +1812,14 @@ async function loadLeagueMembers() {
 if (now < new Date('2025-06-28')) return 1;
 
 // Week 1 is June 28-29
-if (now < new Date('2025-06-30')) return 1;
+if (now <= new Date('2025-06-29T23:59:59')) return 1;
 
-// For week 2+, find which Monday-Sunday period we're in
+// For week 2+, calculate based on days since June 30
 const week2Start = new Date('2025-06-30');
-const currentMonday = new Date(now);
-const currentDayOfWeek = now.getDay();
-const daysToCurrentMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
-currentMonday.setDate(now.getDate() + daysToCurrentMonday);
+const daysSinceWeek2 = Math.floor((now - week2Start) / (24 * 60 * 60 * 1000));
+const weekNumber = Math.floor(daysSinceWeek2 / 7) + 2;
 
-const weeksDiff = Math.floor((currentMonday - week2Start) / (7 * 24 * 60 * 60 * 1000)) + 2;
-return Math.min(Math.max(1, weeksDiff), 6);
+return Math.min(weekNumber, 6);
             }
         }
 
