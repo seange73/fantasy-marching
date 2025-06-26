@@ -3619,7 +3619,7 @@ async function banUser(userId, username) {
 			}, {
 				onConflict: 'league_id,user_id'
             });
-        
+        console.log('added user to ban table);
         if (banError && banError.code !== '23505') throw banError;
         
         // Remove from league
