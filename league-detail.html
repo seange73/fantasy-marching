@@ -1949,11 +1949,9 @@ async function loadLineupFromDraft() {
     const currentWeek = await getCurrentWeekFromDB();
     
     // Calculate week date range
-    const seasonStart = new Date('2025-06-28');
-    const weekStart = new Date(seasonStart);
-    weekStart.setDate(weekStart.getDate() + (currentWeek - 1) * 7);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 6);
+	const weekRange = getWeekDateRange(currentWeek);
+	const weekStart = weekRange.start;
+	const weekEnd = weekRange.end;
     
     // Get events for this week
     const { data: weekEvents } = await supabaseClient
@@ -2150,11 +2148,9 @@ async function calculateTeamWeeklyScore(teamId) {
     const currentWeek = await getCurrentWeekFromDB();
     
     // Calculate week date range
-    const seasonStart = new Date('2025-06-28');
-    const weekStart = new Date(seasonStart);
-    weekStart.setDate(weekStart.getDate() + (currentWeek - 1) * 7);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 6);
+const weekRange = getWeekDateRange(currentWeek);
+const weekStart = weekRange.start;
+const weekEnd = weekRange.end;
     
     // Get events for this week
     const { data: weekEvents } = await supabaseClient
@@ -3350,12 +3346,9 @@ async function loadFreeAgents() {
             const container = document.getElementById('weekCompetitions');
             
             try {
-                // Calculate week date range
-                const seasonStart = new Date('2025-06-28');
-                const weekStart = new Date(seasonStart);
-                weekStart.setDate(weekStart.getDate() + (weekNumber - 1) * 7);
-                const weekEnd = new Date(weekStart);
-                weekEnd.setDate(weekEnd.getDate() + 6);
+const weekRange = getWeekDateRange(weekNumber);
+const weekStart = weekRange.start;
+const weekEnd = weekRange.end;
                 
                 // Get events for this week
                 const { data: events, error } = await supabaseClient
@@ -3942,71 +3935,6 @@ async function deleteLeague() {
         }
         document.addEventListener('DOMContentLoaded', initializePage);
         
-        // Add helper functions for matchups
-        async function loadWeekCompetitions(weekNumber) {
-            const container = document.getElementById('weekCompetitions');
-            
-            try {
-                // Calculate week date range
-                const seasonStart = new Date('2025-06-28');
-                const weekStart = new Date(seasonStart);
-                weekStart.setDate(weekStart.getDate() + (weekNumber - 1) * 7);
-                const weekEnd = new Date(weekStart);
-                weekEnd.setDate(weekEnd.getDate() + 6);
-                
-                // Get events for this week
-                const { data: events, error } = await supabaseClient
-                    .from('events')
-                    .select('*')
-                    .gte('date', weekStart.toISOString().split('T')[0])
-                    .lte('date', weekEnd.toISOString().split('T')[0])
-                    .order('date');
-                
-                if (error) throw error;
-                
-                if (!events || events.length === 0) {
-                    container.innerHTML = `
-                        <p style="color: #666; text-align: center;">No competitions scheduled this week</p>
-                    `;
-                    return;
-                }
-                
-                container.innerHTML = events.map(event => `
-                    <div style="
-                        padding: 1rem;
-                        background: rgba(255, 255, 255, 0.03);
-                        border-radius: 12px;
-                        margin-bottom: 0.75rem;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                    ">
-                        <div>
-                            <div style="font-weight: 600; color: white;">${event.name}</div>
-                            <div style="font-size: 0.9rem; color: #a0a0a0;">
-                                ${new Date(event.date).toLocaleDateString()} • ${event.location || 'TBD'}
-                            </div>
-                        </div>
-                        <div style="
-                            padding: 0.25rem 0.75rem;
-                            background: ${event.is_completed ? 'rgba(78, 205, 196, 0.2)' : 'rgba(255, 215, 0, 0.2)'};
-                            color: ${event.is_completed ? '#4ecdc4' : '#ffd700'};
-                            border-radius: 20px;
-                            font-size: 0.85rem;
-                            font-weight: 600;
-                        ">
-                            ${event.is_completed ? 'Completed' : 'Upcoming'}
-                        </div>
-                    </div>
-                `).join('');
-                
-            } catch (error) {
-                console.error('Error loading week competitions:', error);
-                container.innerHTML = `
-                    <p style="color: #ff6b6b; text-align: center;">Error loading competitions</p>
-                `;
-            }
-        }
         
         
         // Get caption color
