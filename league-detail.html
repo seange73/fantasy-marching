@@ -1790,7 +1790,7 @@ async function loadLeagueMembers() {
             }
         }
 
-        // Get current week from database
+// Get current week from database
         async function getCurrentWeekFromDB() {
             try {
         // For testing with date override
@@ -1807,10 +1807,27 @@ async function loadLeagueMembers() {
             } 
 			catch (error) {
                 console.error('Error getting current week:', error);
-                // Fallback calculation
+                // Fallback calculation - calendar week based
                 const seasonStart = new Date('2025-06-28');
                 const now = new Date();
-                const weeksDiff = Math.floor((now - seasonStart) / (7 * 24 * 60 * 60 * 1000)) + 1;
+                
+                // If before season start, return week 1
+                if (now < seasonStart) return 1;
+                
+                // Get the Monday of the season start week
+                const seasonStartMonday = new Date(seasonStart);
+                const dayOfWeek = seasonStart.getDay();
+                const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                seasonStartMonday.setDate(seasonStart.getDate() + daysToMonday);
+                
+                // Get the Monday of the current week
+                const currentMonday = new Date(now);
+                const currentDayOfWeek = now.getDay();
+                const daysToCurrentMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
+                currentMonday.setDate(now.getDate() + daysToCurrentMonday);
+                
+                // Calculate weeks between Mondays
+                const weeksDiff = Math.floor((currentMonday - seasonStartMonday) / (7 * 24 * 60 * 60 * 1000)) + 1;
                 return Math.min(Math.max(1, weeksDiff), 6);
             }
         }
