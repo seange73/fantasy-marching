@@ -3044,86 +3044,8 @@ async function loadFreeAgents() {
         // Check if it's Sunday (free agent window)
         const today = new Date();
         console.log('LoadFreeAgents: Current date:', today, 'Day:', today.getDay());
-        
-        const { data: isOpen } = await supabaseClient.rpc('is_free_agent_window_open');
-        console.log('LoadFreeAgents: Window open?', isOpen);
-        
-        if (!isOpen) {
-            const today = new Date();
-            const daysUntilSunday = (7 - today.getDay()) % 7 || 7;
-            
-            // Get available free agents
-            const { data: freeAgents, error } = await supabaseClient.rpc('get_free_agents', {
-                p_league_id: leagueId
-            });
-            
-            if (error) throw error;
-            
-            // Group free agents by caption
-            const freeAgentsByCaption = {};
-            freeAgents?.forEach(fa => {
-                if (!freeAgentsByCaption[fa.caption]) {
-                    freeAgentsByCaption[fa.caption] = [];
-                }
-                freeAgentsByCaption[fa.caption].push(fa.corps_name);
-            });
-            
-            container.innerHTML = `
-                <div style="
-                    background: rgba(255, 215, 0, 0.1);
-                    border: 1px solid rgba(255, 215, 0, 0.3);
-                    border-radius: 12px;
-                    padding: 1rem;
-                    margin-bottom: 2rem;
-                    text-align: center;
-                ">
-                    <p style="color: #ffd700; font-weight: 600;">Free Agent Window Closed</p>
-                    <p style="color: #e0e0e0; font-size: 0.9rem; margin-top: 0.5rem;">
-                        Transactions available on Sundays • Opens in ${daysUntilSunday} day${daysUntilSunday !== 1 ? 's' : ''}
-                    </p>
-                </div>
-                
-                <h3 style="
-                    font-size: 1.2rem;
-                    font-weight: 600;
-                    color: #4ecdc4;
-                    margin-bottom: 1.5rem;
-                ">Available Free Agents</h3>
-                
-                <div style="display: grid; gap: 2rem;">
-                    ${Object.entries(freeAgentsByCaption).map(([caption, corps]) => `
-                        <div>
-                            <h4 style="
-                                font-size: 1.1rem;
-                                font-weight: 600;
-                                color: ${getCaptionColor(caption)};
-                                margin-bottom: 1rem;
-                                text-transform: capitalize;
-                            ">${formatCaption(caption)}</h4>
-                            <div style="display: grid; gap: 0.5rem;">
-                                ${corps.length > 0 ? corps.map(corpsName => `
-                                    <div style="
-                                        padding: 1rem;
-                                        background: rgba(255, 255, 255, 0.03);
-                                        border-radius: 8px;
-                                        border: 1px solid rgba(255, 255, 255, 0.1);
-                                        font-weight: 600;
-                                        color: white;
-                                    ">
-                                        ${corpsName}
-                                    </div>
-                                `).join('') : `
-                                    <p style="color: #666; text-align: center; padding: 1rem;">
-                                        No free agents available
-                                    </p>
-                                `}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            return;
-        }
+               
+
          console.log('LoadFreeAgents: Current team:', currentTeam);	
         // Get current week
         const currentWeek = await getCurrentWeekFromDB();
@@ -3195,7 +3117,7 @@ async function loadFreeAgents() {
             }
             freeAgentsByCaption[fa.caption].push(fa.corps_name);
         });
-        
+        const isSunday = new Date().getDay() === 0;
         container.innerHTML = `
             <div style="
                 background: rgba(255, 215, 0, 0.1);
@@ -3205,12 +3127,12 @@ async function loadFreeAgents() {
                 margin-bottom: 2rem;
                 text-align: center;
             ">
-                <p style="color: #ffd700; font-weight: 600;">
-                    Free Agent Window Open - Week ${currentWeek}
-                </p>
-                <p style="color: #e0e0e0; font-size: 0.9rem; margin-top: 0.5rem;">
-                    You can make one roster change today
-                </p>
+<p style="color: #ffd700; font-weight: 600;">
+    Free Agent Window ${isSunday ? 'Open' : 'Closed'} - Week ${currentWeek}
+</p>
+<p style="color: #e0e0e0; font-size: 0.9rem; margin-top: 0.5rem;">
+    ${isSunday ? 'You can make one roster change today' : 'Transactions available on Sundays only'}
+</p>
             </div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
