@@ -1174,7 +1174,7 @@ if (window.DEBUG_OVERRIDE_DATE) {
             const modalButtons = document.getElementById('modalButtons');
             
             modalTitle.textContent = title;
-            modalMessage.textContent = message;
+            modalMessage.innerHTML = message;
             
             // Show/hide input
             if (showInput) {
@@ -3373,13 +3373,6 @@ showModal('Create Trade Offer', `
                     <p style="color: #666;">Select a team first</p>
                 </div>
             </div>   
-        <div>
-            <label style="color: #4ecdc4; font-weight: 600;">Trade With:</label>
-            <select id="tradePartner" class="form-input" style="width: 100%; margin-top: 0.5rem;">
-                <option value="">Select a team...</option>
-                ${teams.map(t => `<option value="${t.id}">${usernameMap[t.user_id] || 'Unknown'}</option>`).join('')}
-            </select>
-        </div>
 
 `, [
     { text: 'Cancel', primary: false },
@@ -3388,7 +3381,9 @@ showModal('Create Trade Offer', `
     
 
     // Load partner's roster when selected
+setTimeout(() => {
     document.getElementById('tradePartner').addEventListener('change', loadPartnerRoster);
+}, 100);
 }
 
 //send trade offer
