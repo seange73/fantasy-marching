@@ -3276,12 +3276,12 @@ if (!currentTeam) {
     const container = document.getElementById('tradesContainer');
     container.innerHTML = '<div class="loading">Loading trades...</div>';
     // ✅ Actually fetch trades BEFORE checking them
-    const { data: trades, error } = await supabaseClient
-        .from('league_trade_offers')
-        .select('*, from_team_offers(*), to_team_offers(*)') // include related offers if needed
-        .eq('league_id', leagueId)
-        .or(`from_team_id.eq.${currentTeam.id},to_team_id.eq.${currentTeam.id}`)
-        .order('created_at', { ascending: false });
+const { data: trades, error } = await supabaseClient
+  .from('league_trade_offers')
+  .select('*')
+  .eq('league_id', leagueId)
+  .or(`from_team_uuid.eq.${currentTeam.id},to_team_uuid.eq.${currentTeam.id}`)
+  .order('created_at', { ascending: false });
     if (error) {
         console.error('Error loading trades:', error);
         container.innerHTML = '<p style="color: #ff6b6b;">Error loading trades</p>';
