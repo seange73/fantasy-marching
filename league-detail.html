@@ -3280,7 +3280,7 @@ const { data: trades, error } = await supabaseClient
   .from('league_trade_offers')
   .select('*')
   .eq('league_id', leagueId)
-  .or(`from_team_uuid.eq.${currentTeam.id},to_team_uuid.eq.${currentTeam.id}`)
+  .or(`from_team_id.eq.${currentTeam.id},to_team_id.eq.${currentTeam.id}`)
   .order('created_at', { ascending: false });
     if (error) {
         console.error('Error loading trades:', error);
