@@ -3274,71 +3274,7 @@ async function loadTrades() {
 	const { data: trades } = await supabaseClient
 // Get all user IDs from trades
 if (!trades || trades.length === 0) {
-container.innerHTML = `
-    <div style="display: grid; gap: 2rem;">
-        <div>
-            <button class="btn" onclick="createNewTrade()">Create New Trade</button>
-        </div>
-        <div>
-            <h3 style="color: #4ecdc4; margin-bottom: 1rem;">Your Trades</h3>
-            <div id="activeTradesList">
-                ${trades?.length ? trades.map(trade => {
-                    const isFromTeam = trade.from_team_id === currentTeam.id;
-                    const partnerUsername = teamToUsername[isFromTeam ? trade.to_team_id : trade.from_team_id] || 'Unknown';
-                    
-                    return `
-                        <div style="
-                            background: rgba(255, 255, 255, 0.05);
-                            border: 1px solid rgba(255, 255, 255, 0.1);
-                            border-radius: 12px;
-                            padding: 1.5rem;
-                            margin-bottom: 1rem;
-                        ">
-                            <div style="display: flex; justify-content: space-between; align-items: start;">
-                                <div>
-                                    <div style="font-weight: 600; color: #e0e0e0; margin-bottom: 0.5rem;">
-                                        Trade with ${partnerUsername}
-                                    </div>
-                                    <div style="font-size: 0.9rem; color: #a0a0a0;">
-                                        Status: <span style="color: ${trade.status === 'pending' ? '#ffd700' : trade.status === 'accepted' ? '#4ecdc4' : '#ff6b6b'};">
-                                            ${trade.status.charAt(0).toUpperCase() + trade.status.slice(1)}
-                                        </span>
-                                    </div>
-                                </div>
-                                ${trade.status === 'pending' && !isFromTeam ? `
-                                    <div style="display: flex; gap: 0.5rem;">
-                                        <button class="btn" onclick="acceptTrade('${trade.id}')">Accept</button>
-                                        <button class="btn btn-secondary" onclick="rejectTrade('${trade.id}')">Reject</button>
-                                    </div>
-<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <div>
-            <div style="font-size: 0.85rem; color: #a0a0a0; margin-bottom: 0.5rem;">
-                ${isFromTeam ? 'You Give:' : 'They Offer:'}
-            </div>
-            ${trade.from_team_offers.map(offer => 
-                `<div style="color: #ff6b6b;">- ${offer.corps_name} (${formatCaption(offer.caption)})</div>`
-            ).join('')}
-        </div>
-        <div>
-            <div style="font-size: 0.85rem; color: #a0a0a0; margin-bottom: 0.5rem;">
-                ${isFromTeam ? 'You Receive:' : 'You Give:'}
-            </div>
-            ${trade.to_team_offers.map(offer => 
-                `<div style="color: #4ecdc4;">+ ${offer.corps_name} (${formatCaption(offer.caption)})</div>`
-            ).join('')}
-        </div>
-    </div>
-</div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    `;
-                }).join('') : 'No trades yet'}
-            </div>
-        </div>
-    </div>
-`;
+    container.innerHTML = `<div>No pending trades</div>`;
     return;
 }
 const teamIds = new Set();
