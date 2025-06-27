@@ -3321,6 +3321,7 @@ const { data: trades } = await supabaseClient
     .or(`from_team_id.eq.${currentTeam.id},to_team_id.eq.${currentTeam.id}`)
     .order('created_at', { ascending: false });
         
+console.log('Trades loaded:', trades);
 container.innerHTML = `
     <div style="display: grid; gap: 2rem;">
         <div>
