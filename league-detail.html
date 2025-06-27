@@ -3269,6 +3269,10 @@ async function loadFreeAgents() {
 }
 // Load trades
 async function loadTrades() {
+if (!currentTeam) {
+    console.log('No current team loaded');
+    await loadUserTeam();
+}
     const container = document.getElementById('tradesContainer');
     container.innerHTML = '<div class="loading">Loading trades...</div>';
 	const { data: trades } = await supabaseClient
@@ -3320,7 +3324,11 @@ const { data: trades } = await supabaseClient
     .eq('league_id', leagueId)
     .or(`from_team_id.eq.${currentTeam.id},to_team_id.eq.${currentTeam.id}`)
     .order('created_at', { ascending: false });
-        
+console.log('Trades query result:', { data: trades, error });
+
+if (error) {
+    console.error('Error loading trades:', error);
+}
 console.log('Trades loaded:', trades);
 container.innerHTML = `
     <div style="display: grid; gap: 2rem;">
