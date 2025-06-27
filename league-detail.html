@@ -3300,6 +3300,24 @@ async function loadTrades() {
         container.innerHTML = '<p style="color: #ff6b6b;">Error loading trades</p>';
     }
 }
+//load partner's roster
+async function loadPartnerRoster() {
+    const partnerId = document.getElementById('tradePartner').value;
+    if (!partnerId) return;
+    
+    const { data: roster } = await supabaseClient
+        .from('league_team_roster')
+        .select('*')
+        .eq('team_id', partnerId)
+        .order('caption');
+    
+    document.getElementById('theirOffers').innerHTML = roster.map(r => `
+        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <input type="checkbox" value="${r.corps_name}|${r.caption}">
+            <span>${r.corps_name} (${formatCaption(r.caption)})</span>
+        </label>
+    `).join('');
+}
 
 // Create new trade
 async function createNewTrade() {
@@ -3387,25 +3405,6 @@ showModal('Create Trade Offer', `
 
     // Load partner's roster when selected
     document.getElementById('tradePartner').addEventListener('change', loadPartnerRoster);
-}
-
-//load partner's roster
-async function loadPartnerRoster() {
-    const partnerId = document.getElementById('tradePartner').value;
-    if (!partnerId) return;
-    
-    const { data: roster } = await supabaseClient
-        .from('league_team_roster')
-        .select('*')
-        .eq('team_id', partnerId)
-        .order('caption');
-    
-    document.getElementById('theirOffers').innerHTML = roster.map(r => `
-        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <input type="checkbox" value="${r.corps_name}|${r.caption}">
-            <span>${r.corps_name} (${formatCaption(r.caption)})</span>
-        </label>
-    `).join('');
 }
 
 //send trade offer
