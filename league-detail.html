@@ -3319,7 +3319,6 @@ const { data: trades } = await supabaseClient
     .select('*')
     .eq('league_id', leagueId)
     .or(`from_team_id.eq.${currentTeam.id},to_team_id.eq.${currentTeam.id}`)
-    .eq('status', 'pending')
     .order('created_at', { ascending: false });
         
 container.innerHTML = `
