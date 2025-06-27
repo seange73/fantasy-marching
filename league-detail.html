@@ -3360,48 +3360,15 @@ async function createNewTrade() {
         </div>
     `;
     
-showModal('Create Trade Offer', 'Loading...', [
-    { text: 'Cancel', primary: false },
-    { text: 'Send Offer', primary: true, callback: sendTradeOffer }
-]);
-
-// Then set the content after modal is shown
-setTimeout(() => {
-    const modalMessage = document.getElementById('modalMessage');
-    modalMessage.innerHTML = `
-        <div style="display: grid; gap: 1.5rem;">
-            <div>
-                <label style="color: #4ecdc4; font-weight: 600;">Trade With:</label>
-                <select id="tradePartner" class="form-input" style="width: 100%; margin-top: 0.5rem;">
-                    <option value="">Select a team...</option>
-                    ${teams.map(t => `<option value="${t.id}">${usernameMap[t.user_id] || 'Unknown'}</option>`).join('')}
-                </select>
-            </div>
-            
-            <div>
-                <label style="color: #4ecdc4; font-weight: 600;">You Give:</label>
-                <div id="yourOffers" style="margin-top: 0.5rem;">
-                    ${roster.map(r => `
-                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <input type="checkbox" value="${r.corps_name}|${r.caption}">
-                            <span>${r.corps_name} (${formatCaption(r.caption)})</span>
-                        </label>
-                    `).join('')}
-                </div>
-            </div>
-            
-            <div>
-                <label style="color: #4ecdc4; font-weight: 600;">You Receive:</label>
-                <div id="theirOffers" style="margin-top: 0.5rem;">
-                    <p style="color: #666;">Select a team first</p>
-                </div>
-            </div>
-        </div>
-    `;
+    showModal('Create Trade Offer', '', [
+        { text: 'Cancel', primary: false },
+        { text: 'Send Offer', primary: true, callback: sendTradeOffer }
+    ]);
     
+
     // Load partner's roster when selected
     document.getElementById('tradePartner').addEventListener('change', loadPartnerRoster);
-}, 100);
+}
 
 //load partner's roster
 async function loadPartnerRoster() {
