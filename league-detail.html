@@ -3269,6 +3269,8 @@ async function loadFreeAgents() {
 }
 // Load trades
 async function loadTrades() {
+    const container = document.getElementById('tradesContainer');
+    container.innerHTML = '<div class="loading">Loading trades...</div>';
 	const { data: trades } = await supabaseClient
 // Get all user IDs from trades
 if (!trades || trades.length === 0) {
@@ -3299,8 +3301,6 @@ teams?.forEach(t => {
     const profile = profiles?.find(p => p.id === t.user_id);
     teamToUsername[t.id] = profile?.username || 'Unknown';
 });
-    const container = document.getElementById('tradesContainer');
-    container.innerHTML = '<div class="loading">Loading trades...</div>';
     
     try {
         // Get user's trade offers
