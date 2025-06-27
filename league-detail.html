@@ -3278,6 +3278,7 @@ if (!currentTeam) {
 	const { data: trades } = await supabaseClient
 // Get all user IDs from trades
 if (!trades || trades.length === 0) {
+console.log('Trades query result:', { data: trades});
 container.innerHTML = `
     <div style="display: grid; gap: 2rem;">
         <div>
