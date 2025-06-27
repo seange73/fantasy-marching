@@ -3274,7 +3274,7 @@ async function loadTrades() {
 	const { data: trades } = await supabaseClient
 // Get all user IDs from trades
 if (!trades || trades.length === 0) {
-   container.innerHTML = `<div>No pending trades</div>`;
+//   container.innerHTML = `<div>No pending trades</div>`;
     return;
 }
 const teamIds = new Set();
