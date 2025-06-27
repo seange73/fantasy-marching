@@ -3271,8 +3271,12 @@ async function loadFreeAgents() {
 async function loadTrades() {
 	const { data: trades } = await supabaseClient
 // Get all user IDs from trades
+if (!trades || trades.length === 0) {
+    container.innerHTML = `<div>No pending trades</div>`;
+    return;
+}
 const teamIds = new Set();
-trades?.forEach(trade => {
+trades.forEach(trade => {
     teamIds.add(trade.from_team_id);
     teamIds.add(trade.to_team_id);
 });
@@ -3304,6 +3308,7 @@ teams?.forEach(t => {
             .from('league_trade_offers')
             .select('*')
             .eq('league_id', leagueId)
+			.eq('status', 'pending')
             .or(`from_team_id.eq.${currentTeam.id},to_team_id.eq.${currentTeam.id}`)
             .order('created_at', { ascending: false });
         
@@ -3343,6 +3348,26 @@ container.innerHTML = `
                                         <button class="btn" onclick="acceptTrade('${trade.id}')">Accept</button>
                                         <button class="btn btn-secondary" onclick="rejectTrade('${trade.id}')">Reject</button>
                                     </div>
+<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+            <div style="font-size: 0.85rem; color: #a0a0a0; margin-bottom: 0.5rem;">
+                ${isFromTeam ? 'You Give:' : 'They Offer:'}
+            </div>
+            ${trade.from_team_offers.map(offer => 
+                `<div style="color: #ff6b6b;">- ${offer.corps_name} (${formatCaption(offer.caption)})</div>`
+            ).join('')}
+        </div>
+        <div>
+            <div style="font-size: 0.85rem; color: #a0a0a0; margin-bottom: 0.5rem;">
+                ${isFromTeam ? 'You Receive:' : 'You Give:'}
+            </div>
+            ${trade.to_team_offers.map(offer => 
+                `<div style="color: #4ecdc4;">+ ${offer.corps_name} (${formatCaption(offer.caption)})</div>`
+            ).join('')}
+        </div>
+    </div>
+</div>
                                 ` : ''}
                             </div>
                         </div>
