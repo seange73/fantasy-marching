@@ -3886,7 +3886,12 @@ async function deleteLeague() {
                 showNotification('Error', 'Please select both a corps to drop and a corps to add', 'error');
                 return;
             }
-            
+            // Check if it's Sunday
+            const today = new Date();
+            if (today.getDay() !== 0) {
+                showNotification('Error', 'Transactions can only be made on Sundays', 'error');
+                return;
+            }
             showModal(
                 'Confirm Transaction',
                 `Are you sure you want to drop ${selectedDrop.corps} (${formatCaption(selectedDrop.caption)}) for ${selectedAdd.corps} (${formatCaption(selectedAdd.caption)})?`,
