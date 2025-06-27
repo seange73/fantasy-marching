@@ -3269,6 +3269,31 @@ async function loadFreeAgents() {
 }
 // Load trades
 async function loadTrades() {
+	const { data: trades } = await supabaseClient
+// Get all user IDs from trades
+const teamIds = new Set();
+trades?.forEach(trade => {
+    teamIds.add(trade.from_team_id);
+    teamIds.add(trade.to_team_id);
+});
+
+// Get team info and usernames
+const { data: teams } = await supabaseClient
+    .from('league_teams')
+    .select('id, user_id')
+    .in('id', Array.from(teamIds));
+
+const userIds = teams?.map(t => t.user_id) || [];
+const { data: profiles } = await supabaseClient
+    .from('profiles')
+    .select('id, username')
+    .in('id', userIds);
+
+// Create maps
+const teamToUser = {};
+const userToUsername = {};
+teams?.forEach(t => teamToUser[t.id] = t.user_id);
+profiles?.forEach(p => userToUsername[p.id] = p.username);
     const container = document.getElementById('tradesContainer');
     container.innerHTML = '<div class="loading">Loading trades...</div>';
     
@@ -3281,19 +3306,51 @@ async function loadTrades() {
             .or(`from_team_id.eq.${currentTeam.id},to_team_id.eq.${currentTeam.id}`)
             .order('created_at', { ascending: false });
         
-        container.innerHTML = `
-            <div style="display: grid; gap: 2rem;">
-                <div>
-                    <button class="btn" onclick="createNewTrade()">Create New Trade</button>
-                </div>
-                <div>
-                    <h3 style="color: #4ecdc4; margin-bottom: 1rem;">Active Trades</h3>
-                    <div id="activeTradesList">
-                        ${trades?.length ? 'Trades will appear here' : 'No active trades'}
-                    </div>
-                </div>
+container.innerHTML = `
+    <div style="display: grid; gap: 2rem;">
+        <div>
+            <button class="btn" onclick="createNewTrade()">Create New Trade</button>
+        </div>
+        <div>
+            <h3 style="color: #4ecdc4; margin-bottom: 1rem;">Your Trades</h3>
+            <div id="activeTradesList">
+                ${trades?.length ? trades.map(trade => {
+                    const isFromTeam = trade.from_team_id === currentTeam.id;
+                    const partnerUsername = userToUsername[teamToUser[isFromTeam ? trade.to_team_id : trade.from_team_id]] || 'Unknown';
+                    
+                    return `
+                        <div style="
+                            background: rgba(255, 255, 255, 0.05);
+                            border: 1px solid rgba(255, 255, 255, 0.1);
+                            border-radius: 12px;
+                            padding: 1.5rem;
+                            margin-bottom: 1rem;
+                        ">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <div style="font-weight: 600; color: #e0e0e0; margin-bottom: 0.5rem;">
+                                        Trade with ${partnerUsername}
+                                    </div>
+                                    <div style="font-size: 0.9rem; color: #a0a0a0;">
+                                        Status: <span style="color: ${trade.status === 'pending' ? '#ffd700' : trade.status === 'accepted' ? '#4ecdc4' : '#ff6b6b'};">
+                                            ${trade.status}
+                                        </span>
+                                    </div>
+                                </div>
+                                ${trade.status === 'pending' && !isFromTeam ? `
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button class="btn" onclick="acceptTrade('${trade.id}')">Accept</button>
+                                        <button class="btn btn-secondary" onclick="rejectTrade('${trade.id}')">Reject</button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('') : 'No trades yet'}
             </div>
-        `;
+        </div>
+    </div>
+`;
         
     } catch (error) {
         console.error('Error loading trades:', error);
@@ -3437,6 +3494,29 @@ async function sendTradeOffer() {
     } else {
         showNotification('Success', 'Trade offer sent!', 'success');
         closeModal();
+        loadTrades();
+    }
+}
+async function acceptTrade(tradeId) {
+    const { error } = await supabaseClient
+        .from('league_trade_offers')
+        .update({ status: 'accepted', responded_at: new Date() })
+        .eq('id', tradeId);
+    
+    if (!error) {
+        showNotification('Success', 'Trade accepted!', 'success');
+        loadTrades();
+    }
+}
+
+async function rejectTrade(tradeId) {
+    const { error } = await supabaseClient
+        .from('league_trade_offers')
+        .update({ status: 'rejected', responded_at: new Date() })
+        .eq('id', tradeId);
+    
+    if (!error) {
+        showNotification('Success', 'Trade rejected', 'success');
         loadTrades();
     }
 }
