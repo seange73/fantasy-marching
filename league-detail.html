@@ -3302,8 +3302,145 @@ async function loadTrades() {
 }
 
 // Create new trade
-function createNewTrade() {
-    showNotification('Info', 'Trade creation UI coming next!', 'info');
+async function createNewTrade() {
+    // Get all teams in league except current user's
+    const { data: teams } = await supabaseClient
+        .from('league_teams')
+        .select('*')
+        .eq('league_id', leagueId)
+        .neq('id', currentTeam.id);
+    
+    // Get usernames
+    const userIds = teams.map(t => t.user_id);
+    const { data: profiles } = await supabaseClient
+        .from('profiles')
+        .select('id, username')
+        .in('id', userIds);
+    
+    const usernameMap = {};
+    profiles?.forEach(p => usernameMap[p.id] = p.username);
+    
+    // Get user's roster
+    const { data: roster } = await supabaseClient
+        .from('league_team_roster')
+        .select('*')
+        .eq('team_id', currentTeam.id)
+        .order('caption');
+    
+    // Show trade creation modal
+    const modalMessage = document.getElementById('modalMessage');
+    modalMessage.innerHTML = `
+        <div style="display: grid; gap: 1.5rem;">
+            <div>
+                <label style="color: #4ecdc4; font-weight: 600;">Trade With:</label>
+                <select id="tradePartner" class="form-input" style="width: 100%; margin-top: 0.5rem;">
+                    <option value="">Select a team...</option>
+                    ${teams.map(t => `<option value="${t.id}">${usernameMap[t.user_id] || 'Unknown'}</option>`).join('')}
+                </select>
+            </div>
+            
+            <div>
+                <label style="color: #4ecdc4; font-weight: 600;">You Give:</label>
+                <div id="yourOffers" style="margin-top: 0.5rem;">
+                    ${roster.map(r => `
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <input type="checkbox" value="${r.corps_name}|${r.caption}">
+                            <span>${r.corps_name} (${formatCaption(r.caption)})</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <div>
+                <label style="color: #4ecdc4; font-weight: 600;">You Receive:</label>
+                <div id="theirOffers" style="margin-top: 0.5rem;">
+                    <p style="color: #666;">Select a team first</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    showModal('Create Trade Offer', '', [
+        { text: 'Cancel', primary: false },
+        { text: 'Send Offer', primary: true, callback: sendTradeOffer }
+    ]);
+    
+    // Load partner's roster when selected
+    document.getElementById('tradePartner').addEventListener('change', loadPartnerRoster);
+}
+
+//load partner's roster
+async function loadPartnerRoster() {
+    const partnerId = document.getElementById('tradePartner').value;
+    if (!partnerId) return;
+    
+    const { data: roster } = await supabaseClient
+        .from('league_team_roster')
+        .select('*')
+        .eq('team_id', partnerId)
+        .order('caption');
+    
+    document.getElementById('theirOffers').innerHTML = roster.map(r => `
+        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <input type="checkbox" value="${r.corps_name}|${r.caption}">
+            <span>${r.corps_name} (${formatCaption(r.caption)})</span>
+        </label>
+    `).join('');
+}
+
+//send trade offer
+async function sendTradeOffer() {
+    const partnerId = document.getElementById('tradePartner').value;
+    if (!partnerId) {
+        showNotification('Error', 'Please select a trade partner', 'error');
+        return;
+    }
+    
+    const yourOffers = Array.from(document.querySelectorAll('#yourOffers input:checked')).map(cb => {
+        const [corps_name, caption] = cb.value.split('|');
+        return { corps_name, caption };
+    });
+    
+    const theirOffers = Array.from(document.querySelectorAll('#theirOffers input:checked')).map(cb => {
+        const [corps_name, caption] = cb.value.split('|');
+        return { corps_name, caption };
+    });
+    
+    if (yourOffers.length === 0 || theirOffers.length === 0) {
+        showNotification('Error', 'Both sides must offer at least one corps', 'error');
+        return;
+    }
+    
+    // Check 10 offer limit
+    const { count } = await supabaseClient
+        .from('league_trade_offers')
+        .select('*', { count: 'exact', head: true })
+        .eq('from_team_id', currentTeam.id)
+        .eq('status', 'pending');
+    
+    if (count >= 10) {
+        showNotification('Error', 'You can only have 10 pending offers', 'error');
+        return;
+    }
+    
+    // Create trade
+    const { error } = await supabaseClient
+        .from('league_trade_offers')
+        .insert({
+            league_id: leagueId,
+            from_team_id: currentTeam.id,
+            to_team_id: partnerId,
+            from_team_offers: yourOffers,
+            to_team_offers: theirOffers
+        });
+    
+    if (error) {
+        showNotification('Error', 'Failed to create trade: ' + error.message, 'error');
+    } else {
+        showNotification('Success', 'Trade offer sent!', 'success');
+        closeModal();
+        loadTrades();
+    }
 }
         // Initialize on load
         document.addEventListener('DOMContentLoaded', initializePage);
