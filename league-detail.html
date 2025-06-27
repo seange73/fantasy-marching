@@ -3380,27 +3380,11 @@ showModal('Create Trade Offer', `
                 ${teams.map(t => `<option value="${t.id}">${usernameMap[t.user_id] || 'Unknown'}</option>`).join('')}
             </select>
         </div>
-        
-        <div>
-            <label style="color: #4ecdc4; font-weight: 600;">You Give:</label>
-            <div id="yourOffers" style="margin-top: 0.5rem;">
-                ${roster.map(r => `
-                    <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <input type="checkbox" value="${r.corps_name}|${r.caption}">
-                        <span>${r.corps_name} (${formatCaption(r.caption)})</span>
-                    </label>
-                `).join('')}
-            </div>
-        </div>
-        
-        <div>
-            <label style="color: #4ecdc4; font-weight: 600;">You Receive:</label>
-            <div id="theirOffers" style="margin-top: 0.5rem;">
-                <p style="color: #666;">Select a team first</p>
-            </div>
-        </div>
-    </div>
+
 `, [
+    { text: 'Cancel', primary: false },
+    { text: 'Send Offer', primary: true, callback: sendTradeOffer }
+]);
     
 
     // Load partner's roster when selected
