@@ -1131,39 +1131,55 @@ async function displayMyLeagues() {
 }
 
         // Load available leagues
-        async function loadAvailableLeagues() {
-            // Get all active leagues (including private ones with passwords)
-            const { data: leagues, error } = await supabaseClient
-                .from('leagues')
-                .select('*')
-                .eq('is_active', true)
-                .order('is_global', { ascending: false })
-                .order('created_at', { ascending: false });
+async function loadAvailableLeagues() {
+    // Get all active leagues (including private ones with passwords)
+    const { data: leagues, error } = await supabaseClient
+        .from('leagues')
+        .select('*')
+        .eq('is_active', true)
+        .order('is_global', { ascending: false })
+        .order('created_at', { ascending: false });
 
-            if (error) {
-                console.error('Error loading available leagues:', error);
-                return;
-            }
+    if (error) {
+        console.error('Error loading available leagues:', error);
+        return;
+    }
 
-            // Get owner usernames separately
-            const ownerIds = [...new Set(leagues.map(l => l.owner_id))];
-            const { data: profiles } = await supabaseClient
-                .from('profiles')
-                .select('id, username')
-                .in('id', ownerIds);
+    // Get draft statuses for all leagues
+    const leagueIds = leagues.map(l => l.id);
+    const { data: drafts } = await supabaseClient
+        .from('league_drafts')
+        .select('league_id, status')
+        .in('league_id', leagueIds);
+    
+    // Create a map of league_id to draft status
+    const draftStatusMap = {};
+    drafts?.forEach(d => {
+        draftStatusMap[d.league_id] = d.status;
+    });
 
-            // Add username to each league
-            const leaguesWithProfiles = leagues.map(league => ({
-                ...league,
-                profiles: profiles?.find(p => p.id === league.owner_id)
-            }));
+    // Get owner usernames separately
+    const ownerIds = [...new Set(leagues.map(l => l.owner_id))];
+    const { data: profiles } = await supabaseClient
+        .from('profiles')
+        .select('id, username')
+        .in('id', ownerIds);
 
-            // Filter out leagues user is already in
-            const myLeagueIds = myLeagues.map(l => l.leagues.id);
-            availableLeagues = leaguesWithProfiles.filter(l => !myLeagueIds.includes(l.id));
-            
-            displayAvailableLeagues();
-        }
+    // Add username to each league
+    const leaguesWithProfiles = leagues.map(league => ({
+        ...league,
+        profiles: profiles?.find(p => p.id === league.owner_id)
+    }));
+
+    // Filter out leagues user is already in AND leagues with started/completed drafts
+    const myLeagueIds = myLeagues.map(l => l.leagues.id);
+    availableLeagues = leaguesWithProfiles.filter(l => 
+        !myLeagueIds.includes(l.id) && 
+        (!draftStatusMap[l.id] || draftStatusMap[l.id] === 'not_started')
+    );
+    
+    displayAvailableLeagues();
+}
 
         // Display available leagues
         async function displayAvailableLeagues(searchTerm = '') {
