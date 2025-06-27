@@ -1016,6 +1016,7 @@
                 <button class="tab" onclick="switchTab('matchup')">Weekly Matchup</button>
                 <button class="tab" onclick="switchTab('standings')">Standings</button>
                 <button class="tab" onclick="switchTab('recruitment')">Free Agents</button>
+				<button class="tab" onclick="switchTab('trades')">Trades</button>
             </div>
 
             <div class="content">
@@ -1050,6 +1051,13 @@
                         <!-- Free agents will be populated here -->
                     </div>
                 </div>
+				<!-- Trades Tab -->
+				<div id="trades-content" class="tab-content hidden">
+					<h2 class="section-title">Trades</h2>
+					<div id="tradesContainer">
+						<!-- Trades will be populated here -->
+					</div>
+				</div>
             </div>
         </div>
     </div>
@@ -2390,6 +2398,9 @@ function switchTab(tabName) {
         case 'recruitment':
             loadFreeAgents();
             break;
+		case 'trades':
+			loadTrades();
+			break;
     }
 }
 
@@ -3256,7 +3267,44 @@ async function loadFreeAgents() {
         container.innerHTML = '<p style="text-align: center; color: #ff6b6b;">Error loading free agents</p>';
     }
 }
+// Load trades
+async function loadTrades() {
+    const container = document.getElementById('tradesContainer');
+    container.innerHTML = '<div class="loading">Loading trades...</div>';
+    
+    try {
+        // Get user's trade offers
+        const { data: trades } = await supabaseClient
+            .from('league_trade_offers')
+            .select('*')
+            .eq('league_id', leagueId)
+            .or(`from_team_id.eq.${currentTeam.id},to_team_id.eq.${currentTeam.id}`)
+            .order('created_at', { ascending: false });
+        
+        container.innerHTML = `
+            <div style="display: grid; gap: 2rem;">
+                <div>
+                    <button class="btn" onclick="createNewTrade()">Create New Trade</button>
+                </div>
+                <div>
+                    <h3 style="color: #4ecdc4; margin-bottom: 1rem;">Active Trades</h3>
+                    <div id="activeTradesList">
+                        ${trades?.length ? 'Trades will appear here' : 'No active trades'}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Error loading trades:', error);
+        container.innerHTML = '<p style="color: #ff6b6b;">Error loading trades</p>';
+    }
+}
 
+// Create new trade
+function createNewTrade() {
+    showNotification('Info', 'Trade creation UI coming next!', 'info');
+}
         // Initialize on load
         document.addEventListener('DOMContentLoaded', initializePage);
         
