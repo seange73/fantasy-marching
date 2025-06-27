@@ -3275,8 +3275,18 @@ if (!currentTeam) {
 }
     const container = document.getElementById('tradesContainer');
     container.innerHTML = '<div class="loading">Loading trades...</div>';
-	const { data: trades } = await supabaseClient
-// Get all user IDs from trades
+    // ✅ Actually fetch trades BEFORE checking them
+    const { data: trades, error } = await supabaseClient
+        .from('league_trade_offers')
+        .select('*, from_team_offers(*), to_team_offers(*)') // include related offers if needed
+        .eq('league_id', leagueId)
+        .or(`from_team_id.eq.${currentTeam.id},to_team_id.eq.${currentTeam.id}`)
+        .order('created_at', { ascending: false });
+    if (error) {
+        console.error('Error loading trades:', error);
+        container.innerHTML = '<p style="color: #ff6b6b;">Error loading trades</p>';
+        return;
+    }
 if (!trades || trades.length === 0) {
 console.log('Trades query result:', { data: trades});
 container.innerHTML = `
@@ -3318,18 +3328,6 @@ teams?.forEach(t => {
 });
     
     try {
-        // Get user's trade offers
-const { data: trades } = await supabaseClient
-    .from('league_trade_offers')
-    .select('*')
-    .eq('league_id', leagueId)
-    .or(`from_team_id.eq.${currentTeam.id},to_team_id.eq.${currentTeam.id}`)
-    .order('created_at', { ascending: false });
-console.log('Trades query result:', { data: trades, error });
-
-if (error) {
-    console.error('Error loading trades:', error);
-}
 console.log('Trades loaded:', trades);
 container.innerHTML = `
     <div style="display: grid; gap: 2rem;">
