@@ -3273,10 +3273,10 @@ async function loadTrades() {
     container.innerHTML = '<div class="loading">Loading trades...</div>';
 	const { data: trades } = await supabaseClient
 // Get all user IDs from trades
-if (!trades || trades.length === 0) {
-    container.innerHTML = `<div>No pending trades</div>`;
-    return;
-}
+//if (!trades || trades.length === 0) {
+   //container.innerHTML = `<div>No pending trades</div>`;
+    //return;
+//}
 const teamIds = new Set();
 trades.forEach(trade => {
     teamIds.add(trade.from_team_id);
