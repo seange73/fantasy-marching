@@ -3117,7 +3117,7 @@ async function loadFreeAgents() {
             }
             freeAgentsByCaption[fa.caption].push(fa.corps_name);
         });
-        const isSunday = new Date().getDay() === 0;
+        const isSunday = new Date().getDay() === 1;
         container.innerHTML = `
             <div style="
                 background: rgba(255, 215, 0, 0.1);
@@ -3131,7 +3131,7 @@ async function loadFreeAgents() {
     Free Agent Window ${isSunday ? 'Open' : 'Closed'} - Week ${currentWeek}
 </p>
 <p style="color: #e0e0e0; font-size: 0.9rem; margin-top: 0.5rem;">
-    ${isSunday ? 'You can make one roster change today' : 'Transactions available on Sundays only'}
+    ${isSunday ? 'You can make one roster change today' : 'Transactions available on Mondays only'}
 </p>
             </div>
             
@@ -3810,8 +3810,8 @@ async function deleteLeague() {
             }
             // Check if it's Sunday
             const today = new Date();
-            if (today.getDay() !== 0) {
-                showNotification('Error', 'Transactions can only be made on Sundays', 'error');
+            if (today.getDay() !== 1) {
+                showNotification('Error', 'Transactions can only be made on Mondays', 'error');
                 return;
             }
             showModal(
