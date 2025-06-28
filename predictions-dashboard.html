@@ -657,7 +657,8 @@ if (!predictionsError && predictions) {
             }
             
             grid.innerHTML = filteredEvents.map(event => {
-                const eventDate = new Date(event.date);
+                const eventDateParts = event.date.split('-');  // YYYY-MM-DD
+const eventDate = new Date(eventDateParts[0], eventDateParts[1] - 1, eventDateParts[2]);
                 const isPast = eventDate < now;
                 const hasPredicted = userPredictions[event.id];
                 const daysUntil = Math.ceil((eventDate - now) / (1000 * 60 * 60 * 24));
