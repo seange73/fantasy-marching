@@ -3381,17 +3381,21 @@ ${trade.status === 'pending' && !isFromTeam ? `
       <div style="font-size: 0.85rem; color: #a0a0a0; margin-bottom: 0.5rem;">
         ${isFromTeam ? 'You Offer:' : 'They Offer:'}
       </div>
-      ${trade.from_team_offers.map(offer => 
-        `<div style="color: #ff6b6b;">- ${offer.corps_name} (${formatCaption(offer.caption)})</div>`
-      ).join('')}
+${trade.from_team_offers.map(offer => 
+  `<div style="color: ${isFromTeam ? '#ff6b6b' : '#4ecdc4'};">
+    ${isFromTeam ? '-' : '+'} ${offer.corps_name} (${formatCaption(offer.caption)})
+  </div>`
+).join('')}
     </div>
     <div>
       <div style="font-size: 0.85rem; color: #a0a0a0; margin-bottom: 0.5rem;">
         ${isFromTeam ? 'They Give:' : 'You Give:'}
       </div>
-      ${trade.to_team_offers.map(offer => 
-        `<div style="color: #4ecdc4;">+ ${offer.corps_name} (${formatCaption(offer.caption)})</div>`
-      ).join('')}
+${trade.to_team_offers.map(offer => 
+  `<div style="color: ${isFromTeam ? '#4ecdc4' : '#ff6b6b'};">
+    ${isFromTeam ? '+' : '-'} ${offer.corps_name} (${formatCaption(offer.caption)})
+  </div>`
+).join('')}
     </div>
   </div>
 </div>
