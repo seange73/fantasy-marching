@@ -3584,6 +3584,7 @@ async function acceptTrade(tradeId) {
         .update({ team_id: trade.to_team_id })
         .eq('team_id',   trade.from_team_id)
         .eq('corps_name', offer.corps_name)
+		.eq('caption', offer.caption)
     );
   }
 
@@ -3595,6 +3596,7 @@ async function acceptTrade(tradeId) {
         .update({ team_id: trade.from_team_id })
         .eq('team_id',   trade.to_team_id)
         .eq('corps_name', offer.corps_name)
+		.eq('caption', offer.caption)
     );
   }
 
