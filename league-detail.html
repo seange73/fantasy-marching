@@ -3517,7 +3517,7 @@ if (captionsYouGive.length !== 1 ||
     captionsYouGive[0]      !== captionsYouReceive[0]) {
     showNotification(
         'Caption Mismatch',
-        'Trades must exchange items within the **same caption** (Brass ↔ Brass, Percussion ↔ Percussion, etc.).',
+        'Trades must exchange items within the same caption (Brass ↔ Brass, Percussion ↔ Percussion, etc.).',
         'error'
     );
     return;
@@ -3554,28 +3554,91 @@ if (captionsYouGive.length !== 1 ||
     }
 }
 async function acceptTrade(tradeId) {
-    const { error } = await supabaseClient
+  // 1. fetch the trade so we know what to swap
+  const { data: trade, error: fetchErr } = await supabaseClient
         .from('league_trade_offers')
-        .update({ status: 'accepted', responded_at: new Date() })
+        .select('*')
+        .eq('id', tradeId)
+        .single();
+
+  if (fetchErr) {
+    showNotification('Error', 'Could not load trade details', 'error');
+    console.error(fetchErr);
+    return;
+  }
+
+  /*
+    trade.from_team_offers  – JSON array of corps the sender gives
+    trade.to_team_offers    – JSON array of corps the receiver gives
+    Each item has at least { corps_id, corps_name, caption }
+    Adjust the table / column names below to match your roster table.
+  */
+
+  const updates = [];
+
+  // sender → receiver
+  for (const offer of trade.from_team_offers) {
+    updates.push(
+      supabaseClient
+        .from('league_rosters')
+        .update({ team_uuid: trade.to_team_uuid })
+        .eq('team_uuid',   trade.from_team_uuid)
+        .eq('corps_id',    offer.corps_id)
+    );
+  }
+
+  // receiver → sender
+  for (const offer of trade.to_team_offers) {
+    updates.push(
+      supabaseClient
+        .from('league_rosters')
+        .update({ team_uuid: trade.from_team_uuid })
+        .eq('team_uuid',   trade.to_team_uuid)
+        .eq('corps_id',    offer.corps_id)
+    );
+  }
+
+  // run all updates in parallel
+  const results = await Promise.all(updates);
+  const rosterError = results.find(r => r.error)?.error;
+  if (rosterError) {
+    showNotification('Error', 'Roster update failed', 'error');
+    console.error(rosterError);
+    return;
+  }
+
+  // finally delete the trade row
+  const { error: delErr } = await supabaseClient
+        .from('league_trade_offers')
+        .delete()
         .eq('id', tradeId);
-    
-    if (!error) {
-        showNotification('Success', 'Trade accepted!', 'success');
-        loadTrades();
-    }
+
+  if (delErr) {
+    showNotification('Error', 'Could not delete accepted trade', 'error');
+    console.error(delErr);
+    return;
+  }
+
+  showNotification('Success', 'Trade accepted!', 'success');
+  loadTrades();                       // refresh list
 }
 
 async function rejectTrade(tradeId) {
-    const { error } = await supabaseClient
-        .from('league_trade_offers')
-        .update({ status: 'rejected', responded_at: new Date() })
-        .eq('id', tradeId);
-    
-    if (!error) {
-        showNotification('Success', 'Trade rejected', 'success');
-        loadTrades();
-    }
+  const { error } = await supabaseClient
+      .from('league_trade_offers')
+      .delete()
+      .eq('id', tradeId);
+
+  if (error) {
+    showNotification('Error', 'Could not reject trade', 'error');
+    console.error(error);
+    return;
+  }
+
+  showNotification('Success', 'Trade rejected.', 'success');
+  loadTrades();                   // refresh list
 }
+
         // Initialize on load
         document.addEventListener('DOMContentLoaded', initializePage);
         
