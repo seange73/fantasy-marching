@@ -585,6 +585,7 @@
 
                     </div>
                 </div>
+				console.log("Events loaded:", events);
             `}).join('');
         }
 
@@ -622,7 +623,7 @@
             
             showMessage('Event added successfully!', 'success');
             document.getElementById('eventForm').reset();
-            loadEvents();
+            await loadEvents();
         }
 
         // Delete event
