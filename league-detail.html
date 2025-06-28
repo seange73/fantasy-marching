@@ -3508,7 +3508,20 @@ async function sendTradeOffer() {
         showNotification('Error', 'Both sides must offer at least one corps', 'error');
         return;
     }
-    
+//enforce caption match
+const captionsYouGive     = [...new Set(yourOffers .map(o => o.caption))];
+const captionsYouReceive  = [...new Set(theirOffers.map(o => o.caption))];
+
+if (captionsYouGive.length !== 1 ||
+    captionsYouReceive.length !== 1 ||
+    captionsYouGive[0]      !== captionsYouReceive[0]) {
+    showNotification(
+        'Caption Mismatch',
+        'Trades must exchange items within the **same caption** (Brass ↔ Brass, Percussion ↔ Percussion, etc.).',
+        'error'
+    );
+    return;
+}
     // Check 10 offer limit
     const { count } = await supabaseClient
         .from('league_trade_offers')
