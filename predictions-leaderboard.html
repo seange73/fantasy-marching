@@ -383,7 +383,29 @@
         .back-link:hover {
             transform: translateX(-4px);
         }
+/* Pagination */
+        .pagination-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
 
+        .pagination-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(78, 205, 196, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
         @media (max-width: 768px) {
             .nav-tabs {
                 gap: 1rem;
@@ -472,7 +494,15 @@
                     <p>Loading leaderboard...</p>
                 </div>
             </div>
-        </div>
+        </div>           
+            <!-- Add pagination controls -->
+            <div id="paginationControls" style="display: none; margin-top: 2rem; text-align: center;">
+                <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">← Previous</button>
+                <span style="margin: 0 1rem; color: #a0a0a0;">
+                    Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+                </span>
+                <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">Next →</button>
+            </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -550,6 +580,7 @@
         // Switch leaderboard mode
         function setLeaderboardMode(mode) {
             leaderboardMode = mode;
+            currentPage = 1; // Reset to first page
             
             // Update button states
             document.getElementById('scoreBtn').classList.toggle('active', mode === 'score');
@@ -559,14 +590,26 @@
         }
 
         // Load leaderboard
-        async function loadLeaderboard() {
+         async function loadLeaderboard() {
             try {
+                // First get total count
                 let orderBy = leaderboardMode === 'accuracy' ? 'average_accuracy' : 'total_score';
+                const { count } = await supabaseClient
+                    .from('prediction_leaderboard')
+                    .select('*', { count: 'exact', head: true });
+                
+                totalItems = count || 0;
+                const totalPages = Math.ceil(totalItems / itemsPerPage);
+                
+                // Calculate offset
+                const offset = (currentPage - 1) * itemsPerPage;
+                
+                // Get paginated data
                 const { data: stats } = await supabaseClient
                     .from('prediction_leaderboard')
                     .select('*')
                     .order(orderBy, { ascending: false })
-                    .limit(50);
+                    .range(offset, offset + itemsPerPage - 1);
                 
                 if (!stats || stats.length === 0) {
                     document.getElementById('leaderboardContent').innerHTML = `
@@ -574,16 +617,25 @@
                             No prediction data available yet
                         </p>
                     `;
+                    document.getElementById('paginationControls').style.display = 'none';
                     return;
                 }
+                
+                // Update pagination controls
+                document.getElementById('currentPage').textContent = currentPage;
+                document.getElementById('totalPages').textContent = totalPages;
+                document.getElementById('prevBtn').disabled = currentPage === 1;
+                document.getElementById('nextBtn').disabled = currentPage === totalPages;
+                document.getElementById('paginationControls').style.display = 'block';
                 
                 const container = document.getElementById('leaderboardContent');
                 container.innerHTML = stats.map((player, index) => {
                     const isCurrentUser = player.user_id === currentUser.id;
+                    const globalRank = offset + index + 1;
                     
                     return `
                         <div class="leaderboard-entry ${isCurrentUser ? 'highlight' : ''}">
-                            <div class="rank ${index < 3 ? `rank-${index + 1}` : 'rank-default'}">${index + 1}</div>
+                            <div class="rank ${globalRank <= 3 ? `rank-${globalRank}` : 'rank-default'}">${globalRank}</div>
                             <div class="player-info">
                                 <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
                                 <span class="player-name">
@@ -601,7 +653,7 @@
                                     <div class="stat-label">Accuracy</div>
                                 </div>
                                 <div class="stat-item">
-                                    <div class="stat-value">${player.predictions_made}</div>
+                                    <div class="stat-value">${player.predictions_made || player.total_predictions || 0}</div>
                                     <div class="stat-label">Predictions</div>
                                 </div>
                             </div>
@@ -617,6 +669,14 @@
                     </p>
                 `;
             }
+        }
+ // Change page
+        function changePage(direction) {
+            currentPage += direction;
+            loadLeaderboard();
+            
+            // Scroll to top of leaderboard
+            document.querySelector('.leaderboard-container').scrollIntoView({ behavior: 'smooth' });
         }
 
         // Initialize on load
