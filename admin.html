@@ -913,13 +913,16 @@ document.getElementById('dateTimeForm').addEventListener('submit', async (e) => 
     const newDate = document.getElementById('newEventDate').value;
     const newTime = document.getElementById('newEventTime').value;
 
-    const { error } = await supabaseClient
-        .from('events')
-        .update({
-            date: newDate,
-            time: newTime
-        })
-        .eq('id', currentEditEventId);
+const { data, error } = await supabaseClient
+    .from('events')
+    .update({
+        date: newDate,
+        time: newTime
+    })
+    .eq('id', currentEditEventId)
+    .select();
+
+console.log("Updated event result:", data, error);
 
     if (error) {
         showDateTimeMessage('Error updating event: ' + error.message, 'error');
