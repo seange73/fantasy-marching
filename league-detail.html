@@ -3580,10 +3580,10 @@ async function acceptTrade(tradeId) {
   for (const offer of trade.from_team_offers) {
     updates.push(
       supabaseClient
-        .from('league_rosters')
-        .update({ team_uuid: trade.to_team_uuid })
-        .eq('team_uuid',   trade.from_team_uuid)
-        .eq('corps_id',    offer.corps_id)
+        .from('league_team_roster')
+        .update({ team_id: trade.to_team_id })
+        .eq('team_id',   trade.from_team_id)
+        .eq('id',    offer.id)
     );
   }
 
@@ -3591,10 +3591,10 @@ async function acceptTrade(tradeId) {
   for (const offer of trade.to_team_offers) {
     updates.push(
       supabaseClient
-        .from('league_rosters')
-        .update({ team_uuid: trade.from_team_uuid })
-        .eq('team_uuid',   trade.to_team_uuid)
-        .eq('corps_id',    offer.corps_id)
+        .from('league_team_roster')
+        .update({ team_id: trade.from_team_id })
+        .eq('team_id',   trade.to_team_id)
+        .eq('id',    offer.id)
     );
   }
 
