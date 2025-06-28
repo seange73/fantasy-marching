@@ -515,31 +515,29 @@ function formatEventDateTime(event) {
     if (!event.date || !event.time || !event.timezone) {
         return 'Date/time not set';
     }
-
+	console.log("DEBUG event", event);
     try {
-        // Create date-time string in ISO format
+        // event date+time in UTC:
         const isoString = `${event.date}T${event.time}:00`;
+        // treat it as UTC
+        const eventUtc = new Date(isoString + "Z");
 
-        // Create a Date object for the event time in its local time zone
-        const formatter = new Intl.DateTimeFormat('en-US', {
+        // convert to user's local time
+        return eventUtc.toLocaleString('en-US', {
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             weekday: 'long',
             year: 'numeric',
             month: 'long',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
-            timeZone: event.timezone,
             hour12: false
         });
-
-        // Format in viewer's local time zone
-        return formatter.format(new Date(isoString));
     } catch (e) {
-        console.error("Date conversion failed", e);
-        return 'Invalid Date';
+        console.error("date conversion failed", e);
+        return event.date;
     }
 }
-
 
         // Initialize dashboard
         async function initPredictionsDashboard() {
@@ -716,7 +714,7 @@ const eventDate = new Date(eventDateParts[0], eventDateParts[1] - 1, eventDatePa
                         <div class="event-header">
                             <div>
                                 <h3 class="event-title">${event.name}</h3>
-<div class="event-date">
+                                <div class="event-date">
     <span>📅</span>
     ${formatEventDateTime(event)}
 </div>
