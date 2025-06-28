@@ -3554,75 +3554,16 @@ if (captionsYouGive.length !== 1 ||
     }
 }
 async function acceptTrade(tradeId) {
-  // 1. fetch the trade so we know what to swap
-  const { data: trade, error: fetchErr } = await supabaseClient
-        .from('league_trade_offers')
-        .select('*')
-        .eq('id', tradeId)
-        .single();
+  const { error } = await supabaseClient.rpc('accept_trade', { p_trade_id: tradeId });
 
-  if (fetchErr) {
-    showNotification('Error', 'Could not load trade details', 'error');
-    console.error(fetchErr);
-    return;
-  }
-
-  /*
-    trade.from_team_offers  – JSON array of corps the sender gives
-    trade.to_team_offers    – JSON array of corps the receiver gives
-    Each item has at least { corps_id, corps_name, caption }
-    Adjust the table / column names below to match your roster table.
-  */
-
-  const updates = [];
-
-  // sender → receiver
-  for (const offer of trade.from_team_offers) {
-    updates.push(
-      supabaseClient
-        .from('league_team_roster')
-        .update({ team_id: trade.to_team_id })
-        .eq('team_id',   trade.from_team_id)
-        .eq('corps_name', offer.corps_name)
-		.eq('caption', offer.caption)
-    );
-  }
-
-  // receiver → sender
-  for (const offer of trade.to_team_offers) {
-    updates.push(
-      supabaseClient
-        .from('league_team_roster')
-        .update({ team_id: trade.from_team_id })
-        .eq('team_id',   trade.to_team_id)
-        .eq('corps_name', offer.corps_name)
-		.eq('caption', offer.caption)
-    );
-  }
-
-  // run all updates in parallel
-  const results = await Promise.all(updates);
-  const rosterError = results.find(r => r.error)?.error;
-  if (rosterError) {
-    showNotification('Error', 'Roster update failed', 'error');
-    console.error(rosterError);
-    return;
-  }
-
-  // finally delete the trade row
-  const { error: delErr } = await supabaseClient
-        .from('league_trade_offers')
-        .delete()
-        .eq('id', tradeId);
-
-  if (delErr) {
-    showNotification('Error', 'Could not delete accepted trade', 'error');
-    console.error(delErr);
+  if (error) {
+    showNotification('Error', 'Accepting trade failed', 'error');
+    console.error(error);
     return;
   }
 
   showNotification('Success', 'Trade accepted!', 'success');
-  loadTrades();                       // refresh list
+  loadTrades();
 }
 
 async function rejectTrade(tradeId) {
