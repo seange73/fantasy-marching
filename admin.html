@@ -598,23 +598,30 @@
             const time = document.getElementById('eventTime').value;
             const location = document.getElementById('eventLocation').value;
             const corpsList = getSelectedCorps();
-            
+            // determine timezone
+const parts = location.split(',');
+const stateAbbr = parts[parts.length - 1].trim().toUpperCase();
+const timezoneMap = {
+  // same mapping as above
+};
+const tz = timezoneMap[stateAbbr] || 'America/Chicago';
             if (corpsList.length === 0) {
                 showMessage('Please select at least one corps', 'error');
                 return;
             }
             
-            const { data, error } = await supabaseClient
-                .from('events')
-                .insert({
-                    name: name,
-                    date: date,
-                    time: time,
-                    location: location,
-                    corps_list: corpsList
-                })
-                .select()
-                .single();
+const { data, error } = await supabaseClient
+  .from('events')
+  .insert({
+    name: name,
+    date: date,
+    time: time,
+    location: location,
+    corps_list: corpsList,
+    timezone: tz
+  })
+  .select()
+  .single();
             
             if (error) {
                 showMessage('Error adding event: ' + error.message, 'error');
@@ -914,19 +921,87 @@ document.getElementById('dateTimeForm').addEventListener('submit', async (e) => 
     const newDate = document.getElementById('newEventDate').value;
     const newTime = document.getElementById('newEventTime').value;
 
-const { data, error } = await supabaseClient
-    .from('events')
-    .update({
-        date: newDate,
-        time: newTime
-    })
-    .eq('id', currentEditEventId)
-    .select();
+    // First, fetch the event to get the location
+    const { data: event, error: loadError } = await supabaseClient
+        .from('events')
+        .select('*')
+        .eq('id', currentEditEventId)
+        .single();
 
-console.log("Updated event result:", data, error);
+    if (loadError || !event) {
+        showDateTimeMessage('Error loading event location', 'error');
+        return;
+    }
 
-    if (error) {
-        showDateTimeMessage('Error updating event: ' + error.message, 'error');
+    // get timezone from location
+    const timezoneMap = {
+        'CA': 'America/Los_Angeles',
+        'OR': 'America/Los_Angeles',
+        'WA': 'America/Los_Angeles',
+        'NV': 'America/Los_Angeles',
+        'ID': 'America/Boise',
+        'MT': 'America/Denver',
+        'UT': 'America/Denver',
+        'CO': 'America/Denver',
+        'AZ': 'America/Phoenix',
+        'NM': 'America/Denver',
+        'TX': 'America/Chicago',
+        'OK': 'America/Chicago',
+        'KS': 'America/Chicago',
+        'NE': 'America/Chicago',
+        'SD': 'America/Chicago',
+        'ND': 'America/Chicago',
+        'MN': 'America/Chicago',
+        'IA': 'America/Chicago',
+        'MO': 'America/Chicago',
+        'WI': 'America/Chicago',
+        'IL': 'America/Chicago',
+        'IN': 'America/Indiana/Indianapolis',
+        'MI': 'America/Detroit',
+        'OH': 'America/New_York',
+        'PA': 'America/New_York',
+        'NY': 'America/New_York',
+        'NJ': 'America/New_York',
+        'CT': 'America/New_York',
+        'MA': 'America/New_York',
+        'RI': 'America/New_York',
+        'VT': 'America/New_York',
+        'NH': 'America/New_York',
+        'ME': 'America/New_York',
+        'FL': 'America/New_York',
+        'GA': 'America/New_York',
+        'SC': 'America/New_York',
+        'NC': 'America/New_York',
+        'VA': 'America/New_York',
+        'MD': 'America/New_York',
+        'DC': 'America/New_York',
+        'KY': 'America/New_York',
+        'TN': 'America/Chicago',
+        'AL': 'America/Chicago',
+        'MS': 'America/Chicago',
+        'LA': 'America/Chicago',
+        'AR': 'America/Chicago'
+    };
+
+    let tz = 'America/Chicago'; // default
+    if (event.location) {
+        const parts = event.location.split(',');
+        const stateAbbr = parts[parts.length - 1].trim().toUpperCase();
+        tz = timezoneMap[stateAbbr] || 'America/Chicago';
+    }
+
+    // now update with timezone
+    const { error: updateError } = await supabaseClient
+        .from('events')
+        .update({
+            date: newDate,
+            time: newTime,
+            timezone: tz
+        })
+        .eq('id', currentEditEventId);
+
+    if (updateError) {
+        showDateTimeMessage('Error updating event: ' + updateError.message, 'error');
         return;
     }
 
