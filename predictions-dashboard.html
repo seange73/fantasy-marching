@@ -592,16 +592,17 @@
             allEvents = events || [];
             
             // Load user's predictions
-            const { data: predictions, error: predictionsError } = await supabaseClient
-                .from('predictions')
-                .select('event_id')
-                .eq('user_id', currentUser.id);
-            
-            if (!predictionsError && predictions) {
-                predictions.forEach(pred => {
-                    userPredictions[pred.event_id] = true;
-                });
-            }
+// Load user's predictions
+const { data: predictions, error: predictionsError } = await supabaseClient
+    .from('predictions')
+    .select('id, event_id')
+    .eq('user_id', currentUser.id);
+
+if (!predictionsError && predictions) {
+    predictions.forEach(pred => {
+        userPredictions[pred.event_id] = pred.id;   // store the prediction id
+    });
+}
             
             // Display events
             displayEvents();
@@ -740,9 +741,18 @@
         }
 
         // Navigate to event prediction page
-        function goToEvent(eventId) {
-            window.location.href = `/predictions.html?eventId=${eventId}`;
-        }
+function goToEvent(eventId) {
+    const event = allEvents.find(ev => ev.id === eventId);
+    if (!event) return;
+
+    if (event.is_completed && userPredictions[eventId]) {
+        // go to results page
+        window.location.href = `/prediction-results.html?predictionId=${userPredictions[eventId]}`;
+    } else {
+        // go to predictions page
+        window.location.href = `/predictions.html?eventId=${eventId}`;
+    }
+}
 
         // Initialize on load
         document.addEventListener('DOMContentLoaded', initPredictionsDashboard);

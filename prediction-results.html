@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Results - Fantasy Marching</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles - Exact from predictions.html */
+        .header {
+            background: rgba(15, 15, 35, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            height: 75px;
+            width: auto;
+            display: block;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-tab {
+            color: #a0a0a0;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            color: #4ecdc4;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            border-radius: 2px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: rgba(26, 26, 46, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0.5rem;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .profile-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: #e0e0e0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .dropdown-item.admin {
+            color: #4ecdc4;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0.5rem 0;
+        }
+
+        .dropdown-icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        /* Event Header */
+        .event-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .event-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4ecdc4;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            transform: translateX(-4px);
+        }
+
+        /* Card Styles */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #4ecdc4;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Leaderboard Styles - Exact from predictions.html */
+        .leaderboard {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            min-height: 300px;
+        }
+
+        .leaderboard-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #4ecdc4;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem 1rem 60px;
+            margin-bottom: 0.75rem;
+            border-radius: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            font-weight: 600;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .leaderboard-entry::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .rank-number {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            font-weight: 800;
+            opacity: 0.8;
+            width: 30px;
+            text-align: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .corps-total {
+            background: transparent;
+        }
+
+        .gold {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #000;
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+        }
+
+        .gold::before {
+            background: #ffd700;
+            width: 6px;
+        }
+
+        .silver {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+            color: #000;
+            box-shadow: 0 8px 25px rgba(192, 192, 192, 0.3);
+        }
+
+        .silver::before {
+            background: #c0c0c0;
+            width: 5px;
+        }
+
+        .bronze {
+            background: linear-gradient(135deg, #cd7f32 0%, #e8a857 100%);
+            color: #000;
+            box-shadow: 0 8px 25px rgba(205, 127, 50, 0.3);
+        }
+
+        .bronze::before {
+            background: #cd7f32;
+            width: 4px;
+        }
+
+        .default {
+            background: rgba(255, 255, 255, 0.08);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .default::before {
+            display: none;
+        }
+
+        /* Accuracy Section */
+        .accuracy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .accuracy-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .accuracy-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .accuracy-label {
+            font-size: 0.9rem;
+            color: #a0a0a0;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .accuracy-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4ecdc4;
+        }
+
+        .accuracy-percentage {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Points Breakdown */
+        .breakdown-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .breakdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .breakdown-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .breakdown-corps {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .breakdown-total {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #4ecdc4;
+        }
+
+        .points-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .points-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .points-label {
+            font-size: 0.85rem;
+            color: #a0a0a0;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .points-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4ecdc4;
+        }
+
+        /* Caption Awards */
+        .caption-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .caption-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .caption-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .caption-type {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .caption-pick {
+            font-size: 1rem;
+            color: #a0a0a0;
+            margin-bottom: 1rem;
+        }
+
+        .caption-result {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .caption-result.correct {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+        }
+
+        .caption-result.incorrect {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        /* Icons */
+        .icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .event-title {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .accuracy-percentage {
+                font-size: 2.5rem;
+            }
+
+            .points-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-tabs {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .header-content {
+                padding: 1rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+        }
+
+        /* Animations */
+        .animate-in {
+            animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/dashboard.html" class="logo-link">
+                <img src="images/logo.png" alt="Fantasy Marching" class="logo">
+            </a>
+            
+            <nav class="nav-tabs">
+                <a href="/dashboard.html" class="nav-tab">Dashboard</a>
+                <a href="/predictions-dashboard.html" class="nav-tab active">Predictions</a>
+                <a href="/league.html" class="nav-tab">League</a>
+                <a href="/contact.html" class="nav-tab">Contact Us</a>
+            </nav>
+            
+            <div class="user-profile" onclick="toggleUserMenu()">
+                <div class="user-avatar" id="userAvatar">
+                    <!-- Will be populated with user initial or image -->
+                </div>
+                <span class="user-name" id="userName">Loading...</span>
+                
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="/profile.html" class="dropdown-item">
+                        <span class="dropdown-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <a href="/settings.html" class="dropdown-item">
+                        <span class="dropdown-icon">⚙️</span>
+                        <span>Settings</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
+                        <span class="dropdown-icon">🛡️</span>
+                        <span>Admin Panel</span>
+                    </a>
+                    <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
+                    <div class="dropdown-item" onclick="logout()">
+                        <span class="dropdown-icon">🚪</span>
+                        <span>Logout</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <a href="/predictions-dashboard.html" class="back-link">← Back to All Events</a>
+        
+        <div class="event-header animate-in">
+            <h1 class="event-title">DCI Championships 2024</h1>
+            <p class="subtitle">August 10, 2024 • Lucas Oil Stadium, Indianapolis, IN</p>
+        </div>
+
+        <!-- Predicted Placements -->
+        <div class="card">
+            <div class="leaderboard">
+                <h2 class="leaderboard-title">Your Predicted Placements</h2>
+                <div id="leaderboard">
+                    <div class="leaderboard-entry gold">
+                        <div class="rank-number">1</div>
+                        <strong>Blue Devils</strong>
+                        <div class="corps-total">98.500</div>
+                    </div>
+                    <div class="leaderboard-entry silver">
+                        <div class="rank-number">2</div>
+                        <strong>Boston Crusaders</strong>
+                        <div class="corps-total">97.850</div>
+                    </div>
+                    <div class="leaderboard-entry bronze">
+                        <div class="rank-number">3</div>
+                        <strong>Bluecoats</strong>
+                        <div class="corps-total">97.200</div>
+                    </div>
+                    <div class="leaderboard-entry default">
+                        <div class="rank-number">4</div>
+                        <strong>Carolina Crown</strong>
+                        <div class="corps-total">96.750</div>
+                    </div>
+                    <div class="leaderboard-entry default">
+                        <div class="rank-number">5</div>
+                        <strong>The Cavaliers</strong>
+                        <div class="corps-total">95.900</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accuracy Summary -->
+        <div class="card">
+            <h2 class="section-title">Prediction Accuracy</h2>
+            <div class="accuracy-grid">
+                <div class="accuracy-item">
+                    <div class="accuracy-label">Points Earned</div>
+                    <div class="accuracy-value">850</div>
+                </div>
+                <div class="accuracy-item">
+                    <div class="accuracy-label">Possible Points</div>
+                    <div class="accuracy-value">1000</div>
+                </div>
+                <div class="accuracy-item">
+                    <div class="accuracy-label">Accuracy</div>
+                    <div class="accuracy-value accuracy-percentage">85%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Points Breakdown -->
+        <div class="card">
+            <h2 class="section-title">Points Breakdown by Corps</h2>
+            
+            <div class="breakdown-item">
+                <div class="breakdown-header">
+                    <div class="breakdown-corps">Blue Devils</div>
+                    <div class="breakdown-total">180 pts</div>
+                </div>
+                <div class="points-grid">
+                    <div class="points-item">
+                        <div class="points-label">Placement</div>
+                        <div class="points-value">100</div>
+                    </div>
+                    <div class="points-item">
+                        <div class="points-label">Score</div>
+                        <div class="points-value">50</div>
+                    </div>
+                    <div class="points-item">
+                        <div class="points-label">Bonus</div>
+                        <div class="points-value">30</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="breakdown-item">
+                <div class="breakdown-header">
+                    <div class="breakdown-corps">Boston Crusaders</div>
+                    <div class="breakdown-total">150 pts</div>
+                </div>
+                <div class="points-grid">
+                    <div class="points-item">
+                        <div class="points-label">Placement</div>
+                        <div class="points-value">80</div>
+                    </div>
+                    <div class="points-item">
+                        <div class="points-label">Score</div>
+                        <div class="points-value">45</div>
+                    </div>
+                    <div class="points-item">
+                        <div class="points-label">Bonus</div>
+                        <div class="points-value">25</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="breakdown-item">
+                <div class="breakdown-header">
+                    <div class="breakdown-corps">Bluecoats</div>
+                    <div class="breakdown-total">160 pts</div>
+                </div>
+                <div class="points-grid">
+                    <div class="points-item">
+                        <div class="points-label">Placement</div>
+                        <div class="points-value">90</div>
+                    </div>
+                    <div class="points-item">
+                        <div class="points-label">Score</div>
+                        <div class="points-value">40</div>
+                    </div>
+                    <div class="points-item">
+                        <div class="points-label">Bonus</div>
+                        <div class="points-value">30</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="breakdown-item">
+                <div class="breakdown-header">
+                    <div class="breakdown-corps">Carolina Crown</div>
+                    <div class="breakdown-total">140 pts</div>
+                </div>
+                <div class="points-grid">
+                    <div class="points-item">
+                        <div class="points-label">Placement</div>
+                        <div class="points-value">70</div>
+                    </div>
+                    <div class="points-item">
+                        <div class="points-label">Score</div>
+                        <div class="points-value">50</div>
+                    </div>
+                    <div class="points-item">
+                        <div class="points-label">Bonus</div>
+                        <div class="points-value">20</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="breakdown-item">
+                <div class="breakdown-header">
+                    <div class="breakdown-corps">The Cavaliers</div>
+                    <div class="breakdown-total">120 pts</div>
+                </div>
+                <div class="points-grid">
+                    <div class="points-item">
+                        <div class="points-label">Placement</div>
+                        <div class="points-value">60</div>
+                    </div>
+                    <div class="points-item">
+                        <div class="points-label">Score</div>
+                        <div class="points-value">35</div>
+                    </div>
+                    <div class="points-item">
+                        <div class="points-label">Bonus</div>
+                        <div class="points-value">25</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Caption Awards -->
+        <div class="card">
+            <h2 class="section-title">Caption Award Predictions</h2>
+            <div class="caption-grid">
+                <div class="caption-item">
+                    <div class="caption-type">Brass</div>
+                    <div class="caption-pick">Your Pick: Blue Devils</div>
+                    <div class="caption-result correct">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                        Correct
+                    </div>
+                </div>
+                <div class="caption-item">
+                    <div class="caption-type">Percussion</div>
+                    <div class="caption-pick">Your Pick: Boston Crusaders</div>
+                    <div class="caption-result incorrect">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                        Missed
+                    </div>
+                </div>
+                <div class="caption-item">
+                    <div class="caption-type">Color Guard</div>
+                    <div class="caption-pick">Your Pick: Bluecoats</div>
+                    <div class="caption-result correct">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                        Correct
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+async function loadPredictionData() {
+    const predictionId = getPredictionIdFromUrl();
+    if (!predictionId) {
+        alert("Missing prediction ID");
+        return;
+    }
+
+    try {
+        // 1. Get the prediction itself
+        const { data: prediction, error: predError } = await supabaseClient
+            .from("predictions")
+            .select("*")
+            .eq("id", predictionId)
+            .single();
+
+        if (predError || !prediction) {
+            console.error(predError);
+            alert("Prediction not found");
+            return;
+        }
+
+        // 2. Get the scoring results
+        const { data: result, error: resultError } = await supabaseClient
+            .from("prediction_results")
+            .select("*")
+            .eq("prediction_id", predictionId)
+            .single();
+
+        if (resultError || !result) {
+            console.error(resultError);
+            alert("Scoring not found for this prediction");
+            return;
+        }
+
+        // 3. Get the event details
+        const { data: event, error: eventError } = await supabaseClient
+            .from("events")
+            .select("*")
+            .eq("id", prediction.event_id)
+            .single();
+
+        if (eventError || !event) {
+            console.error(eventError);
+            alert("Event not found");
+            return;
+        }
+
+        renderPredictionPage(prediction, result, event);
+
+    } catch (e) {
+        console.error(e);
+        alert("Error loading prediction");
+    }
+}
+function renderPredictionPage(prediction, result, event) {
+    // event name/date
+    document.querySelector(".event-title").textContent = event.name;
+    const eventDate = new Date(event.date).toLocaleDateString("en-US", {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+    document.querySelector(".subtitle").textContent = `${eventDate} • ${event.location || "TBD"}`;
+
+    // accuracy summary
+    document.querySelector(".accuracy-grid").innerHTML = `
+        <div class="accuracy-item">
+            <div class="accuracy-label">Points Earned</div>
+            <div class="accuracy-value">${result.total_points}</div>
+        </div>
+        <div class="accuracy-item">
+            <div class="accuracy-label">Possible Points</div>
+            <div class="accuracy-value">${result.total_possible}</div>
+        </div>
+        <div class="accuracy-item">
+            <div class="accuracy-label">Accuracy</div>
+            <div class="accuracy-value accuracy-percentage">${Math.round(result.accuracy * 100)}%</div>
+        </div>
+    `;
+
+    // predicted rankings
+    const ordered = Object.entries(prediction.score_predictions || {})
+        .sort((a,b) => b[1] - a[1]);
+
+    const leaderboard = document.getElementById("leaderboard");
+    leaderboard.innerHTML = ordered.map(([corps,score],index) => {
+        let cls = "default";
+        if(index === 0) cls = "gold";
+        else if(index === 1) cls = "silver";
+        else if(index === 2) cls = "bronze";
+        return `
+            <div class="leaderboard-entry ${cls}">
+                <div class="rank-number">${index+1}</div>
+                <strong>${corps}</strong>
+                <div class="corps-total">${score.toFixed(3)}</div>
+            </div>
+        `;
+    }).join("");
+
+    // caption awards
+    const captions = ["brass","percussion","guard"];
+    const captionContainer = document.querySelector(".caption-grid");
+    captionContainer.innerHTML = captions.map(caption => {
+        const userPick = prediction.caption_predictions?.[caption] || "N/A";
+        const actual = event.caption_winners?.[caption] || "N/A";
+        const correct = userPick === actual;
+        return `
+            <div class="caption-item">
+                <div class="caption-type">${caption.replace("_"," ").toUpperCase()}</div>
+                <div class="caption-pick">Your Pick: ${userPick}</div>
+                <div class="caption-result ${correct ? "correct" : "incorrect"}">
+                    ${correct ? "✔ Correct" : "✖ Missed"}
+                </div>
+            </div>
+        `;
+    }).join("");
+
+    // you can later expand to points breakdown by looping through corps if you store it
+}
+function getPredictionIdFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("predictionId");
+}
+        // Toggle user menu
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const profile = document.querySelector('.user-profile');
+            const dropdown = document.getElementById('profileDropdown');
+            
+            if (!profile.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // Logout function
+        function logout() {
+            // TODO: Implement logout with Supabase
+            console.log('Logout function to be implemented');
+            window.location.href = '/login.html';
+        }
+
+        // Initialize user data
+        function initializeUserData() {
+            // TODO: Get user data from Supabase
+            // For now, using placeholder data
+            const userName = localStorage.getItem('userName') || 'User';
+            const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
+            
+            document.getElementById('userName').textContent = userName;
+            document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
+            
+            // Check if user is admin
+            const isAdmin = localStorage.getItem('isAdmin') === 'true';
+            if (isAdmin) {
+                document.getElementById('adminLink').style.display = 'flex';
+                document.getElementById('adminDivider').style.display = 'block';
+            }
+        }
+initializeUserData();
+loadPredictionData();
+    </script>
+</body>
+</html>
