@@ -833,36 +833,40 @@ grid.innerHTML = reminders.map(reminder => `
 }
 
         // Load predictions leaderboard
-        async function loadPredictionsLeaderboard() {
-            try {
-                // Get user prediction stats
-                const { data: stats } = await supabaseClient
-                    .from('user_prediction_stats')
-                    .select('*')
-                    .order('total_predictions', { ascending: false })
-                    .limit(5);
-                
-                if (stats && stats.length > 0) {
-                    const container = document.getElementById('predictionsLeaderboard');
-                    container.innerHTML = stats.map((player, index) => `
-                        <div class="leaderboard-entry">
-                            <div class="rank ${index < 3 ? `rank-${index + 1}` : 'rank-default'}">${index + 1}</div>
-                            <div class="player-info">
-                                <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
-                                <span class="player-name">${player.username || 'User'}</span>
-                            </div>
-                            <span class="player-score">${player.total_predictions} predictions</span>
-                        </div>
-                    `).join('');
-                } else {
-                    // Use mock data if no real data
-                    loadMockPredictionsLeaderboard();
-                }
-            } catch (error) {
-                console.error('Error loading predictions leaderboard:', error);
-                loadMockPredictionsLeaderboard();
-            }
+async function loadPredictionsLeaderboard() {
+    try {
+        let orderBy = leaderboardMode === 'accuracy' ? 'average_accuracy' : 'total_score';
+        const { data: stats } = await supabaseClient
+            .from('prediction_leaderboard')
+            .select('*')
+            .order(orderBy, { ascending: false })
+            .limit(5);
+        
+        if (stats && stats.length > 0) {
+            const container = document.getElementById('predictionsLeaderboard');
+            container.innerHTML = stats.map((player, index) => `
+                <div class="leaderboard-entry">
+                    <div class="rank ${index < 3 ? `rank-${index + 1}` : 'rank-default'}">${index + 1}</div>
+                    <div class="player-info">
+                        <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
+                        <span class="player-name">${player.username || 'User'}</span>
+                    </div>
+                    <span class="player-score">${
+                        leaderboardMode === 'accuracy'
+                        ? (player.average_accuracy * 100).toFixed(2) + '%'
+                        : player.total_score + ' pts'
+                    }</span>
+                </div>
+            `).join('');
         }
+    } catch (error) {
+        console.error('Error loading predictions leaderboard:', error);
+    }
+}
+function setLeaderboardMode(mode) {
+    leaderboardMode = mode;
+    loadPredictionsLeaderboard();
+}
 
         // Fallback mock data for predictions
         function loadMockPredictionsLeaderboard() {
@@ -1168,6 +1172,7 @@ async function loadUserLeagues() {
     let currentRequestLeagueId = null;
     let currentRequestUserId = null;
 	let currentRequestUsername = null; // Add this line
+	let leaderboardMode = 'score';
 	
     function handleJoinRequest(requestId, leagueId, userId, username, leagueName) {
         currentRequestId = requestId;
