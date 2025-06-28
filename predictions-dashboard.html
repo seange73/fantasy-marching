@@ -687,7 +687,7 @@ const eventDate = new Date(eventDateParts[0], eventDateParts[1] - 1, eventDatePa
 
 const isPast = eventDateTime < now;
                 const hasPredicted = userPredictions[event.id];
-                const daysUntil = Math.ceil(eventDateTime.diff(now, 'days').days);
+                const daysUntil = Math.round(eventDateTime.diff(now, 'days').days)
                 
                 let status = 'upcoming';
                 let statusText = 'Upcoming';
