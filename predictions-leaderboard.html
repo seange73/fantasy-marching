@@ -511,7 +511,9 @@
         let currentUser = null;
         let isAdmin = false;
         let leaderboardMode = 'score';
-
+		let currentPage = 1;
+        let totalItems = 0;
+        const itemsPerPage = 50;
         // Initialize page
         async function initializePage() {
             // Check authentication
