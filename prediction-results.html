@@ -709,113 +709,11 @@
 
         <!-- Points Breakdown -->
         <div class="card">
-            <h2 class="section-title">Points Breakdown by Corps</h2>
-            
-            <div class="breakdown-item">
-                <div class="breakdown-header">
-                    <div class="breakdown-corps">Blue Devils</div>
-                    <div class="breakdown-total">180 pts</div>
-                </div>
-                <div class="points-grid">
-                    <div class="points-item">
-                        <div class="points-label">Placement</div>
-                        <div class="points-value">100</div>
-                    </div>
-                    <div class="points-item">
-                        <div class="points-label">Score</div>
-                        <div class="points-value">50</div>
-                    </div>
-                    <div class="points-item">
-                        <div class="points-label">Bonus</div>
-                        <div class="points-value">30</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="breakdown-item">
-                <div class="breakdown-header">
-                    <div class="breakdown-corps">Boston Crusaders</div>
-                    <div class="breakdown-total">150 pts</div>
-                </div>
-                <div class="points-grid">
-                    <div class="points-item">
-                        <div class="points-label">Placement</div>
-                        <div class="points-value">80</div>
-                    </div>
-                    <div class="points-item">
-                        <div class="points-label">Score</div>
-                        <div class="points-value">45</div>
-                    </div>
-                    <div class="points-item">
-                        <div class="points-label">Bonus</div>
-                        <div class="points-value">25</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="breakdown-item">
-                <div class="breakdown-header">
-                    <div class="breakdown-corps">Bluecoats</div>
-                    <div class="breakdown-total">160 pts</div>
-                </div>
-                <div class="points-grid">
-                    <div class="points-item">
-                        <div class="points-label">Placement</div>
-                        <div class="points-value">90</div>
-                    </div>
-                    <div class="points-item">
-                        <div class="points-label">Score</div>
-                        <div class="points-value">40</div>
-                    </div>
-                    <div class="points-item">
-                        <div class="points-label">Bonus</div>
-                        <div class="points-value">30</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="breakdown-item">
-                <div class="breakdown-header">
-                    <div class="breakdown-corps">Carolina Crown</div>
-                    <div class="breakdown-total">140 pts</div>
-                </div>
-                <div class="points-grid">
-                    <div class="points-item">
-                        <div class="points-label">Placement</div>
-                        <div class="points-value">70</div>
-                    </div>
-                    <div class="points-item">
-                        <div class="points-label">Score</div>
-                        <div class="points-value">50</div>
-                    </div>
-                    <div class="points-item">
-                        <div class="points-label">Bonus</div>
-                        <div class="points-value">20</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="breakdown-item">
-                <div class="breakdown-header">
-                    <div class="breakdown-corps">The Cavaliers</div>
-                    <div class="breakdown-total">120 pts</div>
-                </div>
-                <div class="points-grid">
-                    <div class="points-item">
-                        <div class="points-label">Placement</div>
-                        <div class="points-value">60</div>
-                    </div>
-                    <div class="points-item">
-                        <div class="points-label">Score</div>
-                        <div class="points-value">35</div>
-                    </div>
-                    <div class="points-item">
-                        <div class="points-label">Bonus</div>
-                        <div class="points-value">25</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <h2 class="section-title">How Predictions Are Scored</h2>
+  <p style="text-align:center; color:#a0a0a0;">
+    <a href="/contact.html" style="color:#4ecdc4; text-decoration:underline;">Learn about scoring rules here</a>
+  </p>
+</div>
 
         <!-- Caption Awards -->
         <div class="card">
@@ -967,9 +865,9 @@ function renderPredictionPage(prediction, result, event) {
             <div class="caption-item">
                 <div class="caption-type">${caption.replace("_"," ").toUpperCase()}</div>
                 <div class="caption-pick">Your Pick: ${userPick}</div>
-                <div class="caption-result ${correct ? "correct" : "incorrect"}">
-                    ${correct ? "✔ Correct" : "✖ Missed"}
-                </div>
+<div class="caption-result ${correct ? "correct" : "incorrect"}">
+  ${correct ? "✔ Correct" : `✖ Missed (Actual: ${actual})`}
+</div>
             </div>
         `;
     }).join("");
@@ -1005,19 +903,25 @@ function getPredictionIdFromUrl() {
 
         // Initialize user data
         function initializeUserData() {
-            // TODO: Get user data from Supabase
-            // For now, using placeholder data
-            const userName = localStorage.getItem('userName') || 'User';
-            const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('username, avatar_url, is_admin')
+                .eq('id', currentUser.id)
+                .single();
             
-            document.getElementById('userName').textContent = userName;
-            document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
-            
-            // Check if user is admin
-            const isAdmin = localStorage.getItem('isAdmin') === 'true';
-            if (isAdmin) {
-                document.getElementById('adminLink').style.display = 'flex';
-                document.getElementById('adminDivider').style.display = 'block';
+            if (profile) {
+                document.getElementById('userName').textContent = profile.username || currentUser.email.split('@')[0];
+                
+                // Set avatar (initial letter for now)
+                const initial = (profile.username || currentUser.email)[0].toUpperCase();
+                document.getElementById('userAvatar').textContent = initial;
+                
+                // Check admin status
+                isAdmin = profile.is_admin || false;
+                if (isAdmin) {
+                    document.getElementById('adminLink').style.display = 'flex';
+                    document.getElementById('adminDivider').style.display = 'block';
+                }
             }
         }
 initializeUserData();
