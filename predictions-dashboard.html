@@ -515,6 +515,7 @@ function formatEventDateTime(event) {
     if (!event.date || !event.time || !event.timezone) {
         return 'Date/time not set';
     }
+	console.log("DEBUG event", event);
     try {
         // event date+time in UTC:
         const isoString = `${event.date}T${event.time}:00`;
