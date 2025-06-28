@@ -3583,7 +3583,7 @@ async function acceptTrade(tradeId) {
         .from('league_team_roster')
         .update({ team_id: trade.to_team_id })
         .eq('team_id',   trade.from_team_id)
-        .eq('id',    offer.id)
+        //.eq('id',    offer.id)
     );
   }
 
@@ -3594,7 +3594,7 @@ async function acceptTrade(tradeId) {
         .from('league_team_roster')
         .update({ team_id: trade.from_team_id })
         .eq('team_id',   trade.to_team_id)
-        .eq('id',    offer.id)
+        //.eq('id',    offer.id)
     );
   }
 
