@@ -696,7 +696,35 @@
                         `).join('')}
                     </div>
                 `;
-                
+                content.innerHTML += `
+  <div class="corps-score-section" style="margin-top: 2rem;">
+    <h4 class="corps-score-title">Caption Winners</h4>
+    <div class="score-inputs">
+      <div class="score-input-group">
+        <label>Brass Winner</label>
+        <select id="brass_winner">
+          <option value="">Select Corps</option>
+          ${currentEventCorps.map(corps => `<option value="${corps}">${corps}</option>`).join('')}
+        </select>
+      </div>
+      <div class="score-input-group">
+        <label>Percussion Winner</label>
+        <select id="percussion_winner">
+          <option value="">Select Corps</option>
+          ${currentEventCorps.map(corps => `<option value="${corps}">${corps}</option>`).join('')}
+        </select>
+      </div>
+      <div class="score-input-group">
+        <label>Color Guard Winner</label>
+        <select id="guard_winner">
+          <option value="">Select Corps</option>
+          ${currentEventCorps.map(corps => `<option value="${corps}">${corps}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+  </div>
+`;
+
                 document.getElementById('scoreModal').style.display = 'block';
             } catch (error) {
                 console.error('Error in editScores:', error);
@@ -740,7 +768,9 @@
                     total_score: total
                 });
             }
-            
+            const brassWinner = document.getElementById('brass_winner').value;
+			const percussionWinner = document.getElementById('percussion_winner').value;
+			const guardWinner = document.getElementById('guard_winner').value;
             // Delete existing scores and insert new ones
             const { error: deleteError } = await supabaseClient
                 .from('event_scores')
@@ -766,7 +796,14 @@
             if (allScoresEntered) {
                 await supabaseClient
                     .from('events')
-                    .update({ is_completed: true })
+                    .update({
+    is_completed: allScoresEntered,
+    caption_winners: {
+      brass: brassWinner,
+      percussion: percussionWinner,
+      color_guard: guardWinner
+    }
+  })
                     .eq('id', currentEventId);
             }
             
