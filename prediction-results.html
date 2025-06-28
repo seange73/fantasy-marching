@@ -855,22 +855,31 @@ function renderPredictionPage(prediction, result, event) {
     }).join("");
 
     // caption awards
-    const captions = ["brass","percussion","color_guard"];
-    const captionContainer = document.querySelector(".caption-grid");
-    captionContainer.innerHTML = captions.map(caption => {
-        const userPick = prediction.caption_predictions?.[caption] || "N/A";
-        const actual = event.caption_winners?.[caption] || "N/A";
-        const correct = userPick === actual;
-        return `
-            <div class="caption-item">
-                <div class="caption-type">${caption.replace("_"," ").toUpperCase()}</div>
-                <div class="caption-pick">Your Pick: ${userPick}</div>
-<div class="caption-result ${correct ? "correct" : "incorrect"}">
-  ${correct ? "✔ Correct" : `✖ Missed (Actual: ${actual})`}
-</div>
+const captions = ["brass","percussion","color_guard"];
+const captionContainer = document.querySelector(".caption-grid");
+captionContainer.innerHTML = captions.map(caption => {
+    let userPick = prediction.caption_predictions?.[caption] || null;
+
+    // fix: map 'guard' prediction key to 'color_guard'
+    if (!userPick && caption === "color_guard") {
+        userPick = prediction.caption_predictions?.["guard"] || "N/A";
+    }
+    userPick = userPick || "N/A";
+
+    const actual = event.caption_winners?.[caption] || "N/A";
+    const correct = userPick === actual;
+
+    return `
+        <div class="caption-item">
+            <div class="caption-type">${caption.replace("_"," ").toUpperCase()}</div>
+            <div class="caption-pick">Your Pick: ${userPick}</div>
+            <div class="caption-result ${correct ? "correct" : "incorrect"}">
+                ${correct ? "✔ Correct" : `✖ Missed (Actual: ${actual})`}
             </div>
-        `;
-    }).join("");
+        </div>
+    `;
+}).join("");
+
 
     // you can later expand to points breakdown by looping through corps if you store it
 }
