@@ -516,16 +516,14 @@ function formatEventDateTime(event) {
         return 'Date/time not set';
     }
     try {
-        // parse event date+time in event's timezone
-        const tzDate = new Date(`${event.date}T${event.time}:00`);
+        // event date+time in UTC:
+        const isoString = `${event.date}T${event.time}:00`;
+        // treat it as UTC
+        const eventUtc = new Date(isoString + "Z");
 
-        // get timestamp in UTC from event timezone
-        const eventTime = new Date(
-            tzDate.toLocaleString("en-US", { timeZone: event.timezone })
-        );
-
-        // show in viewer's local time
-        return eventTime.toLocaleString('en-US', {
+        // convert to user's local time
+        return eventUtc.toLocaleString('en-US', {
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -539,6 +537,7 @@ function formatEventDateTime(event) {
         return event.date;
     }
 }
+
         // Initialize dashboard
         async function initPredictionsDashboard() {
             // Check authentication
