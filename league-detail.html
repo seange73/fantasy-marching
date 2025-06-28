@@ -3379,7 +3379,7 @@ ${trade.status === 'pending' && !isFromTeam ? `
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
     <div>
       <div style="font-size: 0.85rem; color: #a0a0a0; margin-bottom: 0.5rem;">
-        ${isFromTeam ? 'You Offer:' : 'They Offer:'}
+        ${isFromTeam ? 'Offering:' : 'Requesting:'}
       </div>
 ${trade.from_team_offers.map(offer => 
   `<div style="color: ${isFromTeam ? '#ff6b6b' : '#4ecdc4'};">
