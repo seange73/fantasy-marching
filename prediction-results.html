@@ -855,7 +855,7 @@ function renderPredictionPage(prediction, result, event) {
     }).join("");
 
     // caption awards
-    const captions = ["brass","percussion","guard"];
+    const captions = ["brass","percussion","color_guard"];
     const captionContainer = document.querySelector(".caption-grid");
     captionContainer.innerHTML = captions.map(caption => {
         const userPick = prediction.caption_predictions?.[caption] || "N/A";
