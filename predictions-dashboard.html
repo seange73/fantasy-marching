@@ -511,6 +511,34 @@
         let userPredictions = {};
         let currentFilter = 'all';
 
+function formatEventDateTime(event) {
+    if (!event.date || !event.time || !event.timezone) {
+        return 'Date/time not set';
+    }
+    try {
+        // parse event date+time in event's timezone
+        const tzDate = new Date(`${event.date}T${event.time}:00`);
+
+        // get timestamp in UTC from event timezone
+        const eventTime = new Date(
+            tzDate.toLocaleString("en-US", { timeZone: event.timezone })
+        );
+
+        // show in viewer's local time
+        return eventTime.toLocaleString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+    } catch (e) {
+        console.error("date conversion failed", e);
+        return event.date;
+    }
+}
         // Initialize dashboard
         async function initPredictionsDashboard() {
             // Check authentication
@@ -687,34 +715,9 @@ const eventDate = new Date(eventDateParts[0], eventDateParts[1] - 1, eventDatePa
                             <div>
                                 <h3 class="event-title">${event.name}</h3>
                                 <div class="event-date">
-                                    <span>📅</span>
-(() => {
-    if (!event.date || !event.time || !event.timezone) {
-        return 'Date/time not set';
-    }
-    try {
-        // Combine date + time + timezone into one
-        const isoString = `${event.date}T${event.time}`;
-        const utcDate = new Date(
-            new Date(isoString + "Z").toLocaleString("en-US", { timeZone: event.timezone })
-        );
-
-        // Format in user's local time
-        return utcDate.toLocaleString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
-    } catch (e) {
-        console.error("date conversion failed", e);
-        return event.date;
-    }
-})()
-                                </div>
+    <span>📅</span>
+    ${formatEventDateTime(event)}
+</div>
                                 <div class="event-location">
                                     <span>📍</span>
                                     ${event.location || 'Location TBD'}
