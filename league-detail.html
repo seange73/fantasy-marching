@@ -3360,32 +3360,41 @@ container.innerHTML = `
                                         </span>
                                     </div>
                                 </div>
-                                ${trade.status === 'pending' && !isFromTeam ? `
-                                    <div style="display: flex; gap: 0.5rem;">
-                                        <button class="btn" onclick="acceptTrade('${trade.id}')">Accept</button>
-                                        <button class="btn btn-secondary" onclick="rejectTrade('${trade.id}')">Reject</button>
-                                    </div>
+${trade.status === 'pending' && !isFromTeam ? `
+  <div style="display: flex; gap: 0.5rem;">
+    <button class="btn" onclick="acceptTrade('${trade.id}')">Accept</button>
+    <button class="btn btn-secondary" onclick="rejectTrade('${trade.id}')">Reject</button>
+  </div>
+` 
+: trade.status === 'pending' && isFromTeam ? `
+  <div style="display: flex; gap: 0.5rem;">
+    <button class="btn btn-secondary" onclick="revokeTrade('${trade.id}')">Revoke</button>
+  </div>
+`
+: ''
+}
+
+<!-- details block ALWAYS shown below -->
 <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <div>
-            <div style="font-size: 0.85rem; color: #a0a0a0; margin-bottom: 0.5rem;">
-                ${isFromTeam ? 'You Give:' : 'They Offer:'}
-            </div>
-            ${trade.from_team_offers.map(offer => 
-                `<div style="color: #ff6b6b;">- ${offer.corps_name} (${formatCaption(offer.caption)})</div>`
-            ).join('')}
-        </div>
-        <div>
-            <div style="font-size: 0.85rem; color: #a0a0a0; margin-bottom: 0.5rem;">
-                ${isFromTeam ? 'You Receive:' : 'You Give:'}
-            </div>
-            ${trade.to_team_offers.map(offer => 
-                `<div style="color: #4ecdc4;">+ ${offer.corps_name} (${formatCaption(offer.caption)})</div>`
-            ).join('')}
-        </div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <div>
+      <div style="font-size: 0.85rem; color: #a0a0a0; margin-bottom: 0.5rem;">
+        ${isFromTeam ? 'You Offer:' : 'They Offer:'}
+      </div>
+      ${trade.from_team_offers.map(offer => 
+        `<div style="color: #ff6b6b;">- ${offer.corps_name} (${formatCaption(offer.caption)})</div>`
+      ).join('')}
     </div>
+    <div>
+      <div style="font-size: 0.85rem; color: #a0a0a0; margin-bottom: 0.5rem;">
+        ${isFromTeam ? 'They Give:' : 'You Give:'}
+      </div>
+      ${trade.to_team_offers.map(offer => 
+        `<div style="color: #4ecdc4;">+ ${offer.corps_name} (${formatCaption(offer.caption)})</div>`
+      ).join('')}
+    </div>
+  </div>
 </div>
-                                ` : ''}
                             </div>
                         </div>
                     `;
@@ -3580,6 +3589,21 @@ async function rejectTrade(tradeId) {
 
   showNotification('Success', 'Trade rejected.', 'success');
   loadTrades();                   // refresh list
+}
+async function revokeTrade(tradeId) {
+  const { error } = await supabaseClient
+    .from('league_trade_offers')
+    .delete()
+    .eq('id', tradeId);
+
+  if (error) {
+    showNotification('Error', 'Could not revoke trade', 'error');
+    console.error(error);
+    return;
+  }
+
+  showNotification('Success', 'Trade revoked.', 'success');
+  loadTrades();
 }
 
         // Initialize on load
