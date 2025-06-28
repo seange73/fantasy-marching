@@ -955,11 +955,10 @@
             
             // Set up real-time subscriptions
             setupRealtimeSubscriptions();
-            
+ 			//load caption rankings
+			await loadCaptionRankings();           
             // Load available corps for current caption
             await loadAvailableCorps();
-			//load caption rankings
-			await loadCaptionRankings();
         }
 
         // Load user profile
