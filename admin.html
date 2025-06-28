@@ -446,7 +446,28 @@
             </div>
         </div>
     </div>
-
+<div id="dateTimeModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Change Date & Time</h2>
+      <button class="close-btn" onclick="closeDateTimeModal()">&times;</button>
+    </div>
+    <div id="dateTimeModalContent">
+      <form id="dateTimeForm">
+        <div class="form-group">
+          <label for="newEventDate">New Date</label>
+          <input type="date" id="newEventDate" required>
+        </div>
+        <div class="form-group">
+          <label for="newEventTime">New Time</label>
+          <input type="time" id="newEventTime" required>
+        </div>
+        <button type="submit" class="btn">Save Changes</button>
+      </form>
+      <div id="dateTimeMessage" class="message"></div>
+    </div>
+  </div>
+</div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script>
@@ -460,7 +481,7 @@
 
         let currentEventId = null;
         let currentEventCorps = [];
-
+		let currentEditEventId = null;
         // Check if user is admin
         async function checkAdminAccess() {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -558,6 +579,10 @@
                         <button class="btn btn-danger" onclick="deleteEvent('${event.id}', '${event.name.replace(/'/g, "\\'")}')">
                             Delete Event
                         </button>
+						<button class="btn" onclick="openEditDateTime('${event.id}', '${event.name.replace(/'/g,"\\'")}', '${event.date}', '${event.time || ""}')">
+    Change Date/Time
+</button>
+
                     </div>
                 </div>
             `}).join('');
@@ -865,6 +890,59 @@ finalScoresJson.forEach((c, idx) => {
                 closeScoreModal();
             }
         }
+		// Open modal
+function openEditDateTime(eventId, eventName, date, time) {
+    currentEditEventId = eventId;
+    document.getElementById('newEventDate').value = date;
+    document.getElementById('newEventTime').value = time || "";
+    document.getElementById('dateTimeMessage').style.display = 'none';
+    document.getElementById('dateTimeModal').style.display = 'block';
+}
+
+// Close modal
+function closeDateTimeModal() {
+    document.getElementById('dateTimeModal').style.display = 'none';
+    currentEditEventId = null;
+}
+
+// Submit form
+document.getElementById('dateTimeForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentEditEventId) return;
+
+    const newDate = document.getElementById('newEventDate').value;
+    const newTime = document.getElementById('newEventTime').value;
+
+    const { error } = await supabaseClient
+        .from('events')
+        .update({
+            date: newDate,
+            time: newTime
+        })
+        .eq('id', currentEditEventId);
+
+    if (error) {
+        showDateTimeMessage('Error updating event: ' + error.message, 'error');
+        return;
+    }
+
+    showDateTimeMessage('Event date/time updated!', 'success');
+    setTimeout(() => {
+        closeDateTimeModal();
+        loadEvents();
+    }, 1000);
+});
+
+// showDateTimeMessage helper
+function showDateTimeMessage(text, type) {
+    const el = document.getElementById('dateTimeMessage');
+    el.textContent = text;
+    el.className = `message ${type}`;
+    el.style.display = 'block';
+    setTimeout(() => {
+        el.style.display = 'none';
+    }, 3000);
+}
     </script>
 </body>
 </html>
