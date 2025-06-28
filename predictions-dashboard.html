@@ -433,6 +433,7 @@
             }
         }
     </style>
+	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 </head>
 <body>
     <!-- Header -->
@@ -515,29 +516,21 @@ function formatEventDateTime(event) {
     if (!event.date || !event.time || !event.timezone) {
         return 'Date/time not set';
     }
-	console.log("DEBUG event", event);
-    try {
-        // event date+time in UTC:
-        const isoString = `${event.date}T${event.time}:00`;
-        // treat it as UTC
-        const eventUtc = new Date(isoString + "Z");
 
-        // convert to user's local time
-        return eventUtc.toLocaleString('en-US', {
-            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
+    try {
+        const { DateTime } = luxon;
+
+        // event is scheduled in its own timezone:
+        const dt = DateTime.fromISO(`${event.date}T${event.time}`, { zone: event.timezone });
+
+        // convert to *local browser timezone* for display
+        return dt.setZone(DateTime.local().zoneName).toLocaleString(DateTime.DATETIME_FULL);
     } catch (e) {
-        console.error("date conversion failed", e);
+        console.error("Luxon parsing failed", e);
         return event.date;
     }
 }
+
 
         // Initialize dashboard
         async function initPredictionsDashboard() {
