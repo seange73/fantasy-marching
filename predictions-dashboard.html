@@ -644,7 +644,7 @@ if (!predictionsError && predictions) {
 
         // Display events based on current filter
         function displayEvents() {
-            const now = new Date();
+		    const now = luxon.DateTime.now();
             let filteredEvents = allEvents;
             
             switch (currentFilter) {
@@ -680,9 +680,14 @@ if (!predictionsError && predictions) {
             grid.innerHTML = filteredEvents.map(event => {
                 const eventDateParts = event.date.split('-');  // YYYY-MM-DD
 const eventDate = new Date(eventDateParts[0], eventDateParts[1] - 1, eventDateParts[2]);
-                const isPast = eventDate < now;
+                const eventDateTime = luxon.DateTime.fromISO(
+  `${event.date}T${event.time || '00:00'}`,
+  { zone: event.timezone }
+);
+
+const isPast = eventDateTime < now;
                 const hasPredicted = userPredictions[event.id];
-                const daysUntil = Math.ceil((eventDate - now) / (1000 * 60 * 60 * 24));
+                const daysUntil = Math.ceil(eventDateTime.diff(now, 'days').days);
                 
                 let status = 'upcoming';
                 let statusText = 'Upcoming';
