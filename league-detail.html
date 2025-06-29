@@ -1480,6 +1480,7 @@ async function showPreDraftState() {
 
     // ✅ ADD THIS: show or hide the leave button for members
     const leaveBtn = document.getElementById("leaveLeagueBtn");
+	console.log("isOwner is", isOwner);
     if (!isOwner) {
         leaveBtn.style.display = "inline-block";
     } else {
@@ -4199,6 +4200,9 @@ async function deleteLeague() {
     if (leaveBtn) {
         leaveBtn.addEventListener("click", leaveLeague);
     }
+});
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById("leaveLeagueBtn").style.display = "inline-block";
 });
         
         
