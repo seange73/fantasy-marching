@@ -662,6 +662,7 @@
             }
         }
     </style>
+	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 </head>
 <body>
     <!-- Header -->
@@ -1352,7 +1353,13 @@ if (banCheck) {
             const name = document.getElementById('leagueName').value.trim();
             const password = document.getElementById('leaguePassword').value.trim() || null;
             const maxMembers = parseInt(document.getElementById('maxMembers').value);
-            const draftTime = document.getElementById('draftTime').value || null;
+            const draftTimeInput = document.getElementById('draftTime').value || null;
+let draftTime = null;
+if (draftTimeInput) {
+    // convert to UTC before storing
+    const localDateTime = luxon.DateTime.fromISO(draftTimeInput);
+    draftTime = localDateTime.toUTC().toISO();
+}
             
             // Validate max members is even
             if (maxMembers % 2 !== 0) {
