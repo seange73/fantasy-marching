@@ -488,8 +488,8 @@
 
         <!-- Filter Tabs -->
 <div class="filter-tabs">
-    <div class="filter-tab" onclick="filterEvents('all')">All Events</div>
     <div class="filter-tab active" onclick="filterEvents('upcoming')">Upcoming</div>
+    <div class="filter-tab" onclick="filterEvents('all')">All Events</div>
     <div class="filter-tab" onclick="filterEvents('predicted')">My Predictions</div>
     <div class="filter-tab" onclick="filterEvents('completed')">Completed</div>
 </div>
@@ -654,7 +654,7 @@ case 'upcoming':
             zone: event.timezone
         });
         const daysAway = eventDateTime.diff(now, 'days').days;
-        return daysAway >= 0 && daysAway <= 14 && !event.is_completed;
+        return daysAway >= 0 && daysAway <= 7 && !event.is_completed;
     });
     break;
                 case 'predicted':
@@ -709,7 +709,7 @@ if (event.is_completed) {
 } else if (isPast) {
     buttonDisabled = true;
     buttonText = 'Event Passed';
-} else if (daysUntil > 14) {
+} else if (daysUntil > 7) {
     buttonDisabled = true;
     buttonText = 'Predictions Not Yet Open';
 }
