@@ -1449,12 +1449,14 @@ async function showPreDraftState() {
         const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
         
         if (timeDiff < 0) {
+            // Draft time has passed
             draftInfoEl.innerHTML = `
                 <p>Draft planned for:</p>
                 <div class="draft-countdown">${draftDate.toLocaleDateString()} at ${draftDate.toLocaleTimeString()}</div>
                 <p style="color: #ffd700; font-size: 1rem;">Waiting for owner to start draft</p>
             `;
         } else {
+            // Draft time is in the future
             draftInfoEl.innerHTML = `
                 <p>Draft planned for:</p>
                 <div class="draft-countdown">${draftDate.toLocaleDateString()} at ${draftDate.toLocaleTimeString()}</div>
@@ -1467,30 +1469,84 @@ async function showPreDraftState() {
             <p style="color: #666; font-size: 1rem;">The league owner will schedule the draft soon</p>
         `;
     }
-
+    
     // Show owner actions if user is owner
     if (isOwner) {
         document.getElementById('ownerActions').style.display = 'block';
     }
-
-    if (isOwner) {
-        document.getElementById('ownerActions').innerHTML = `...lots of owner controls...`;
-        loadLeaguePickTimer();
-    }
-
-    // ✅ ADD THIS: show or hide the leave button for members
-    const leaveBtn = document.getElementById("leaveLeagueBtn");
-    if (!isOwner) {
-        leaveBtn.style.display = "inline-block";
-    } else {
-        leaveBtn.style.display = "none";
-    }
-
+    // Add the timer controls for owner
+if (isOwner) {
+    document.getElementById('ownerActions').innerHTML = `
+        <div style="margin-bottom: 2rem;">
+            <h3 style="color: #4ecdc4; margin-bottom: 1rem;">Draft Settings</h3>
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; justify-content: center;">
+                <label style="color: #e0e0e0;">Pick Timer:</label>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="number" id="timerHours" min="0" max="24" value="0" style="
+                        width: 60px;
+                        padding: 0.5rem;
+                        background: rgba(255, 255, 255, 0.08);
+                        border: 2px solid rgba(255, 255, 255, 0.2);
+                        border-radius: 8px;
+                        color: white;
+                        text-align: center;
+                    ">
+                    <span style="color: #666;">h</span>
+                    <input type="number" id="timerMinutes" min="0" max="59" value="1" style="
+                        width: 60px;
+                        padding: 0.5rem;
+                        background: rgba(255, 255, 255, 0.08);
+                        border: 2px solid rgba(255, 255, 255, 0.2);
+                        border-radius: 8px;
+                        color: white;
+                        text-align: center;
+                    ">
+                    <span style="color: #666;">m</span>
+                    <input type="number" id="timerSeconds" min="0" max="59" value="30" style="
+                        width: 60px;
+                        padding: 0.5rem;
+                        background: rgba(255, 255, 255, 0.08);
+                        border: 2px solid rgba(255, 255, 255, 0.2);
+                        border-radius: 8px;
+                        color: white;
+                        text-align: center;
+                    ">
+                    <span style="color: #666;">s</span>
+                    <button onclick="updateCustomPickTimer()" style="
+                        padding: 0.5rem 1rem;
+                        background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                    ">Set</button>
+                </div>
+                <span id="timerUpdateStatus" style="color: #4ecdc4; display: none;">✓ Updated</span>
+            </div>
+        </div>
+        <div class="action-buttons">
+            <button class="btn btn-success" onclick="startDraft()">
+                Start Draft Now
+            </button>
+            <button class="btn btn-secondary" onclick="scheduleDraft()">
+                Schedule Draft
+            </button>
+        </div>
+        <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center;">
+            <button class="btn" style="background: rgba(255, 59, 48, 0.2); border: 1px solid rgba(255, 59, 48, 0.3); color: #ff6b6b;" onclick="deleteLeague()">
+                Delete League
+            </button>
+        </div>
+    `;
+    
+    // Load the current timer setting
+    loadLeaguePickTimer();
+}
     // Load and display members
     console.log('About to load league members');
     await loadLeagueMembers();
 }
-
 
         // Show during draft state
         function showDuringDraftState() {
