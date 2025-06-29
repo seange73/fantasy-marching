@@ -861,12 +861,20 @@
             corpsList = event.corps_list || [];
             
             // Check if event has already passed
-            const eventDate = new Date(event.date);
-            if (eventDate < new Date() && !event.is_completed) {
-                alert('This event has already passed. Predictions are closed.');
-                window.location.href = '/predictions-dashboard.html';
-                return;
-            }
+// Use Luxon to combine date + time + timezone
+const eventDateTime = luxon.DateTime.fromISO(`${event.date}T${event.time}`, {
+    zone: event.timezone
+});
+
+// Convert to local time
+const eventInLocal = eventDateTime.toLocal();
+
+// Compare with current local time
+if (eventInLocal < luxon.DateTime.local() && !event.is_completed) {
+    alert('This event has already passed. Predictions are closed.');
+    window.location.href = '/predictions-dashboard.html';
+    return;
+}
             
             // Display event info
             document.getElementById('eventName').textContent = event.name;
