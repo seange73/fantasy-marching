@@ -879,7 +879,7 @@ if (eventInLocal < luxon.DateTime.local() && !event.is_completed) {
             
             // Display event info
             document.getElementById('eventName').textContent = event.name;
-            document.getElementById('eventDate').textContent = eventDate.toLocaleString(luxon.DateTime.DATETIME_MED) + (event.time ? ` at ${event.time}` : '');
+            document.getElementById('eventDate').textContent = eventInLocal.toLocaleString(luxon.DateTime.DATETIME_MED);
             document.getElementById('eventLocation').textContent = event.location || 'Location TBD';
             
             // Check for existing prediction
