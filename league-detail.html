@@ -3635,14 +3635,7 @@ async function revokeTrade(tradeId) {
   loadTrades();
 }
 
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', async () => {
-    await initializePage();
-    const leaveBtn = document.getElementById("leaveLeagueBtn");
-    if (leaveBtn) {
-        leaveBtn.addEventListener("click", leaveLeague);
-    }
-});
+
         // Add helper functions for matchups
         async function loadWeekCompetitions(weekNumber) {
             const container = document.getElementById('weekCompetitions');
@@ -4261,7 +4254,13 @@ async function deleteLeague() {
                 ]
             );
         }
-
+        document.addEventListener('DOMContentLoaded', async () => {
+    await initializePage();
+    const leaveBtn = document.getElementById("leaveLeagueBtn");
+    if (leaveBtn) {
+        leaveBtn.addEventListener("click", leaveLeague);
+    }
+});
         
         
         
