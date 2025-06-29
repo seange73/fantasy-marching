@@ -939,10 +939,15 @@
                 </div>
             </div>
             
-            <div class="action-buttons">
-                <a href="/league.html" class="btn btn-secondary">Back to Leagues</a>
-            </div>
-        </div>
+<div class="action-buttons">
+    <a href="/league.html" class="btn btn-secondary">Back to Leagues</a>
+    <button id="leaveLeagueBtn" class="btn btn-secondary"
+        style="background: rgba(255, 59, 48, 0.2);
+               border: 1px solid rgba(255, 59, 48, 0.3);
+               color: #ff6b6b;">
+        Leave League
+    </button>
+</div>
 
         <!-- During Draft State -->
         <div id="duringDraftContent" style="display: none;">
@@ -1372,6 +1377,11 @@ async function loadLeaguePickTimer() {
             
             currentLeague = league;
             isOwner = league.owner_id === currentUser.id;
+			if (isOwner) {
+    document.getElementById("leaveLeagueBtn").style.display = "none";
+} else {
+    document.getElementById("leaveLeagueBtn").style.display = "inline-block";
+}
             // display draft time nicely
 if (league.draft_time) {
     const utcTime = luxon.DateTime.fromISO(league.draft_time, { zone: 'utc' });
@@ -3626,8 +3636,13 @@ async function revokeTrade(tradeId) {
 }
 
         // Initialize on load
-        document.addEventListener('DOMContentLoaded', initializePage);
-        
+        document.addEventListener('DOMContentLoaded', async () => {
+    await initializePage();
+    const leaveBtn = document.getElementById("leaveLeagueBtn");
+    if (leaveBtn) {
+        leaveBtn.addEventListener("click", leaveLeague);
+    }
+});
         // Add helper functions for matchups
         async function loadWeekCompetitions(weekNumber) {
             const container = document.getElementById('weekCompetitions');
@@ -3968,7 +3983,28 @@ async function kickMember(userId, username) {
         ]
     );
 }
+async function leaveLeague() {
+    if (!confirm("Are you sure you want to leave this league?")) return;
 
+    try {
+        const { error } = await supabaseClient
+            .from('league_members')
+            .delete()
+            .eq('league_id', leagueId)
+            .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        showNotification('Success', 'You have left the league.', 'success');
+        setTimeout(() => {
+            window.location.href = '/league.html';
+        }, 1500);
+
+    } catch (error) {
+        console.error('Error leaving league:', error);
+        showNotification('Error', 'Could not leave league.', 'error');
+    }
+}
 // Delete league
 async function deleteLeague() {
     showModal(
@@ -4225,7 +4261,7 @@ async function deleteLeague() {
                 ]
             );
         }
-        document.addEventListener('DOMContentLoaded', initializePage);
+
         
         
         
