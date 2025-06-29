@@ -487,12 +487,12 @@
         <p class="page-subtitle">Select an event to make your predictions</p>
 
         <!-- Filter Tabs -->
-        <div class="filter-tabs">
-            <div class="filter-tab active" onclick="filterEvents('all')">All Events</div>
-            <div class="filter-tab" onclick="filterEvents('upcoming')">Upcoming</div>
-            <div class="filter-tab" onclick="filterEvents('predicted')">My Predictions</div>
-            <div class="filter-tab" onclick="filterEvents('completed')">Completed</div>
-        </div>
+<div class="filter-tabs">
+    <div class="filter-tab" onclick="filterEvents('all')">All Events</div>
+    <div class="filter-tab active" onclick="filterEvents('upcoming')">Upcoming</div>
+    <div class="filter-tab" onclick="filterEvents('predicted')">My Predictions</div>
+    <div class="filter-tab" onclick="filterEvents('completed')">Completed</div>
+</div>
 
         <!-- Events Grid -->
         <div class="events-grid" id="eventsGrid">
@@ -510,7 +510,7 @@
         let isAdmin = false;
         let allEvents = [];
         let userPredictions = {};
-        let currentFilter = 'all';
+        let currentFilter = 'upcoming';
 
 function formatEventDateTime(event) {
     if (!event.date || !event.time || !event.timezone) {
@@ -648,11 +648,15 @@ if (!predictionsError && predictions) {
             let filteredEvents = allEvents;
             
             switch (currentFilter) {
-                case 'upcoming':
-                    filteredEvents = allEvents.filter(event => 
-                        new Date(event.date) >= now && !event.is_completed
-                    );
-                    break;
+case 'upcoming':
+    filteredEvents = allEvents.filter(event => {
+        const eventDateTime = luxon.DateTime.fromISO(`${event.date}T${event.time || '00:00'}`, {
+            zone: event.timezone
+        });
+        const daysAway = eventDateTime.diff(now, 'days').days;
+        return daysAway >= 0 && daysAway <= 14 && !event.is_completed;
+    });
+    break;
                 case 'predicted':
                     filteredEvents = allEvents.filter(event => 
                         userPredictions[event.id]
@@ -694,18 +698,21 @@ const isPast = eventDateTime < now;
                 let buttonText = 'Make Predictions';
                 let buttonDisabled = false;
                 
-                if (event.is_completed) {
-                    status = 'completed';
-                    statusText = 'Completed';
-                    buttonText = 'View Results';
-                } else if (hasPredicted) {
-                    status = 'predicted';
-                    statusText = 'Predicted';
-                    buttonText = 'Edit Predictions';
-                } else if (isPast) {
-                    buttonDisabled = true;
-                    buttonText = 'Event Passed';
-                }
+if (event.is_completed) {
+    status = 'completed';
+    statusText = 'Completed';
+    buttonText = 'View Results';
+} else if (hasPredicted) {
+    status = 'predicted';
+    statusText = 'Predicted';
+    buttonText = 'Edit Predictions';
+} else if (isPast) {
+    buttonDisabled = true;
+    buttonText = 'Event Passed';
+} else if (daysUntil > 14) {
+    buttonDisabled = true;
+    buttonText = 'Predictions Not Yet Open';
+}
                 
                 return `
                     <div class="event-card" onclick="${!buttonDisabled ? `goToEvent('${event.id}')` : ''}">
