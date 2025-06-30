@@ -4044,9 +4044,13 @@ async function deleteLeague() {
 }        
 
 async function leaveLeague() {
-    if (!confirm("Are you sure you want to leave this league?")) return;
-
+    // removed confirm so no popup
     try {
+        console.log("About to leave league with values:", {
+            leagueId,
+            userId: currentUser.id
+        });
+
         const { error } = await supabaseClient
             .from('league_members')
             .delete()
@@ -4064,6 +4068,7 @@ async function leaveLeague() {
         showNotification('Error', 'Could not leave league.', 'error');
     }
 }
+
         // Generate matchups for the league (owner only)
         async function generateMatchups() {
             if (!isOwner) {
