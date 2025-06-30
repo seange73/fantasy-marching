@@ -808,28 +808,41 @@ reminders.push({
         .order('date', { ascending: true })
         .limit(3);
     
-    if (upcomingEvents && upcomingEvents.length > 0) {
-        // Check which events user hasn't predicted on
-        for (const event of upcomingEvents) {
-            const { data: prediction } = await supabaseClient
-                .from('predictions')
-                .select('id')
-                .eq('user_id', currentUser.id)
-                .eq('event_id', event.id)
-                .maybeSingle();  // Use maybeSingle() instead of single() to avoid 406 errors
+if (upcomingEvents && upcomingEvents.length > 0) {
+    for (const event of upcomingEvents) {
+        const { data: prediction } = await supabaseClient
+            .from('predictions')
+            .select('id')
+            .eq('user_id', currentUser.id)
+            .eq('event_id', event.id)
+            .maybeSingle();
+
+        if (!prediction) {
+            const diffMs = new Date(event.date) - new Date();
+            const diffHours = diffMs / (1000 * 60 * 60);
             
-            if (!prediction) {
-                const daysUntil = Math.ceil((new Date(event.date) - new Date()) / (1000 * 60 * 60 * 24));
-                reminders.push({
-                    icon: '🎯',
-                    title: 'Predictions Due Soon',
-                    text: `${event.name} predictions close in ${daysUntil} days`,
-                    action: 'Make Predictions',
-                    link: `/predictions.html?eventId=${event.id}`
-                });
+            let timeLeft;
+            if (diffHours >= 24) {
+                const daysLeft = Math.ceil(diffHours / 24);
+                timeLeft = `${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+            } else if (diffHours >= 1) {
+                const hoursLeft = Math.floor(diffHours);
+                timeLeft = `${hoursLeft} hour${hoursLeft !== 1 ? 's' : ''}`;
+            } else {
+                timeLeft = `1 hour`;
             }
+
+            reminders.push({
+                icon: '🎯',
+                title: 'Predictions Due Soon',
+                text: `${event.name} predictions close in ${timeLeft}`,
+                action: 'Make Predictions',
+                link: `/predictions.html?eventId=${event.id}`
+            });
         }
     }
+}
+
     
     // Check for completed events with results
     /*const { data: completedEvents } = await supabaseClient
