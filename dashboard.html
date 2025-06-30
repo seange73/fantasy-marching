@@ -568,6 +568,10 @@
         <!-- Global League Leaderboard -->
         <div class="leaderboard-card">
             <h3 class="leaderboard-title">Top League Players</h3>
+			<div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem;">
+    <button class="leaderboard-toggle-btn active" id="leagueTotalBtn" onclick="setLeagueLeaderboardMode('total')">Total Score</button>
+    <button class="leaderboard-toggle-btn" id="leagueAvgBtn" onclick="setLeagueLeaderboardMode('average')">Weekly Average</button>
+</div>
             <div id="leagueLeaderboard">
                 <div class="loading">Loading leaderboard...</div>
             </div>
@@ -898,7 +902,14 @@ function setLeaderboardMode(mode) {
     
     loadPredictionsLeaderboard();
 }
-
+function setLeagueLeaderboardMode(mode) {
+    leagueLeaderboardMode = mode;
+    
+    document.getElementById('leagueTotalBtn').classList.toggle('active', mode === 'total');
+    document.getElementById('leagueAvgBtn').classList.toggle('active', mode === 'average');
+    
+    loadLeagueLeaderboard();
+}
         // Fallback mock data for predictions
         function loadMockPredictionsLeaderboard() {
             const mockData = [];
@@ -917,22 +928,36 @@ function setLeaderboardMode(mode) {
         }
 
         // Load league leaderboard
-        async function loadLeagueLeaderboard() {
-            // Mock data - replace with actual query when league tables are created
-            const mockData = [];
-            
+async function loadLeagueLeaderboard() {
+    try {
+        let orderBy = leagueLeaderboardMode === 'average' ? 'average_weekly_score' : 'total_score';
+        const { data } = await supabaseClient
+            .from('global_league_leaderboard')
+            .select('*')
+            .order(orderBy, { ascending: false })
+            .limit(5);
+        
+        if (data && data.length > 0) {
             const container = document.getElementById('leagueLeaderboard');
-            container.innerHTML = mockData.map(player => `
+            container.innerHTML = data.map((player, index) => `
                 <div class="leaderboard-entry">
-                    <div class="rank ${player.rank <= 3 ? `rank-${player.rank}` : 'rank-default'}">${player.rank}</div>
+                    <div class="rank ${index < 3 ? `rank-${index + 1}` : 'rank-default'}">${index + 1}</div>
                     <div class="player-info">
-                        <div class="player-avatar">${player.initial}</div>
-                        <span class="player-name">${player.username}</span>
+                        <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
+                        <span class="player-name">${player.username || 'User'}</span>
                     </div>
-                    <span class="player-score">${player.score.toLocaleString()}</span>
+                    <span class="player-score">${
+                        leagueLeaderboardMode === 'average'
+                        ? (player.average_weekly_score || 0).toFixed(1) + ' pts'
+                        : (player.total_score || 0) + ' pts'
+                    }</span>
                 </div>
             `).join('');
         }
+    } catch (error) {
+        console.error('Error loading league leaderboard:', error);
+    }
+}
 
         // Load user's leagues
 async function loadUserLeagues() {
