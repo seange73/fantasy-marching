@@ -930,7 +930,8 @@ function setLeagueLeaderboardMode(mode) {
         // Load league leaderboard
 async function loadLeagueLeaderboard() {
     try {
-        let orderBy = leagueLeaderboardMode === 'average' ? 'average_weekly_score' : 'total_score';
+        let orderBy = leagueLeaderboardMode === 'average' ? 'average_points' : 'total_points';
+
         const { data } = await supabaseClient
             .from('global_league_leaderboard')
             .select('*')
@@ -948,9 +949,9 @@ async function loadLeagueLeaderboard() {
                         <span class="player-name">${player.username || 'User'}</span>
                     </div>
                     <span class="player-score">${
-                        leagueLeaderboardMode === 'average'
-                        ? (player.average_weekly_score || 0).toFixed(1) + ' pts'
-                        : (player.total_score || 0) + ' pts'
+leagueLeaderboardMode === 'average'
+  ? (player.average_points || 0) + ' pts'
+  : (player.total_points || 0) + ' pts'
                     }</span>
                 </div>
             `).join('');
