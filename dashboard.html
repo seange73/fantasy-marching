@@ -845,10 +845,9 @@ reminders.push({
             title: 'Results Available',
             text: `Check how your predictions did for ${completedEvents[0].name}`,
             action: 'View Results',
-            link: `/prediction-results.html?eventId=${completedEvents[0].id}`
+            link: `/prediction-results.html?predictionId=${userPredictions[eventId]}`
         });
     }
-    
 const grid = document.getElementById('remindersGrid');
 grid.innerHTML = reminders.map(reminder => `
     <div class="reminder-card" 
