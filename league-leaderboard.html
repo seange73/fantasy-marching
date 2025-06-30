@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fantasy Marching - Global League Leaderboard</title>
+  <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(15, 15, 35, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            height: 75px;
+            width: auto;
+            display: block;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-tab {
+            color: #a0a0a0;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            color: #4ecdc4;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            border-radius: 2px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: rgba(26, 26, 46, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0.5rem;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .profile-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: #e0e0e0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .dropdown-item.admin {
+            color: #4ecdc4;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0.5rem 0;
+        }
+
+        .dropdown-icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: #a0a0a0;
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+        }
+
+        /* Leaderboard Toggle */
+        .leaderboard-controls {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .leaderboard-toggle-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #a0a0a0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .leaderboard-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .leaderboard-toggle-btn.active {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Leaderboard */
+        .leaderboard-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .leaderboard-entry:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
+            border-color: rgba(78, 205, 196, 0.2);
+        }
+
+        .leaderboard-entry.highlight {
+            background: rgba(78, 205, 196, 0.1);
+            border-color: rgba(78, 205, 196, 0.3);
+        }
+
+        .rank {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            margin-right: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .rank-1 {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .rank-2 {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(192, 192, 192, 0.3);
+        }
+
+        .rank-3 {
+            background: linear-gradient(135deg, #cd7f32 0%, #e8a857 100%);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(205, 127, 50, 0.3);
+        }
+
+        .rank-default {
+            background: rgba(255, 255, 255, 0.1);
+            color: #a0a0a0;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .player-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .player-name {
+            font-weight: 600;
+            color: #e0e0e0;
+            font-size: 1.1rem;
+        }
+
+        .player-stats {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #4ecdc4;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #a0a0a0;
+            margin-top: 0.25rem;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #4ecdc4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Back Link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4ecdc4;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            transform: translateX(-4px);
+        }
+/* Pagination */
+        .pagination-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(78, 205, 196, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        @media (max-width: 768px) {
+            .nav-tabs {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .header-content {
+                padding: 1rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .player-stats {
+                gap: 1rem;
+            }
+
+            .stat-value {
+                font-size: 1.1rem;
+            }
+        }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <a href="/dashboard.html" class="logo-link">
+        <img src="images/logo.png" alt="Fantasy Marching" class="logo" />
+      </a>
+      <nav class="nav-tabs">
+        <a href="/dashboard.html" class="nav-tab">Dashboard</a>
+        <a href="/predictions-dashboard.html" class="nav-tab">Predictions</a>
+        <a href="/league.html" class="nav-tab active">League</a>
+        <a href="/contact.html" class="nav-tab">Contact Us</a>
+      </nav>
+      <div class="user-profile" onclick="toggleUserMenu()">
+        <div class="user-avatar" id="userAvatar"></div>
+        <span class="user-name" id="userName">Loading...</span>
+        <div class="profile-dropdown" id="profileDropdown">
+          <a href="/profile.html" class="dropdown-item">
+            <span class="dropdown-icon">👤</span>
+            <span>Profile</span>
+          </a>
+          <a href="/settings.html" class="dropdown-item">
+            <span class="dropdown-icon">⚙️</span>
+            <span>Settings</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display:none;">
+            <span class="dropdown-icon">🛡️</span>
+            <span>Admin Panel</span>
+          </a>
+          <div class="dropdown-divider" id="adminDivider" style="display:none;"></div>
+          <div class="dropdown-item" onclick="logout()">
+            <span class="dropdown-icon">🚪</span>
+            <span>Logout</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <a href="/dashboard.html" class="back-link">← Back to Dashboard</a>
+    <h1 class="page-title">Global League Leaderboard</h1>
+    <p class="page-subtitle">See the top-performing teams across the global league</p>
+
+    <div class="leaderboard-container">
+      <div id="leaderboardContent" class="loading">
+        <div class="loading-spinner"></div>
+        <p>Loading leaderboard...</p>
+      </div>
+    </div>
+    <!-- Pagination -->
+    <div id="paginationControls" style="display: none; margin-top: 2rem; text-align: center;">
+      <button class="pagination-btn" id="prevBtn" onclick="changePage(-1)">← Previous</button>
+      <span style="margin: 0 1rem; color: #a0a0a0;">
+        Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+      </span>
+      <button class="pagination-btn" id="nextBtn" onclick="changePage(1)">Next →</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script>
+    let currentUser = null;
+    let currentPage = 1;
+    let totalItems = 0;
+    const itemsPerPage = 50;
+
+    async function initializePage() {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) {
+        window.location.href = "/";
+        return;
+      }
+      currentUser = user;
+      await loadUserProfile();
+      await loadLeaderboard();
+    }
+
+    async function loadUserProfile() {
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("username, is_admin")
+        .eq("id", currentUser.id)
+        .single();
+      if (profile) {
+        document.getElementById("userName").textContent = profile.username || currentUser.email.split("@")[0];
+        document.getElementById("userAvatar").textContent = (profile.username || currentUser.email)[0].toUpperCase();
+        if (profile.is_admin) {
+          document.getElementById("adminLink").style.display = "flex";
+          document.getElementById("adminDivider").style.display = "block";
+        }
+      }
+    }
+
+    async function loadLeaderboard() {
+      try {
+        // get count
+        const { count } = await supabaseClient
+          .from("global_league_leaderboard")
+          .select("*", { count: "exact", head: true });
+
+        totalItems = count || 0;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        const offset = (currentPage - 1) * itemsPerPage;
+
+        const { data: stats } = await supabaseClient
+          .from("global_league_leaderboard")
+          .select("*")
+          .order("total_points", { ascending: false })
+          .range(offset, offset + itemsPerPage - 1);
+
+        if (!stats || stats.length === 0) {
+          document.getElementById("leaderboardContent").innerHTML = `
+            <p style="text-align: center; color: #666; padding: 2rem;">
+              No leaderboard data available yet
+            </p>`;
+          document.getElementById("paginationControls").style.display = "none";
+          return;
+        }
+
+        document.getElementById("currentPage").textContent = currentPage;
+        document.getElementById("totalPages").textContent = totalPages;
+        document.getElementById("prevBtn").disabled = currentPage === 1;
+        document.getElementById("nextBtn").disabled = currentPage === totalPages;
+        document.getElementById("paginationControls").style.display = "block";
+
+        const container = document.getElementById("leaderboardContent");
+        container.innerHTML = stats.map((player, index) => {
+          const isCurrentUser = player.user_id === currentUser.id;
+          const globalRank = offset + index + 1;
+          return `
+            <div class="leaderboard-entry ${isCurrentUser ? 'highlight' : ''}">
+              <div class="rank ${globalRank <= 3 ? `rank-${globalRank}` : 'rank-default'}">${globalRank}</div>
+              <div class="player-info">
+                <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
+                <span class="player-name">${player.username || "User"} ${isCurrentUser ? "(You)" : ""}</span>
+              </div>
+              <div class="player-stats">
+                <div class="stat-item">
+                  <div class="stat-value">${player.total_points}</div>
+                  <div class="stat-label">Total Points</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">${player.average_points}</div>
+                  <div class="stat-label">Average Points</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">${player.weeks_played}</div>
+                  <div class="stat-label">Weeks Played</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+      } catch (error) {
+        console.error("Error loading leaderboard:", error);
+        document.getElementById("leaderboardContent").innerHTML = `
+          <p style="text-align: center; color: #ff6b6b; padding: 2rem;">
+            Error loading leaderboard data
+          </p>`;
+      }
+    }
+
+    function changePage(direction) {
+      currentPage += direction;
+      loadLeaderboard();
+      document.querySelector(".leaderboard-container").scrollIntoView({ behavior: "smooth" });
+    }
+
+    function toggleUserMenu() {
+      const dropdown = document.getElementById("profileDropdown");
+      dropdown.classList.toggle("show");
+      document.addEventListener("click", function closeDropdown(e) {
+        if (!e.target.closest(".user-profile")) {
+          dropdown.classList.remove("show");
+          document.removeEventListener("click", closeDropdown);
+        }
+      });
+    }
+
+    async function logout() {
+      await supabaseClient.auth.signOut();
+      window.location.href = "/";
+    }
+
+    document.addEventListener("DOMContentLoaded", initializePage);
+  </script>
+</body>
+</html>
