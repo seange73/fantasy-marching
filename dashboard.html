@@ -494,6 +494,7 @@
             100% { background-position: -200% 0; }
         }
     </style>
+	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 </head>
 <body>
     <!-- Header -->
@@ -818,9 +819,21 @@ if (upcomingEvents && upcomingEvents.length > 0) {
             .maybeSingle();
 
         if (!prediction) {
-            const diffMs = new Date(event.date) - new Date();
-            const diffHours = diffMs / (1000 * 60 * 60);
-            
+            const { DateTime } = luxon;
+
+            // fallback if no time is provided
+            const eventTime = event.time || "00:00";
+
+            // build DateTime with event's time zone
+            const eventDateTime = DateTime.fromISO(`${event.date}T${eventTime}`, {
+                zone: event.timezone || 'America/Chicago'
+            });
+
+            // compare to local browser time:
+            const now = DateTime.local();
+
+            const diffHours = eventDateTime.diff(now, 'hours').hours;
+
             let timeLeft;
             if (diffHours >= 24) {
                 const daysLeft = Math.ceil(diffHours / 24);
