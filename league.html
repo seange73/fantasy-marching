@@ -1158,7 +1158,8 @@ async function loadAvailableLeagues() {
     drafts?.forEach(d => {
         draftStatusMap[d.league_id] = d.status;
     });
-
+console.log("draftStatusMap keys", Object.keys(draftStatusMap));
+console.log("draftStatusMap values", draftStatusMap);
     // Get owner usernames separately
     const ownerIds = [...new Set(leagues.map(l => l.owner_id))];
     const { data: profiles } = await supabaseClient
@@ -1174,12 +1175,17 @@ async function loadAvailableLeagues() {
 
     // Filter out leagues user is already in AND leagues with started/completed drafts
     const myLeagueIds = myLeagues.map(l => l.leagues.id);
+	
 availableLeagues = leaguesWithProfiles.filter(l => {
     const status = draftStatusMap[l.id];
+    console.log(`filtering: league ${l.id} draft status=${status}`);
     return !myLeagueIds.includes(l.id) &&
         (status === undefined || status === 'not_started');
 });
-    
+    console.log("availableLeagues after filtering", availableLeagues.map(l => ({
+    id: l.id,
+    name: l.name
+})));
     displayAvailableLeagues();
 }
 
