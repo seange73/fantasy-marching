@@ -896,24 +896,6 @@
 
 
 
-
-
-
-            // Show last 10 picks
-            const recentPicks = picks.slice(0, 10);
-            
-            container.innerHTML = recentPicks.map(pick => `
-                <div class="pick-item">
-                    <div class="pick-round">Round ${pick.round}, Pick ${pick.pick_number}</div>
-                    <div class="pick-details">
-                        <span class="pick-corps">${pick.corps_name}</span>
-                        <span class="pick-caption">${formatCaption(pick.caption)}</span>
-                    </div>
-                    <div class="pick-user">by ${pick.profiles?.username || 'Unknown'}</div>
-                </div>
-            `).join('');
-        }
-
         // Update my team display
         function updateMyTeamDisplay() {
             const captionLimits = {
