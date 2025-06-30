@@ -832,7 +832,7 @@ reminders.push({
     }
     
     // Check for completed events with results
-    const { data: completedEvents } = await supabaseClient
+    /*const { data: completedEvents } = await supabaseClient
         .from('events')
         .select('*')
         .eq('is_completed', true)
@@ -847,7 +847,7 @@ reminders.push({
             action: 'View Results',
             link: `/prediction-results.html?predictionId=${userPredictions[eventId]}`
         });
-    }
+    }*/
 const grid = document.getElementById('remindersGrid');
 grid.innerHTML = reminders.map(reminder => `
     <div class="reminder-card" 
