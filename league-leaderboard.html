@@ -474,7 +474,10 @@
     <a href="/dashboard.html" class="back-link">← Back to Dashboard</a>
     <h1 class="page-title">Global League Leaderboard</h1>
     <p class="page-subtitle">See the top-performing teams across the global league</p>
-
+<div class="leaderboard-controls">
+  <button class="leaderboard-toggle-btn active" id="pointsBtn" onclick="setLeagueLeaderboardMode('points')">Total Points</button>
+  <button class="leaderboard-toggle-btn" id="averageBtn" onclick="setLeagueLeaderboardMode('average')">Average Weekly</button>
+</div>
     <div class="leaderboard-container">
       <div id="leaderboardContent" class="loading">
         <div class="loading-spinner"></div>
@@ -498,7 +501,8 @@
     let currentPage = 1;
     let totalItems = 0;
     const itemsPerPage = 50;
-
+	let leagueLeaderboardMode = 'points';
+	
     async function initializePage() {
       const { data: { user } } = await supabaseClient.auth.getUser();
       if (!user) {
@@ -612,7 +616,15 @@
         }
       });
     }
+function setLeagueLeaderboardMode(mode) {
+    leagueLeaderboardMode = mode;
+    currentPage = 1; // Reset to first page
 
+    document.getElementById('pointsBtn').classList.toggle('active', mode === 'points');
+    document.getElementById('averageBtn').classList.toggle('active', mode === 'average');
+
+    loadLeagueLeaderboard();
+}
     async function logout() {
       await supabaseClient.auth.signOut();
       window.location.href = "/";
