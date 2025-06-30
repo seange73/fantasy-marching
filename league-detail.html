@@ -939,9 +939,10 @@
                 </div>
             </div>
             
-            <div class="action-buttons">
-                <a href="/league.html" class="btn btn-secondary">Back to Leagues</a>
-            </div>
+<div class="action-buttons">
+    <a href="/league.html" class="btn btn-secondary">Back to Leagues</a>
+    <button class="btn btn-secondary" id="leaveLeagueBtn" style="display: none;">Leave League</button>
+</div>
         </div>
 
         <!-- During Draft State -->
@@ -1541,6 +1542,14 @@ if (isOwner) {
     // Load and display members
     console.log('About to load league members');
     await loadLeagueMembers();
+	// Show the leave button if user is NOT the owner
+if (!isOwner) {
+    const leaveBtn = document.getElementById('leaveLeagueBtn');
+    if (leaveBtn) {
+        leaveBtn.style.display = 'inline-block';
+        leaveBtn.addEventListener('click', leaveLeague);
+    }
+}
 }
 
         // Show during draft state
@@ -4033,6 +4042,28 @@ async function deleteLeague() {
         ]
     );
 }        
+
+async function leaveLeague() {
+    if (!confirm("Are you sure you want to leave this league?")) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('league_members')
+            .delete()
+            .eq('league_id', leagueId)
+            .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        showNotification('Success', 'You have left the league.', 'success');
+        setTimeout(() => {
+            window.location.href = '/league.html';
+        }, 1500);
+    } catch (error) {
+        console.error('Error leaving league:', error);
+        showNotification('Error', 'Could not leave league.', 'error');
+    }
+}
         // Generate matchups for the league (owner only)
         async function generateMatchups() {
             if (!isOwner) {
