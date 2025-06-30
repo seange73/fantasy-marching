@@ -615,10 +615,18 @@
                 grid-template-columns: 1fr;
             }
         }
+		body.global-league-draft .corps-card.drafted::after {
+  display: none;
+}
+#submitGlobalTeamBtn {
+  font-size: 1.2rem;
+  padding: 1rem 2rem;
+  border-radius: 16px;
+}
     </style>
 </head>
-<body>
-    <!-- Header -->
+	<body class="global-league-draft">
+	    <!-- Header -->
     <header class="header">
         <div class="header-content">
             <a href="/dashboard.html" class="logo-link">
@@ -663,9 +671,8 @@
         </div>
     </header>
 
-    <div class="container">
-        <!-- Center - Main Draft Board -->
-        <div class="draft-board">
+<div style="max-width:1600px; margin:0 auto; padding:2rem;">
+  <div class="draft-board" style="width:100%;">
             <div class="board-header">
                 <h1 class="board-title">Available Corps</h1>
             </div>
