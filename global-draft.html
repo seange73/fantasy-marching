@@ -778,7 +778,6 @@
         ];
 
         let currentUser = null;
-        let leagueId = null;
         let currentLeague = null;
         let currentCaption = 'brass';
         let draftedCorps = new Map(); // Map of caption -> Set of corps names
@@ -791,11 +790,6 @@
             myTeam.set(caption, []);
         });
 
-        // Get league ID from URL
-        function getLeagueIdFromUrl() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('leagueId');
-        }
 
         // Initialize page
         async function initializePage() {
@@ -808,15 +802,7 @@
             }
             
             currentUser = user;
-            leagueId = getLeagueIdFromUrl();
-            
-            if (!leagueId) {
-                showAlert('No league specified', 'error');
-                setTimeout(() => {
-                    window.location.href = '/league.html';
-                }, 2000);
-                return;
-            }
+
             
             // Load user profile
             await loadUserProfile();
@@ -873,25 +859,6 @@
             if (!error) {
                 window.location.href = '/';
             }
-        }
-        // Load league data
-        async function loadLeagueData() {
-            const { data: league, error } = await supabaseClient
-                .from('leagues')
-                .select('*')
-                .eq('id', leagueId)
-                .single();
-            
-            if (error || !league) {
-                showAlert('League not found', 'error');
-                setTimeout(() => {
-                    window.location.href = '/league.html';
-                }, 2000);
-                return;
-            }
-            
-            currentLeague = league;
-            document.getElementById('leagueName').textContent = league.name;
         }
 
 
