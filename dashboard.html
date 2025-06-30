@@ -494,15 +494,22 @@
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-		/* Responsive override for mobile landscape */
+/* Fix white bars in landscape */
+html {
+  background-color: #0f0f23;
+}
+
 @media (max-width: 1024px) and (orientation: landscape) {
   .header-content,
   .main-content {
-    max-width: 100%;
-    margin: 0;
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
     padding-left: 1rem;
     padding-right: 1rem;
   }
+}
+
 }
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
