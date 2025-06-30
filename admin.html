@@ -778,106 +778,117 @@ const { data, error } = await supabaseClient
             currentEventCorps = [];
         }
 
-        // Save scores
-        async function saveScores() {
-            if (!currentEventId || currentEventCorps.length === 0) return;
-            
-            const scores = [];
-            
-            for (const corps of currentEventCorps) {
-                const corpsId = corps.replace(/\s+/g, '_');
-                const brass = parseFloat(document.getElementById(`brass_${corpsId}`).value) || 0;
-                const percussion = parseFloat(document.getElementById(`percussion_${corpsId}`).value) || 0;
-                const guard = parseFloat(document.getElementById(`guard_${corpsId}`).value) || 0;
-                const ge = parseFloat(document.getElementById(`ge_${corpsId}`).value) || 0;
-                const visual = parseFloat(document.getElementById(`visual_${corpsId}`).value) || 0;
-                const music = parseFloat(document.getElementById(`music_${corpsId}`).value) || 0;
-                
-                const total = brass + percussion + guard + ge + visual + music;
-                
-                scores.push({
-                    event_id: currentEventId,
-                    corps_name: corps,
-                    brass_score: brass,
-                    percussion_score: percussion,
-                    color_guard_score: guard,
-                    general_effect_score: ge,
-                    visual_score: visual,
-                    music_score: music,
-                    total_score: total
-                });
-            }
-const finalScoresJson = [];
+// Save scores
+async function saveScores() {
+  if (!currentEventId || currentEventCorps.length === 0) return;
 
-for (const corps of currentEventCorps) {
-  const corpsId = corps.replace(/\s+/g, '_');
-  const totalScore = parseFloat(document.getElementById(`total_${corpsId}`).value) || 0;
+  const scores = [];
 
-  finalScoresJson.push({
-    corps_name: corps,
-    score: totalScore
+  for (const corps of currentEventCorps) {
+    const corpsId = corps.replace(/\s+/g, '_');
+    const brass = parseFloat(document.getElementById(`brass_${corpsId}`).value) || 0;
+    const percussion = parseFloat(document.getElementById(`percussion_${corpsId}`).value) || 0;
+    const guard = parseFloat(document.getElementById(`guard_${corpsId}`).value) || 0;
+    const ge = parseFloat(document.getElementById(`ge_${corpsId}`).value) || 0;
+    const visual = parseFloat(document.getElementById(`visual_${corpsId}`).value) || 0;
+    const music = parseFloat(document.getElementById(`music_${corpsId}`).value) || 0;
+
+    const total = brass + percussion + guard + ge + visual + music;
+
+    scores.push({
+      event_id: currentEventId,
+      corps_name: corps,
+      brass_score: brass,
+      percussion_score: percussion,
+      color_guard_score: guard,
+      general_effect_score: ge,
+      visual_score: visual,
+      music_score: music,
+      total_score: total
+    });
+  }
+
+  const finalScoresJson = [];
+  for (const corps of currentEventCorps) {
+    const corpsId = corps.replace(/\s+/g, '_');
+    const totalScore = parseFloat(document.getElementById(`total_${corpsId}`).value) || 0;
+
+    finalScoresJson.push({
+      corps_name: corps,
+      score: totalScore
+    });
+  }
+  finalScoresJson.sort((a, b) => b.score - a.score);
+  finalScoresJson.forEach((c, idx) => {
+    c.placement = idx + 1;
   });
+
+  const brassWinner = document.getElementById('brass_winner').value;
+  const percussionWinner = document.getElementById('percussion_winner').value;
+  const guardWinner = document.getElementById('guard_winner').value;
+
+  // Delete existing scores
+  const { error: deleteError } = await supabaseClient
+    .from('event_scores')
+    .delete()
+    .eq('event_id', currentEventId);
+
+  if (deleteError) {
+    alert('Error saving scores: ' + deleteError.message);
+    return;
+  }
+
+  // Insert new scores
+  const { error: insertError } = await supabaseClient
+    .from('event_scores')
+    .insert(scores);
+
+  if (insertError) {
+    alert('Error saving scores: ' + insertError.message);
+    return;
+  }
+
+  // mark event completed
+  const allScoresEntered = scores.every(s => s.total_score > 0);
+  if (allScoresEntered) {
+    const { error: updateError } = await supabaseClient
+      .from('events')
+      .update({
+        is_completed: allScoresEntered,
+        caption_winners: {
+          brass: brassWinner,
+          percussion: percussionWinner,
+          color_guard: guardWinner
+        },
+        final_scores: finalScoresJson
+      })
+      .eq('id', currentEventId);
+
+    if (updateError) {
+      alert('Error marking event complete: ' + updateError.message);
+      return;
+    }
+
+    // small delay to ensure commit
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // then trigger scoring RPC
+    const { data: scoringResult, error: scoringError } = await supabaseClient
+      .rpc('score_event_predictions', { p_event_id: currentEventId });
+
+    if (scoringError) {
+      console.error('Error scoring predictions:', scoringError);
+      alert('Error running prediction scoring: ' + scoringError.message);
+    } else {
+      console.log('Predictions scored successfully:', scoringResult);
+    }
+  }
+
+  alert('Scores saved successfully!');
+  closeScoreModal();
+  loadEvents();
 }
 
-finalScoresJson.sort((a, b) => b.score - a.score);
-finalScoresJson.forEach((c, idx) => {
-  c.placement = idx + 1;
-});
-
-            const brassWinner = document.getElementById('brass_winner').value;
-			const percussionWinner = document.getElementById('percussion_winner').value;
-			const guardWinner = document.getElementById('guard_winner').value;
-            // Delete existing scores and insert new ones
-            const { error: deleteError } = await supabaseClient
-                .from('event_scores')
-                .delete()
-                .eq('event_id', currentEventId);
-            
-            if (deleteError) {
-                alert('Error saving scores: ' + deleteError.message);
-                return;
-            }
-            
-            const { error: insertError } = await supabaseClient
-                .from('event_scores')
-                .insert(scores);
-            
-            if (insertError) {
-                alert('Error saving scores: ' + insertError.message);
-                return;
-            }
-            
-            // Mark event as completed if all scores are entered
-            const allScoresEntered = scores.every(s => s.total_score > 0);
-            if (allScoresEntered) {
- await supabaseClient
-  .from('events')
-  .update({
-    is_completed: allScoresEntered,
-    caption_winners: {
-      brass: brassWinner,
-      percussion: percussionWinner,
-      color_guard: guardWinner
-    },
-    final_scores: finalScoresJson
-  })
-  .eq('id', currentEventId);
-            }
-      // automatically trigger prediction scoring
-  const { data: scoringResult, error: scoringError } = await supabaseClient
-    .rpc('score_event_predictions', { p_event_id: currentEventId });
-
-  if (scoringError) {
-    console.error('Error scoring predictions:', scoringError);
-    alert('Error running prediction scoring: ' + scoringError.message);
-  } else {
-    console.log('Predictions scored successfully:', scoringResult);
-  }
-        
-            alert('Scores saved successfully!');
-            closeScoreModal();
-            loadEvents();
-        }
 
         // Show message
         function showMessage(text, type) {
