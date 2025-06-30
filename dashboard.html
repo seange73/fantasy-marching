@@ -936,9 +936,10 @@ async function loadLeagueLeaderboard() {
             .select('*')
             .order(orderBy, { ascending: false })
             .limit(5);
-        
+
+        const container = document.getElementById('leagueLeaderboard');
+
         if (data && data.length > 0) {
-            const container = document.getElementById('leagueLeaderboard');
             container.innerHTML = data.map((player, index) => `
                 <div class="leaderboard-entry">
                     <div class="rank ${index < 3 ? `rank-${index + 1}` : 'rank-default'}">${index + 1}</div>
@@ -953,11 +954,47 @@ async function loadLeagueLeaderboard() {
                     }</span>
                 </div>
             `).join('');
+        } else {
+            container.innerHTML = `<div style="text-align:center; color:#666;">No leaderboard data yet.</div>`;
         }
+
+        // Check if this user has a global league team
+        const { data: globalTeam } = await supabaseClient
+            .from('global_league_teams')
+            .select('id')
+            .eq('user_id', currentUser.id)
+            .maybeSingle();
+
+        if (!globalTeam) {
+            const createButton = document.createElement('div');
+            createButton.innerHTML = `
+                <div style="text-align:center; margin-top:1rem;">
+                    <a href="/global-draft.html"
+                       style="
+                           display: inline-block;
+                           background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+                           color: white;
+                           font-weight: 600;
+                           padding: 0.75rem 1.5rem;
+                           border-radius: 12px;
+                           text-decoration: none;
+                           transition: all 0.3s ease;
+                       "
+                       onmouseover="this.style.opacity='0.9'"
+                       onmouseout="this.style.opacity='1'"
+                    >
+                        Create Your Global League Team
+                    </a>
+                </div>
+            `;
+            container.appendChild(createButton);
+        }
+
     } catch (error) {
         console.error('Error loading league leaderboard:', error);
     }
 }
+
 
         // Load user's leagues
 async function loadUserLeagues() {
