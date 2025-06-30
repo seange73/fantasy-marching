@@ -1043,23 +1043,24 @@ function confirmSubmitMyGlobalTeam() {
             missing.push(`${formatCaption(caption)}: ${limit} required`);
         }
     });
-    if (missing.length > 0) {
-        showModal(
-            "Incomplete Team",
-            `<div class="incomplete-team-content">
-    <div class="warning-icon">⚠️</div>
-    <p class="warning-text">You must fill all positions before submitting:</p>
-    <ul class="missing-positions-list">
-        ${missing.map(m => `<li class="missing-position-item">
-            <span class="position-icon">•</span>
-            <span class="position-text">${m}</span>
-        </li>`).join('')}
-    </ul>
-</div>`
-            [{ text: "OK", primary: true }]
-        );
-        return;
-    }
+if (missing.length > 0) {
+    showModal(
+        "Incomplete Team",
+        `<div class="incomplete-team-content">
+            <div class="warning-icon">⚠️</div>
+            <p class="warning-text">You must fill all positions before submitting:</p>
+            <ul class="missing-positions-list">
+                ${missing.map(m => `<li class="missing-position-item">
+                    <span class="position-icon">•</span>
+                    <span class="position-text">${m}</span>
+                </li>`).join('')}
+            </ul>
+        </div>`,
+        [{ text: "OK", primary: true }],
+        false  // Add this fourth parameter for showInput
+    );
+    return;
+}
 
     // Confirm with user
     showModal(
