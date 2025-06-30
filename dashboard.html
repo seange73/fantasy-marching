@@ -494,6 +494,16 @@
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
+		/* Responsive override for mobile landscape */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .header-content,
+  .main-content {
+    max-width: 100%;
+    margin: 0;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 </head>

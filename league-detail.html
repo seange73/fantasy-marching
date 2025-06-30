@@ -4213,7 +4213,7 @@ async function leaveLeague() {
                 showNotification('Error', 'Please select both a corps to drop and a corps to add', 'error');
                 return;
             }
-            // Check if it's Sunday
+            // Check if it's Monday
             const today = new Date();
             if (today.getDay() !== 1) {
                 showNotification('Error', 'Transactions can only be made on Mondays', 'error');
