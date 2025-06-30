@@ -1696,47 +1696,6 @@ const picksChannel = supabaseClient
     )
 
                 
-                // Get username for display
-                const { data: profile } = await supabaseClient
-                    .from('profiles')
-                    .select('username')
-                    .eq('id', pick.user_id)
-                    .single();
-                
-                // Add to recent picks display
-                const container = document.getElementById('recentPicksList');
-                const newPickHtml = `
-                    <div class="pick-item" style="
-                        animation: fadeInScale 0.4s ease forwards;
-                        background: ${pick.user_id === currentUser.id ? 'rgba(78, 205, 196, 0.1)' : 'rgba(255, 255, 255, 0.03)'};
-                        border: 1px solid ${pick.user_id === currentUser.id ? 'rgba(78, 205, 196, 0.3)' : 'rgba(255, 255, 255, 0.1)'};
-                    ">
-                        <div class="pick-round">Round ${pick.round}, Pick ${pick.pick_number}</div>
-                        <div class="pick-details">
-                            <span class="pick-corps">${pick.corps_name}</span>
-                            <span class="pick-caption">${formatCaption(pick.caption)}</span>
-                        </div>
-                        <div class="pick-user">by ${profile?.username || 'Unknown'}</div>
-                    </div>
-                `;
-                
-                // Update display
-                if (container.innerHTML.includes('No picks yet')) {
-                    container.innerHTML = newPickHtml;
-                } else {
-                    container.innerHTML = newPickHtml + container.innerHTML;
-                    
-                    // Keep only last 10
-                    const picks = container.querySelectorAll('.pick-item');
-                    if (picks.length > 10) {
-                        picks[picks.length - 1].remove();
-                    }
-                }
-                
-                // Reload available corps to remove the picked one
-                await loadAvailableCorps();
-            }
-        )
         .subscribe((status) => {
             console.log('Picks channel status:', status);
             if (status === 'CHANNEL_ERROR') {
