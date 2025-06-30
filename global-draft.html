@@ -1221,6 +1221,9 @@ async function submitMyGlobalTeam() {
     }
 
     showAlert('Your team has been locked for the season! Good luck!', 'success');
+	  setTimeout(() => {
+    window.location.href = '/dashboard.html';
+  }, 1500);
   } catch (e) {
     console.error(e);
     showAlert('Error saving your team: ' + e.message, 'error');
