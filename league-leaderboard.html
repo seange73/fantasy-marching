@@ -540,12 +540,11 @@
         totalItems = count || 0;
         const totalPages = Math.ceil(totalItems / itemsPerPage);
         const offset = (currentPage - 1) * itemsPerPage;
-
+          let orderBy = leagueLeaderboardMode === 'average' ? 'average_points' : 'total_points';
         const { data: stats } = await supabaseClient
           .from("global_league_leaderboard")
           .select("*")
-          let orderBy = leagueLeaderboardMode === 'average' ? 'average_points' : 'total_points';
-			.order(orderBy, { ascending: false })
+		  .order(orderBy, { ascending: false })
           .range(offset, offset + itemsPerPage - 1);
 
         if (!stats || stats.length === 0) {
