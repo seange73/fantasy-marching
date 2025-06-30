@@ -808,24 +808,23 @@
         let availableLeagues = [];
 
         // Initialize page
-        async function initializePage() {
-            // Check authentication
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            
-            if (!user) {
-                window.location.href = '/';
-                return;
-            }
-            
-            currentUser = user;
-            
-            // Load user profile
-            await loadUserProfile();
-            
-            // Load leagues data
-            await loadMyLeagues();
-            await loadAvailableLeagues();
-        }
+async function initializePage() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) {
+        window.location.href = '/';
+        return;
+    }
+    currentUser = user;
+
+    await loadUserProfile();
+
+    // force loadMyLeagues to complete and populate myLeagues
+    await loadMyLeagues();
+
+    // only now load available leagues
+    await loadAvailableLeagues();
+}
+
 
         // Load user profile
         async function loadUserProfile() {
@@ -1177,9 +1176,8 @@ async function loadAvailableLeagues() {
     const myLeagueIds = myLeagues.map(l => l.leagues.id);
 availableLeagues = leaguesWithProfiles.filter(l => {
     const status = draftStatusMap[l.id];
-    return !myLeagueIds.includes(l.id) && (
-        status === undefined || status === 'not_started'
-    );
+    return !myLeagueIds.includes(l.id) &&
+        (status === undefined || status === 'not_started');
 });
     
     displayAvailableLeagues();
