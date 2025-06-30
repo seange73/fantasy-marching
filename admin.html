@@ -863,7 +863,7 @@ finalScoresJson.forEach((c, idx) => {
   })
   .eq('id', currentEventId);
             }
-              // automatically trigger prediction scoring
+      // automatically trigger prediction scoring
   const { data: scoringResult, error: scoringError } = await supabaseClient
     .rpc('score_event_predictions', { p_event_id: currentEventId });
 
@@ -873,7 +873,7 @@ finalScoresJson.forEach((c, idx) => {
   } else {
     console.log('Predictions scored successfully:', scoringResult);
   }
-}
+        
             alert('Scores saved successfully!');
             closeScoreModal();
             loadEvents();
