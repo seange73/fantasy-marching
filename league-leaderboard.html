@@ -544,7 +544,8 @@
         const { data: stats } = await supabaseClient
           .from("global_league_leaderboard")
           .select("*")
-          .order("total_points", { ascending: false })
+          let orderBy = leagueLeaderboardMode === 'average' ? 'average_points' : 'total_points';
+			.order(orderBy, { ascending: false })
           .range(offset, offset + itemsPerPage - 1);
 
         if (!stats || stats.length === 0) {
@@ -618,12 +619,12 @@
     }
 function setLeagueLeaderboardMode(mode) {
     leagueLeaderboardMode = mode;
-    currentPage = 1; // Reset to first page
+    currentPage = 1;
 
     document.getElementById('pointsBtn').classList.toggle('active', mode === 'points');
     document.getElementById('averageBtn').classList.toggle('active', mode === 'average');
 
-    loadLeagueLeaderboard();
+    loadLeaderboard();  // call the correct function
 }
     async function logout() {
       await supabaseClient.auth.signOut();
