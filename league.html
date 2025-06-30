@@ -1175,10 +1175,13 @@ async function loadAvailableLeagues() {
 
     // Filter out leagues user is already in AND leagues with started/completed drafts
     const myLeagueIds = myLeagues.map(l => l.leagues.id);
-    availableLeagues = leaguesWithProfiles.filter(l => 
-        !myLeagueIds.includes(l.id) && 
-        (!draftStatusMap[l.id] || draftStatusMap[l.id] === 'not_started')
-    );
+availableLeagues = leaguesWithProfiles.filter(l => 
+    !myLeagueIds.includes(l.id) &&
+    (
+        draftStatusMap[l.id] === undefined ||
+        draftStatusMap[l.id] === 'not_started'
+    )
+);
     
     displayAvailableLeagues();
 }
