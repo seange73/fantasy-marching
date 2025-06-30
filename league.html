@@ -1299,6 +1299,11 @@ if (banCheck) {
             }
             
             // Join the league
+			// Validate not in more than 20 leagues
+if (myLeagues.length >= 20) {
+    showAlert('You cannot be in more than 20 leagues', 'error');
+    return;
+}
             const { error } = await supabaseClient
                 .from('league_members')
                 .insert({
@@ -1360,7 +1365,11 @@ if (draftTimeInput) {
     const localDateTime = luxon.DateTime.fromISO(draftTimeInput);
     draftTime = localDateTime.toUTC().toISO();
 }
-            
+            // Validate not in more than 20 leagues
+if (myLeagues.length >= 20) {
+    showAlert('You cannot be in more than 20 leagues', 'error');
+    return;
+}
             // Validate max members is even
             if (maxMembers % 2 !== 0) {
                 showAlert('Max members must be an even number', 'error');
