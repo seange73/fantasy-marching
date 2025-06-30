@@ -956,10 +956,25 @@
             
             // Set up real-time subscriptions
             setupRealtimeSubscriptions();
+			// Add polling fallback every 2 seconds
+setInterval(async () => {
+    const { data: draft } = await supabaseClient
+        .from('league_drafts')
+        .select('current_pick, current_user_id')
+        .eq('league_id', leagueId)
+        .single();
+
+    if (draft && draft.current_pick !== draftState.current_pick) {
+        console.log('Polling detected a new pick, refreshing...');
+        await loadDraftState();
+        await loadAvailableCorps();
+    }
+}, 2000);
  			//load caption rankings
 			await loadCaptionRankings();           
             // Load available corps for current caption
             await loadAvailableCorps();
+			
         }
 
         // Load user profile
@@ -1634,7 +1649,7 @@ function setupRealtimeSubscriptions() {
                 
                 // Update the UI immediately
                 updateDraftUI();
-                
+                await loadAllPicks();
                 // If it just became our turn, play a sound or show notification
                 if (!wasMyTurn && draftState.current_user_id === currentUser.id) {
                     console.log('Now your turn!');
@@ -1669,26 +1684,17 @@ function setupRealtimeSubscriptions() {
         });
     
     // Subscribe to new picks
-    const picksChannel = supabaseClient
-        .channel(`draft-picks-${leagueId}`)
-        .on('postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'draft_picks', filter: `league_id=eq.${leagueId}` },
-            async (payload) => {
-                console.log('New pick INSERT:', payload);
-                const pick = payload.new;
-                
-                // Update drafted corps immediately
-                draftedCorps.get(pick.caption).add(pick.corps_name);
-                
-                // If it's our pick, update our team
-                if (pick.user_id === currentUser.id) {
-                    const captionArray = myTeam.get(pick.caption);
-                    const limits = { brass: 2, percussion: 2, guard: 2, ge: 1, visual: 1, music: 1 };
-                    if (captionArray.length < limits[pick.caption]) {
-                        captionArray.push(pick.corps_name);
-                        updateMyTeamDisplay();
-                    }
-                }
+const picksChannel = supabaseClient
+    .channel(`draft-picks-${leagueId}`)
+    .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'draft_picks', filter: `league_id=eq.${leagueId}` },
+        async (payload) => {
+            console.log('New pick INSERT:', payload);
+            await loadAllPicks();
+            await loadAvailableCorps();
+        }
+    )
+
                 
                 // Get username for display
                 const { data: profile } = await supabaseClient
