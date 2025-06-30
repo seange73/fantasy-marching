@@ -1148,6 +1148,8 @@ async function loadAvailableLeagues() {
 
     // Get draft statuses for all leagues
     const leagueIds = leagues.map(l => l.id);
+	console.log("leagues variable before getting draft statuses", leagues);
+	console.log("leagueIds being used in .in clause", leagueIds);
     const { data: drafts } = await supabaseClient
         .from('league_drafts')
         .select('league_id, status')
