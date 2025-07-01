@@ -509,6 +509,32 @@ html {
     padding-right: 1rem;
   }
 }
+@media (max-width: 600px) and (orientation: portrait) {
+  .logo-link {
+    display: none;
+  }
+  .nav-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+  .nav-tab {
+    flex: 0 0 auto;
+  }
+  .main-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+  .leaderboard-card,
+  .leagues-container,
+  .reminder-card {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
 
 }
     </style>
