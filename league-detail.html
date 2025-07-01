@@ -3048,13 +3048,16 @@ ${hasScores ? `
     word-break: break-word;
 ">
                                         <div style="text-align: right;">
-                                            <span style="
-                                                font-weight: ${matchup.winner_id === matchup.team1_id ? '700' : '500'};
-                                                color: ${matchup.winner_id === matchup.team1_id ? '#4ecdc4' : '#e0e0e0'};
-                                            ">
-                                                ${matchup.team1Username}
-                                                ${matchup.winner_id === matchup.team1_id ? ' 👑' : ''}
-                                            </span>
+<span style="
+    display: inline-block;
+    max-width: 100px;
+    word-break: break-word;
+    font-weight: ${matchup.winner_id === matchup.team1_id ? '700' : '500'};
+    color: ${matchup.winner_id === matchup.team1_id ? '#4ecdc4' : '#e0e0e0'};
+">
+    ${matchup.team1Username}
+    ${matchup.winner_id === matchup.team1_id ? ' 👑' : ''}
+</span>
                                             ${matchup.team1_score !== null ? `
                                                 <span style="
                                                     margin-left: 0.5rem;
@@ -3065,13 +3068,16 @@ ${hasScores ? `
                                         </div>
                                         <div style="color: #666; font-weight: 600;">vs</div>
                                         <div>
-                                            <span style="
-                                                font-weight: ${matchup.winner_id === matchup.team2_id ? '700' : '500'};
-                                                color: ${matchup.winner_id === matchup.team2_id ? '#4ecdc4' : '#e0e0e0'};
-                                            ">
-                                                ${matchup.team2Username}
-                                                ${matchup.winner_id === matchup.team2_id ? ' 👑' : ''}
-                                            </span>
+<span style="
+    display: inline-block;
+    max-width: 100px;
+    word-break: break-word;
+    font-weight: ${matchup.winner_id === matchup.team2_id ? '700' : '500'};
+    color: ${matchup.winner_id === matchup.team2_id ? '#4ecdc4' : '#e0e0e0'};
+">
+    ${matchup.team2Username}
+    ${matchup.winner_id === matchup.team2_id ? ' 👑' : ''}
+</span>
                                             ${matchup.team2_score !== null ? `
                                                 <span style="
                                                     margin-left: 0.5rem;
