@@ -3956,6 +3956,7 @@ async function acceptTrade(tradeId) {
 
   showNotification('Success', 'Trade accepted!', 'success');
   loadTrades();
+  loadLineupFromDraft();
 }
 
 async function rejectTrade(tradeId) {
