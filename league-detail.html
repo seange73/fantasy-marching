@@ -1038,6 +1038,82 @@ html {
     max-width: 100% !important;
   }
 }
+/* Fix standings on mobile */
+@media (max-width: 600px) {
+  /* Fix standings grid to prevent overflow */
+  .standing-row {
+    grid-template-columns: 30px 1fr auto !important;
+    gap: 0.5rem !important;
+    padding: 0.75rem !important;
+    font-size: 0.9rem !important;
+  }
+  
+  /* Hide win percentage on mobile to save space */
+  .standing-row > span:nth-child(4) {
+    display: none;
+  }
+  
+  /* Make rank number smaller */
+  .standing-row > span:first-child {
+    font-size: 1.2rem !important;
+  }
+  
+  /* Truncate long usernames */
+  .standing-row > span:nth-child(2) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 150px;
+  }
+}
+
+/* Fix season schedule on mobile - remove horizontal scroll */
+@media (max-width: 600px) {
+  /* Remove the scroll container wrapper */
+  .matchup-scroll-container {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    white-space: normal !important;
+  }
+  
+  /* Fix the matchup boxes in season schedule */
+  #seasonSchedule .matchup-box,
+  #seasonSchedule div[style*="grid-template-columns: 1fr auto 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+    padding: 0.5rem !important;
+    min-width: unset !important;
+    text-align: center !important;
+  }
+  
+  /* Stack the team names vertically */
+  #seasonSchedule div[style*="text-align: right"] {
+    text-align: center !important;
+  }
+  
+  /* Make fonts smaller in schedule */
+  #seasonSchedule span {
+    font-size: 0.9rem !important;
+  }
+}
+
+/* Additional fix for very small screens */
+@media (max-width: 400px) {
+  .standing-row {
+    grid-template-columns: 25px 1fr auto !important;
+    gap: 0.3rem !important;
+    padding: 0.5rem !important;
+  }
+  
+  .standing-row > span:nth-child(2) {
+    max-width: 120px;
+    font-size: 0.85rem !important;
+  }
+  
+  .standing-row > span:first-child {
+    font-size: 1rem !important;
+  }
+}
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 </head>
@@ -2976,7 +3052,7 @@ ${hasScores ? `
                                 border-radius: 12px;
                                 border: 1px solid ${team.id === currentTeam?.id ? 'rgba(78, 205, 196, 0.3)' : 'rgba(255, 255, 255, 0.1)'};
                                 transition: all 0.3s ease;
-                            " class="standing-row">
+                            " class="standing-row" data-mobile-compact="true">
                                 <span style="
                                     font-size: 1.5rem;
                                     font-weight: 800;
