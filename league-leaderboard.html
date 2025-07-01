@@ -444,6 +444,43 @@ html {
     padding-right: 1rem;
   }
 }
+@media (max-width: 600px) and (orientation: portrait) {
+  .logo-link {
+    display: none;
+  }
+  .nav-tabs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    scrollbar-width: thin; /* Firefox */
+  }
+  .nav-tabs::-webkit-scrollbar {
+    height: 6px; /* Chrome/Safari scrollbar height */
+  }
+  .nav-tabs::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 4px;
+  }
+  .nav-tab {
+    flex: 0 0 auto; /* prevent shrinking */
+  }
+  .main-content {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+  .leaderboard-card,
+  .leagues-container,
+  .reminder-card {
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+}
+
   </style>
 </head>
 <body>
