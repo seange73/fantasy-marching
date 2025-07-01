@@ -480,6 +480,42 @@ html {
     box-sizing: border-box;
   }
 }
+@media (max-width: 600px) and (orientation: portrait) {
+  .leaderboard-container {
+    padding: 1rem !important;
+  }
+
+  .leaderboard-entry {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .rank {
+    width: 50px !important;
+    height: 50px !important;
+    margin-bottom: 0.5rem;
+    margin-right: 0;
+    flex-shrink: 0;
+  }
+
+  .player-info {
+    width: 100%;
+    justify-content: flex-start;
+    margin-bottom: 0.5rem;
+  }
+
+  .player-stats {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .stat-item {
+    width: 100%;
+    text-align: left;
+  }
+}
 
   </style>
 </head>
