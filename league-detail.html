@@ -949,6 +949,21 @@ html {
     border-radius: 4px;
   }
 }
+@media (max-width: 600px) and (orientation: portrait) {
+  .matchup-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    scrollbar-width: thin;
+  }
+  .matchup-scroll-container::-webkit-scrollbar {
+    height: 6px;
+  }
+  .matchup-scroll-container::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 4px;
+  }
+}
 
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
@@ -3018,16 +3033,20 @@ ${hasScores ? `
                             ${matchups.map(matchup => {
                                 const userInMatchup = matchup.team1_id === currentTeam?.id || matchup.team2_id === currentTeam?.id;
                                 return `
-                                    <div style="
-                                        display: grid;
-                                        grid-template-columns: 1fr auto 1fr;
-                                        gap: 1rem;
-                                        align-items: center;
-                                        padding: 0.75rem 1rem;
-                                        background: ${userInMatchup ? 'rgba(78, 205, 196, 0.05)' : 'rgba(255, 255, 255, 0.03)'};
-                                        border-radius: 8px;
-                                        border: 1px solid ${userInMatchup ? 'rgba(78, 205, 196, 0.2)' : 'rgba(255, 255, 255, 0.05)'};
-                                    ">
+<div style="
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: ${userInMatchup ? 'rgba(78, 205, 196, 0.05)' : 'rgba(255, 255, 255, 0.03)'};
+    border-radius: 8px;
+    border: 1px solid ${userInMatchup ? 'rgba(78, 205, 196, 0.2)' : 'rgba(255, 255, 255, 0.05)'};
+    min-width: 300px;
+    max-width: 100%;
+    overflow: hidden;
+    word-break: break-word;
+">
                                         <div style="text-align: right;">
                                             <span style="
                                                 font-weight: ${matchup.winner_id === matchup.team1_id ? '700' : '500'};
