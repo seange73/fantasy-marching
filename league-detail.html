@@ -934,7 +934,21 @@ html {
     display: inline-block; /* prevents it from breaking lines weirdly */
   }
 }
-
+@media (max-width: 600px) and (orientation: portrait) {
+  .matchup-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    scrollbar-width: thin;
+  }
+  .matchup-scroll-container::-webkit-scrollbar {
+    height: 6px;
+  }
+  .matchup-scroll-container::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 4px;
+  }
+}
 
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
@@ -2995,6 +3009,7 @@ ${hasScores ? `
                             ${week == currentWeek ? ' (Current Week)' : ''}
                             ${week < currentWeek ? ' ✓' : ''}
                         </h4>
+						<div class="matchup-scroll-container">
                         <div style="
                             display: grid;
                             gap: 0.5rem;
@@ -3050,6 +3065,7 @@ ${hasScores ? `
                                 `;
                             }).join('')}
                         </div>
+						</div>
                     </div>
                 `).join('');
                 
