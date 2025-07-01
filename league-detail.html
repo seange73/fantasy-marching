@@ -1075,6 +1075,34 @@ html {
     margin: 0.5rem auto 0;
   }
 }
+.matchup-box {
+  overflow: hidden;
+}
+
+.matchup-box > div {
+  min-width: 0; /* This is crucial for text truncation in grid */
+}
+
+/* For team names specifically */
+.matchup-box div[style*="font-weight:600"] {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  max-width: 100%;
+  padding: 0 0.5rem;
+}
+
+/* For mobile specific adjustments */
+@media (max-width: 600px) {
+  .matchup-box {
+    padding: 1rem 0.5rem; /* Reduce horizontal padding */
+  }
+  
+  .matchup-box > div {
+    width: 100%;
+    max-width: 100%;
+  }
+}
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 </head>
@@ -2663,212 +2691,178 @@ function switchTab(tabName) {
     }
 }
 
-        // Load matchup
-        async function loadMatchup() {
-            if (!currentTeam) {
-                await loadUserTeam();
-            }
+async function loadMatchup() {
+    const container = document.getElementById('matchupContainer');
+    container.innerHTML = '<p style="text-align: center;">Loading matchup...</p>';
+    
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+        
+        const leagueId = getLeagueId();
+        const currentWeek = await getCurrentWeekFromDB();
+        
+        // Get user's team
+        const { data: userTeam } = await supabaseClient
+            .from('league_teams')
+            .select('*')
+            .eq('league_id', leagueId)
+            .eq('user_id', user.id)
+            .single();
             
-            const week = await getCurrentWeekFromDB();
-            document.getElementById('currentWeek').textContent = week;
-            
-            const container = document.getElementById('matchupContainer');
-            
-            // Debug logging
-            console.log('Loading matchup for week:', week);
-            console.log('Current team:', currentTeam);
-            console.log('League ID:', leagueId);
-            
-            try {
-                // Get the matchup for this week - simplified query
-                const { data: matchup, error } = await supabaseClient
-                    .from('league_matchups')
-                    .select('*')
-                    .eq('league_id', leagueId)
-                    .eq('week_number', week)
-                    .or(`team1_id.eq.${currentTeam.id},team2_id.eq.${currentTeam.id}`)
-                    .single();
-                
-                console.log('Matchup query result:', { data: matchup, error });
-				console.log('Full matchup data:', matchup);
-				console.log('Team1 score:', matchup?.team1_score, 'Team2 score:', matchup?.team2_score);
-                
-                if (error || !matchup) {
-                    // Let's also try to see ALL matchups for debugging
-                    const { data: allMatchups } = await supabaseClient
-                        .from('league_matchups')
-                        .select('*')
-                        .eq('league_id', leagueId)
-                        .eq('week_number', week);
-                    
-                    console.log('All matchups for this week:', allMatchups);
-                    
-                    container.innerHTML = `
-                        <div style="text-align: center; padding: 3rem;">
-                            <p style="color: #666; font-size: 1.2rem;">No matchup scheduled for this week</p>
-                            <p style="color: #666; font-size: 0.9rem; margin-top: 1rem;">
-                                Debug: Week ${week}, Team ID: ${currentTeam?.id || 'No team'}
-                            </p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // Now get team details separately with a simpler approach
-                const { data: team1Data } = await supabaseClient
-                    .from('league_teams')
-                    .select('*')
-                    .eq('id', matchup.team1_id)
-                    .single();
-                    
-                const { data: team2Data } = await supabaseClient
-                    .from('league_teams')
-                    .select('*')
-                    .eq('id', matchup.team2_id)
-                    .single();
-                
-                // Get usernames separately
-                let team1Username = 'Unknown';
-                let team2Username = 'Unknown';
-                
-                if (team1Data) {
-                    const { data: profile1 } = await supabaseClient
-                        .from('profiles')
-                        .select('username')
-                        .eq('id', team1Data.user_id)
-                        .single();
-                    if (profile1) team1Username = profile1.username;
-                }
-                
-                if (team2Data) {
-                    const { data: profile2 } = await supabaseClient
-                        .from('profiles')
-                        .select('username')
-                        .eq('id', team2Data.user_id)
-                        .single();
-                    if (profile2) team2Username = profile2.username;
-                }
-                
-                // Create the team objects with username
-                matchup.team1 = { ...team1Data, username: team1Username };
-                matchup.team2 = { ...team2Data, username: team2Username };
-                
-                // Determine which team is the user's and which is the opponent
-                const isTeam1 = matchup.team1_id === currentTeam.id;
-                const userTeam = isTeam1 ? matchup.team1 : matchup.team2;
-                const opponentTeam = isTeam1 ? matchup.team2 : matchup.team1;
-				const opponentTeamId = isTeam1 ? matchup.team2_id : matchup.team1_id;  
-                const userScore = isTeam1 ? matchup.team1_score : matchup.team2_score;
-                const opponentScore = isTeam1 ? matchup.team2_score : matchup.team1_score;
-                console.log('Display scores - User:', userScore, 'Opponent:', opponentScore);
-				console.log('Score check - User !== null?', userScore !== null, 'Opponent !== null?', opponentScore !== null);
-                // Check if there's been any scoring this week
-                const hasScores = userScore !== null || opponentScore !== null;
-                const isTiedScore = hasScores && Math.abs(userScore - opponentScore) < 0.001;
-                
-                container.innerHTML = `
-                    <div style="
-                        display: grid;
-                        grid-template-columns: 1fr auto 1fr;
-                        gap: 2rem;
-                        align-items: center;
-                        padding: 2rem;
-                        background: rgba(255, 255, 255, 0.03);
-                        border-radius: 20px;
-                        border: 1px solid rgba(255, 255, 255, 0.1);
-                    ">
-                        <!-- User's Team -->
-                        <div style="text-align: center;">
-                            <div style="
-                                font-size: 1.2rem;
-                                font-weight: 600;
-                                color: #4ecdc4;
-                                margin-bottom: 1rem;
-                            ">
-                                ${userTeam.username || 'Unknown'}'s Team
-                                ${matchup.winner_id === userTeam.id ? '👑' : ''}
-                            </div>
-                            <div style="
-                                font-size: 3rem;
-                                font-weight: 800;
-                                background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-                                -webkit-background-clip: text;
-                                -webkit-text-fill-color: transparent;
-                                background-clip: text;
-                            ">
-                                ${userScore !== null && userScore !== undefined ? parseFloat(userScore).toFixed(2) : '--'}
-                            </div>
-                        </div>
-                        
-                        <!-- VS -->
-                        <div style="text-align: center;">
-                            <div style="
-                                font-size: 2rem;
-                                font-weight: 700;
-                                color: #666;
-                            ">VS</div>
-                            ${isTiedScore ? `
-                                <div style="
-                                    margin-top: 0.5rem;
-                                    font-size: 0.85rem;
-                                    color: #ffd700;
-                                    font-weight: 600;
-                                ">Tiebreaker!</div>
-                            ` : ''}
-                        </div>
-                        
-                        <!-- Opponent's Team -->
-                        <div style="text-align: center;">
-                            <div style="
-                                font-size: 1.2rem;
-                                font-weight: 600;
-                                color: #e74c3c;
-                                margin-bottom: 1rem;
-                            ">
-                                ${opponentTeam.username || 'Unknown'}'s Team
-                                ${matchup.winner_id === opponentTeam.id ? '👑' : ''}
-                            </div>
-                            <div style="
-                                font-size: 3rem;
-                                font-weight: 800;
-                                color: #e74c3c;
-                            ">
-                                ${opponentScore !== null && opponentScore !== undefined ? parseFloat(opponentScore).toFixed(2) : '--'}
-                            </div>
-${hasScores ? `
-    <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="viewTeamLineup('${opponentTeamId}')">
-        View Lineup
-    </button>
-` : ''}
-                        </div>
-                    </div>
-                    
-                    <!-- Week's competitions -->
-                    <div style="margin-top: 2rem;">
-                        <h3 style="
-                            font-size: 1.2rem;
-                            font-weight: 600;
-                            color: #4ecdc4;
-                            margin-bottom: 1rem;
-                        ">This Week's Competitions</h3>
-                        <div id="weekCompetitions">
-                            Loading competitions...
-                        </div>
-                    </div>
-                `;
-                
-                // Load this week's competitions
-                await loadWeekCompetitions(week);
-                
-            } catch (error) {
-                console.error('Error loading matchup:', error);
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 3rem;">
-                        <p style="color: #ff6b6b; font-size: 1.2rem;">Error loading matchup data</p>
-                    </div>
-                `;
-            }
+        if (!userTeam) {
+            container.innerHTML = '<p style="text-align: center; color: #ff6b6b;">You don\'t have a team in this league</p>';
+            return;
         }
+        
+        // Get this week's matchup
+        const { data: matchups } = await supabaseClient
+            .from('league_matchups')
+            .select(`
+                *,
+                team1:league_teams!league_matchups_team1_id_fkey(id, user_id, username),
+                team2:league_teams!league_matchups_team2_id_fkey(id, user_id, username)
+            `)
+            .eq('league_id', leagueId)
+            .eq('week', currentWeek)
+            .or(`team1_id.eq.${userTeam.id},team2_id.eq.${userTeam.id}`);
+            
+        if (!matchups || matchups.length === 0) {
+            container.innerHTML = '<p style="text-align: center;">No matchup scheduled for this week</p>';
+            return;
+        }
+        
+        const matchup = matchups[0];
+        console.log('Matchup data:', matchup);
+        
+        // Check if scores have been calculated for this week
+        const isTeam1 = matchup.team1_id === userTeam.id;
+        const opponentTeam = isTeam1 ? matchup.team2 : matchup.team1;
+        const opponentTeamId = isTeam1 ? matchup.team2_id : matchup.team1_id;  
+        const userScore = isTeam1 ? matchup.team1_score : matchup.team2_score;
+        const opponentScore = isTeam1 ? matchup.team2_score : matchup.team1_score;
+        console.log('Display scores - User:', userScore, 'Opponent:', opponentScore);
+        console.log('Score check - User !== null?', userScore !== null, 'Opponent !== null?', opponentScore !== null);
+        // Check if there's been any scoring this week
+        const hasScores = userScore !== null || opponentScore !== null;
+        const isTiedScore = hasScores && Math.abs(userScore - opponentScore) < 0.001;
+        
+        container.innerHTML = `
+            <div style="
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
+                gap: 2rem;
+                align-items: center;
+                padding: 2rem;
+                background: rgba(255, 255, 255, 0.03);
+                border-radius: 20px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            ">
+                <!-- User's Team -->
+                <div style="text-align: center;">
+                    <div style="
+                        font-size: 1.2rem;
+                        font-weight: 600;
+                        color: #4ecdc4;
+                        margin-bottom: 1rem;
+                        word-break: break-word;
+                        overflow-wrap: break-word;
+                        max-width: 100%;
+                        padding: 0 0.5rem;
+                    ">
+                        ${userTeam.username || 'Unknown'}'s Team
+                        ${matchup.winner_id === userTeam.id ? '👑' : ''}
+                    </div>
+                    <div style="
+                        font-size: 3rem;
+                        font-weight: 800;
+                        background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        background-clip: text;
+                    ">
+                        ${userScore !== null && userScore !== undefined ? parseFloat(userScore).toFixed(2) : '--'}
+                    </div>
+                </div>
+                
+                <!-- VS -->
+                <div style="text-align: center;">
+                    <div style="
+                        font-size: 2rem;
+                        font-weight: 700;
+                        color: #666;
+                    ">VS</div>
+                    ${isTiedScore ? `
+                        <div style="
+                            font-size: 0.85rem;
+                            color: #ffd700;
+                            font-weight: 600;
+                            margin-top: 0.5rem;
+                        ">Tied!</div>
+                    ` : ''}
+                    ${matchup.is_tiebreaker ? `
+                        <div style="
+                            font-size: 0.85rem;
+                            color: #ffd700;
+                            font-weight: 600;
+                            margin-top: 0.5rem;
+                        ">Tiebreaker!</div>
+                    ` : ''}
+                </div>
+                
+                <!-- Opponent's Team -->
+                <div style="text-align: center;">
+                    <div style="
+                        font-size: 1.2rem;
+                        font-weight: 600;
+                        color: #e74c3c;
+                        margin-bottom: 1rem;
+                        word-break: break-word;
+                        overflow-wrap: break-word;
+                        max-width: 100%;
+                        padding: 0 0.5rem;
+                    ">
+                        ${opponentTeam.username || 'Unknown'}'s Team
+                        ${matchup.winner_id === opponentTeam.id ? '👑' : ''}
+                    </div>
+                    <div style="
+                        font-size: 3rem;
+                        font-weight: 800;
+                        color: #e74c3c;
+                    ">
+                        ${opponentScore !== null && opponentScore !== undefined ? parseFloat(opponentScore).toFixed(2) : '--'}
+                    </div>
+                    <button class="btn btn-secondary" style="
+                        margin-top: 1rem;
+                        width: calc(100% - 1rem);
+                        max-width: 200px;
+                        word-break: break-word;
+                        margin-left: 0.5rem;
+                        margin-right: 0.5rem;
+                    " onclick="viewTeamLineup('${opponentTeamId}')">View Lineup</button>
+                </div>
+            </div>
+            
+            <!-- Add responsive style -->
+            <style>
+                @media (max-width: 600px) {
+                    #matchupContainer > div {
+                        grid-template-columns: 1fr !important;
+                        gap: 1.5rem;
+                        padding: 1.5rem;
+                    }
+                }
+            </style>
+        `;
+        
+        // Update the current week display
+        document.getElementById('currentWeek').textContent = currentWeek;
+        
+    } catch (error) {
+        console.error('Error loading matchup:', error);
+        container.innerHTML = '<p style="text-align: center; color: #ff6b6b;">Error loading matchup</p>';
+    }
+}
 
         // Load standings
         async function loadStandings() {
