@@ -3038,28 +3038,36 @@ async function loadSeasonSchedule() {
                         return `
                             <div style="
                                 display: flex;
-                                flex-direction: row;
-                                flex-wrap: wrap;
+                                flex-direction: column;
                                 justify-content: center;
                                 align-items: center;
-                                gap: 0.5rem;
                                 padding: 0.75rem 1rem;
                                 background: ${userInMatchup ? 'rgba(78, 205, 196, 0.05)' : 'rgba(255,255,255,0.03)'};
                                 border: 1px solid ${userInMatchup ? 'rgba(78,205,196,0.2)' : 'rgba(255,255,255,0.05)'};
                                 border-radius: 8px;
                                 width: 100%;
                                 box-sizing: border-box;
-                                word-break: break-word;
+                                margin-bottom: 0.5rem;
                             ">
-                                <div style="flex: 1; text-align: center;">
-                                    <strong>${matchup.team1Username}</strong>
-                                    ${matchup.team1_score !== null ? `<span> ${matchup.team1_score.toFixed(1)}</span>` : ''}
+                                <div style="font-weight:700; text-align:center;">
+                                    ${matchup.team1Username}
+                                    ${matchup.team1_score !== null ? `<span> (${matchup.team1_score.toFixed(1)})</span>` : ''}
                                 </div>
-                                <div style="flex: 0; text-align: center;">vs</div>
-                                <div style="flex: 1; text-align: center;">
-                                    <strong>${matchup.team2Username}</strong>
-                                    ${matchup.team2_score !== null ? `<span> ${matchup.team2_score.toFixed(1)}</span>` : ''}
+                                <div style="color:#999; margin:0.25rem 0;">vs</div>
+                                <div style="font-weight:700; text-align:center;">
+                                    ${matchup.team2Username}
+                                    ${matchup.team2_score !== null ? `<span> (${matchup.team2_score.toFixed(1)})</span>` : ''}
                                 </div>
+                                <button style="
+                                    margin-top:0.5rem;
+                                    padding:0.5rem 1rem;
+                                    border-radius:8px;
+                                    background: linear-gradient(135deg,#4ecdc4 0%,#45b7d1 100%);
+                                    color:white;
+                                    border:none;
+                                    font-weight:600;
+                                    cursor:pointer;
+                                ">View Lineup</button>
                             </div>
                         `;
                     }).join('')}
