@@ -2699,6 +2699,7 @@ async function loadMatchup() {
         const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) throw new Error('Not authenticated');
         
+        const leagueId = getLeagueId();
         const currentWeek = await getCurrentWeekFromDB();
         
         // Get user's team
