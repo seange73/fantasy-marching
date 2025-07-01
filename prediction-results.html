@@ -596,6 +596,21 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+/* Fix white bars in landscape */
+html {
+  background-color: #0f0f23;
+}
+
+@media (max-width: 1024px) and (orientation: landscape) {
+  .header-content,
+  .main-content {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
     </style>
 </head>
 <body>
