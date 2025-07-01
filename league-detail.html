@@ -893,6 +893,31 @@ html {
     box-sizing: border-box;
   }
 }
+@media (max-width: 968px) {
+  .stat-value {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 600px) and (orientation: portrait) {
+  .tabs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    scrollbar-width: thin; /* Firefox */
+  }
+  .tabs::-webkit-scrollbar {
+    height: 6px;
+  }
+  .tabs::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 4px;
+  }
+  .tab {
+    flex: 0 0 auto;
+  }
+}
 
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
