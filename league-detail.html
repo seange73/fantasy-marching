@@ -921,6 +921,19 @@ html {
     flex: 0 0 auto;
   }
 }
+@media (max-width: 600px) and (orientation: portrait) {
+  .matchup-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    box-sizing: border-box;
+    padding: 0 0.5rem; /* optional: consistent padding */
+  }
+  .matchup-box {
+    min-width: 300px;  /* or higher if needed to show contents comfortably */
+    display: inline-block; /* prevents it from breaking lines weirdly */
+  }
+}
 
 
     </style>
