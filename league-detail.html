@@ -1063,7 +1063,18 @@ html {
   }
 }
 
-
+@media (max-width: 600px) {
+  .matchup-box {
+    grid-template-columns: 1fr !important;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .matchup-box button {
+    max-width: 100%;
+    margin: 0.5rem auto 0;
+  }
+}
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 </head>
@@ -3114,7 +3125,6 @@ async function loadSeasonSchedule() {
                         return `
 <div class="matchup-box" style="
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
     gap: 1rem;
     align-items: center;
     padding: 1rem;
@@ -3151,7 +3161,6 @@ async function loadSeasonSchedule() {
         <button class="btn btn-secondary" style="
             margin-top: 0.5rem;
             width: 100%;
-            max-width: 150px;
             word-break: break-word;
         " onclick="viewTeamLineup('${matchup.team2_id}')">View Lineup</button>
     </div>
