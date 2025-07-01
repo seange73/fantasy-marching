@@ -2954,7 +2954,6 @@ async function loadSeasonSchedule() {
     const container = document.getElementById('seasonSchedule');
 
     try {
-        // Get all matchups
         const { data: matchups } = await supabaseClient
             .from('league_matchups')
             .select('*')
@@ -2967,32 +2966,22 @@ async function loadSeasonSchedule() {
             return;
         }
 
-        // Get all teams
         const { data: teams } = await supabaseClient
             .from('league_teams')
             .select('*')
             .eq('league_id', leagueId);
 
-        // Get all profiles
         const userIds = teams.map(t => t.user_id);
         const { data: profiles } = await supabaseClient
             .from('profiles')
             .select('id, username')
             .in('id', userIds);
 
-        // Create maps
         const teamMap = {};
         const usernameMap = {};
+        teams?.forEach(t => { teamMap[t.id] = t; });
+        profiles?.forEach(p => { usernameMap[p.id] = p.username; });
 
-        teams?.forEach(t => {
-            teamMap[t.id] = t;
-        });
-
-        profiles?.forEach(p => {
-            usernameMap[p.id] = p.username;
-        });
-
-        // Add team info to matchups
         matchups.forEach(matchup => {
             const team1 = teamMap[matchup.team1_id];
             const team2 = teamMap[matchup.team2_id];
@@ -3000,7 +2989,6 @@ async function loadSeasonSchedule() {
             matchup.team2Username = team2 ? (usernameMap[team2.user_id] || 'Unknown') : 'Unknown';
         });
 
-        // Group by week
         const weeklyMatchups = {};
         matchups.forEach(matchup => {
             if (!weeklyMatchups[matchup.week_number]) {
@@ -3023,86 +3011,59 @@ async function loadSeasonSchedule() {
                     ${week == currentWeek ? ' (Current Week)' : ''}
                     ${week < currentWeek ? ' ✓' : ''}
                 </h4>
-                <div style="overflow-x: auto;">
-                    <div style="
-                        display: flex;
-                        flex-direction: column;
-                        gap: 0.5rem;
-                        padding-left: 1rem;
-                    ">
-                        ${matchups.map(matchup => {
-                            const userInMatchup = matchup.team1_id === currentTeam?.id || matchup.team2_id === currentTeam?.id;
-                            return `
-                                <div style="
-                                    display: flex;
-                                    flex-wrap: wrap;
-                                    justify-content: space-between;
-                                    align-items: center;
-                                    gap: 0.5rem;
-                                    padding: 0.75rem 1rem;
-                                    background: ${userInMatchup ? 'rgba(78, 205, 196, 0.05)' : 'rgba(255, 255, 255, 0.03)'};
-                                    border-radius: 8px;
-                                    border: 1px solid ${userInMatchup ? 'rgba(78, 205, 196, 0.2)' : 'rgba(255, 255, 255, 0.05)'};
-                                    width: 100%;
-                                    box-sizing: border-box;
-                                    overflow-wrap: anywhere;
-                                    word-break: break-word;
-                                ">
-                                    <div style="
-                                        flex: 1 1 40%;
-                                        text-align: right;
-                                        min-width: 100px;
-                                        overflow-wrap: anywhere;
-                                        word-break: break-word;
+                <div>
+                    ${matchups.map(matchup => {
+                        const userInMatchup = matchup.team1_id === currentTeam?.id || matchup.team2_id === currentTeam?.id;
+                        return `
+                            <div style="
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                gap: 0.25rem;
+                                padding: 0.75rem 1rem;
+                                margin-bottom: 0.5rem;
+                                background: ${userInMatchup ? 'rgba(78, 205, 196, 0.05)' : 'rgba(255, 255, 255, 0.03)'};
+                                border: 1px solid ${userInMatchup ? 'rgba(78, 205, 196, 0.2)' : 'rgba(255, 255, 255, 0.05)'};
+                                border-radius: 8px;
+                                width: 100%;
+                                box-sizing: border-box;
+                            ">
+                                <div style="text-align: center; word-break: break-word;">
+                                    <span style="
+                                        font-weight: ${matchup.winner_id === matchup.team1_id ? '700' : '500'};
+                                        color: ${matchup.winner_id === matchup.team1_id ? '#4ecdc4' : '#e0e0e0'};
                                     ">
+                                        ${matchup.team1Username}
+                                        ${matchup.winner_id === matchup.team1_id ? ' 👑' : ''}
+                                    </span>
+                                    ${matchup.team1_score !== null ? `
                                         <span style="
-                                            font-weight: ${matchup.winner_id === matchup.team1_id ? '700' : '500'};
-                                            color: ${matchup.winner_id === matchup.team1_id ? '#4ecdc4' : '#e0e0e0'};
-                                        ">
-                                            ${matchup.team1Username}
-                                            ${matchup.winner_id === matchup.team1_id ? ' 👑' : ''}
-                                        </span>
-                                        ${matchup.team1_score !== null ? `
-                                            <span style="
-                                                margin-left: 0.5rem;
-                                                font-weight: 700;
-                                                color: ${matchup.winner_id === matchup.team1_id ? '#4ecdc4' : '#666'};
-                                            ">${matchup.team1_score.toFixed(1)}</span>
-                                        ` : ''}
-                                    </div>
-                                    <div style="
-                                        flex: 0 0 auto;
-                                        text-align: center;
-                                        min-width: 20px;
-                                        color: #666;
-                                        font-weight: 600;
-                                    ">vs</div>
-                                    <div style="
-                                        flex: 1 1 40%;
-                                        text-align: left;
-                                        min-width: 100px;
-                                        overflow-wrap: anywhere;
-                                        word-break: break-word;
-                                    ">
-                                        <span style="
-                                            font-weight: ${matchup.winner_id === matchup.team2_id ? '700' : '500'};
-                                            color: ${matchup.winner_id === matchup.team2_id ? '#4ecdc4' : '#e0e0e0'};
-                                        ">
-                                            ${matchup.team2Username}
-                                            ${matchup.winner_id === matchup.team2_id ? ' 👑' : ''}
-                                        </span>
-                                        ${matchup.team2_score !== null ? `
-                                            <span style="
-                                                margin-left: 0.5rem;
-                                                font-weight: 700;
-                                                color: ${matchup.winner_id === matchup.team2_id ? '#4ecdc4' : '#666'};
-                                            ">${matchup.team2_score.toFixed(1)}</span>
-                                        ` : ''}
-                                    </div>
+                                            margin-left: 0.3rem;
+                                            font-weight: 700;
+                                            color: ${matchup.winner_id === matchup.team1_id ? '#4ecdc4' : '#666'};
+                                        ">${matchup.team1_score.toFixed(1)}</span>
+                                    ` : ''}
                                 </div>
-                            `;
-                        }).join('')}
-                    </div>
+                                <div style="color: #666; font-weight: 600;">vs</div>
+                                <div style="text-align: center; word-break: break-word;">
+                                    <span style="
+                                        font-weight: ${matchup.winner_id === matchup.team2_id ? '700' : '500'};
+                                        color: ${matchup.winner_id === matchup.team2_id ? '#4ecdc4' : '#e0e0e0'};
+                                    ">
+                                        ${matchup.team2Username}
+                                        ${matchup.winner_id === matchup.team2_id ? ' 👑' : ''}
+                                    </span>
+                                    ${matchup.team2_score !== null ? `
+                                        <span style="
+                                            margin-left: 0.3rem;
+                                            font-weight: 700;
+                                            color: ${matchup.winner_id === matchup.team2_id ? '#4ecdc4' : '#666'};
+                                        ">${matchup.team2_score.toFixed(1)}</span>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             </div>
         `).join('');
@@ -3112,6 +3073,7 @@ async function loadSeasonSchedule() {
         container.innerHTML = '<p style="text-align: center; color: #ff6b6b;">Error loading schedule</p>';
     }
 }
+
 
 // Load transaction history
 async function loadTransactionHistory() {
