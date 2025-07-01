@@ -1179,6 +1179,26 @@ html {
     font-size: 0.9rem !important;
   }
 }
+@media (max-width: 600px) {
+  #activeTradesList > div {
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    max-width: 100% !important;
+  }
+
+  #activeTradesList div[style*="display: flex"] {
+    flex-wrap: wrap !important;
+  }
+
+  #activeTradesList div[style*="display: flex"] > * {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+
+  #activeTradesList .btn {
+    width: 100% !important;
+  }
+}
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 </head>
