@@ -982,86 +982,6 @@ html {
     text-align: center;
   }
 }
-.matchup-box {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  padding: 2rem;
-  background: rgba(255, 255, 255, 0.03);
-  margin-bottom: 1rem;
-}
-
-.matchup-inner {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 2rem;
-  align-items: center;
-}
-
-.team {
-  text-align: center;
-}
-
-.team-name {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #4ecdc4;
-}
-
-.team2 .team-name {
-  color: #e74c3c;
-}
-
-.team-score {
-  font-size: 3rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.team2 .team-score {
-  color: #e74c3c;
-  background: none;
-  -webkit-text-fill-color: unset;
-}
-
-.vs-block {
-  text-align: center;
-}
-
-.vs-text {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #666;
-}
-
-.tiebreaker {
-  margin-top: 0.5rem;
-  font-size: 0.85rem;
-  color: #ffd700;
-  font-weight: 600;
-}
-
-.view-btn {
-  margin-top: 1rem;
-}
-
-/* RESPONSIVE: stack vertically on small screens */
-@media (max-width: 600px) and (orientation: portrait) {
-  .matchup-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .team-score {
-    font-size: 2rem;
-  }
-  .vs-text {
-    font-size: 1.5rem;
-  }
-}
 
 
     </style>
@@ -3052,6 +2972,7 @@ ${hasScores ? `
 async function loadSeasonSchedule() {
     const container = document.getElementById('seasonSchedule');
     try {
+        // get matchups
         const { data: matchups } = await supabaseClient
             .from('league_matchups')
             .select('*')
@@ -3064,11 +2985,13 @@ async function loadSeasonSchedule() {
             return;
         }
 
+        // get teams
         const { data: teams } = await supabaseClient
             .from('league_teams')
             .select('*')
             .eq('league_id', leagueId);
 
+        // get profiles
         const userIds = teams.map(t => t.user_id);
         const { data: profiles } = await supabaseClient
             .from('profiles')
@@ -3080,6 +3003,7 @@ async function loadSeasonSchedule() {
         teams?.forEach(t => teamMap[t.id] = t);
         profiles?.forEach(p => usernameMap[p.id] = p.username);
 
+        // enhance matchups
         matchups.forEach(matchup => {
             const team1 = teamMap[matchup.team1_id];
             const team2 = teamMap[matchup.team2_id];
@@ -3088,11 +3012,11 @@ async function loadSeasonSchedule() {
         });
 
         const weeklyMatchups = {};
-        matchups.forEach(matchup => {
-            if (!weeklyMatchups[matchup.week_number]) {
-                weeklyMatchups[matchup.week_number] = [];
+        matchups.forEach(m => {
+            if (!weeklyMatchups[m.week_number]) {
+                weeklyMatchups[m.week_number] = [];
             }
-            weeklyMatchups[matchup.week_number].push(matchup);
+            weeklyMatchups[m.week_number].push(m);
         });
 
         const currentWeek = await getCurrentWeekFromDB();
@@ -3113,35 +3037,50 @@ async function loadSeasonSchedule() {
                     ${matchups.map(matchup => {
                         const userInMatchup = matchup.team1_id === currentTeam?.id || matchup.team2_id === currentTeam?.id;
                         return `
-<div class="matchup-box" style="
-    ${userInMatchup ? 'border: 1px solid rgba(78, 205, 196, 0.2); background: rgba(78, 205, 196, 0.05);' : ''}
-">
-  <div class="matchup-inner">
-    <div class="team team1">
-      <div class="team-name">${matchup.team1Username}</div>
-      <div class="team-score">${matchup.team1_score !== null ? matchup.team1_score.toFixed(1) : '--'}</div>
-    </div>
-    <div class="vs-block">
-      <div class="vs-text">VS</div>
-    </div>
-    <div class="team team2">
-      <div class="team-name">${matchup.team2Username}</div>
-      <div class="team-score">${matchup.team2_score !== null ? matchup.team2_score.toFixed(1) : '--'}</div>
-      <button class="btn btn-secondary view-btn" onclick="viewTeamLineup('${matchup.team2_id}')">View Lineup</button>
-    </div>
-  </div>
-</div>
+                            <div style="
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                align-items: center;
+                                padding: 0.75rem 1rem;
+                                background: ${userInMatchup ? 'rgba(78, 205, 196, 0.05)' : 'rgba(255,255,255,0.03)'};
+                                border: 1px solid ${userInMatchup ? 'rgba(78,205,196,0.2)' : 'rgba(255,255,255,0.05)'};
+                                border-radius: 8px;
+                                width: 100%;
+                                box-sizing: border-box;
+                                margin-bottom: 0.5rem;
+                            ">
+                                <div style="font-weight:700; text-align:center;">
+                                    ${matchup.team1Username}
+                                    ${matchup.team1_score !== null ? `<span> (${matchup.team1_score.toFixed(1)})</span>` : ''}
+                                </div>
+                                <div style="color:#999; margin:0.25rem 0;">vs</div>
+                                <div style="font-weight:700; text-align:center;">
+                                    ${matchup.team2Username}
+                                    ${matchup.team2_score !== null ? `<span> (${matchup.team2_score.toFixed(1)})</span>` : ''}
+                                </div>
+                                <button style="
+                                    margin-top:0.5rem;
+                                    padding:0.5rem 1rem;
+                                    border-radius:8px;
+                                    background: linear-gradient(135deg,#4ecdc4 0%,#45b7d1 100%);
+                                    color:white;
+                                    border:none;
+                                    font-weight:600;
+                                    cursor:pointer;
+                                ">View Lineup</button>
+                            </div>
                         `;
                     }).join('')}
                 </div>
             </div>
         `).join('');
+
     } catch (error) {
         console.error('Error loading schedule:', error);
         container.innerHTML = '<p style="text-align: center; color: #ff6b6b;">Error loading schedule</p>';
     }
 }
-
 
 
 
