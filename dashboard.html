@@ -509,21 +509,31 @@ html {
     padding-right: 1rem;
   }
 }
+
 @media (max-width: 600px) and (orientation: portrait) {
   .logo-link {
     display: none;
   }
   .nav-tabs {
     overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
     flex-wrap: nowrap;
-    gap: 0.5rem;
+    scrollbar-width: thin;
+  }
+  .nav-tabs::-webkit-scrollbar {
+    height: 6px;
+  }
+  .nav-tabs::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 4px;
   }
   .nav-tab {
     flex: 0 0 auto;
   }
   .main-content {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
     max-width: 100% !important;
     margin: 0 !important;
   }
@@ -532,6 +542,8 @@ html {
   .reminder-card {
     width: 100%;
     box-sizing: border-box;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 }
 
