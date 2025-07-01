@@ -2997,12 +2997,13 @@ async function loadSeasonSchedule() {
             .select('id, username')
             .in('id', userIds);
 
+        // maps
         const teamMap = {};
         const usernameMap = {};
         teams?.forEach(t => teamMap[t.id] = t);
         profiles?.forEach(p => usernameMap[p.id] = p.username);
 
-        // enhance matchups
+        // enhance matchups with usernames
         matchups.forEach(matchup => {
             const team1 = teamMap[matchup.team1_id];
             const team2 = teamMap[matchup.team2_id];
@@ -3010,12 +3011,13 @@ async function loadSeasonSchedule() {
             matchup.team2Username = team2 ? (usernameMap[team2.user_id] || 'Unknown') : 'Unknown';
         });
 
+        // group by week
         const weeklyMatchups = {};
-        matchups.forEach(m => {
-            if (!weeklyMatchups[m.week_number]) {
-                weeklyMatchups[m.week_number] = [];
+        matchups.forEach(matchup => {
+            if (!weeklyMatchups[matchup.week_number]) {
+                weeklyMatchups[matchup.week_number] = [];
             }
-            weeklyMatchups[m.week_number].push(m);
+            weeklyMatchups[matchup.week_number].push(matchup);
         });
 
         const currentWeek = await getCurrentWeekFromDB();
@@ -3036,29 +3038,18 @@ async function loadSeasonSchedule() {
                     ${matchups.map(matchup => {
                         const userInMatchup = matchup.team1_id === currentTeam?.id || matchup.team2_id === currentTeam?.id;
                         return `
-                            <div style="
-                                display: flex;
-                                flex-direction: row;
-                                flex-wrap: wrap;
-                                justify-content: center;
-                                align-items: center;
-                                gap: 0.5rem;
-                                padding: 0.75rem 1rem;
+                            <div class="matchup-box" style="
                                 background: ${userInMatchup ? 'rgba(78, 205, 196, 0.05)' : 'rgba(255,255,255,0.03)'};
                                 border: 1px solid ${userInMatchup ? 'rgba(78,205,196,0.2)' : 'rgba(255,255,255,0.05)'};
-                                border-radius: 8px;
-                                width: 100%;
-                                box-sizing: border-box;
-                                word-break: break-word;
                             ">
-                                <div style="flex: 1; text-align: center;">
+                                <div style="overflow-wrap: break-word;">
                                     <strong>${matchup.team1Username}</strong>
-                                    ${matchup.team1_score !== null ? `<span> ${matchup.team1_score.toFixed(1)}</span>` : ''}
+                                    ${matchup.team1_score !== null ? `<span style="margin-left:0.3rem;">${matchup.team1_score.toFixed(1)}</span>` : ''}
                                 </div>
-                                <div style="flex: 0; text-align: center;">vs</div>
-                                <div style="flex: 1; text-align: center;">
+                                <div style="color:#666; font-weight:600;">vs</div>
+                                <div style="overflow-wrap: break-word;">
                                     <strong>${matchup.team2Username}</strong>
-                                    ${matchup.team2_score !== null ? `<span> ${matchup.team2_score.toFixed(1)}</span>` : ''}
+                                    ${matchup.team2_score !== null ? `<span style="margin-left:0.3rem;">${matchup.team2_score.toFixed(1)}</span>` : ''}
                                 </div>
                             </div>
                         `;
@@ -3072,7 +3063,6 @@ async function loadSeasonSchedule() {
         container.innerHTML = '<p style="text-align: center; color: #ff6b6b;">Error loading schedule</p>';
     }
 }
-
 
 
 
