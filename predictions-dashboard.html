@@ -432,6 +432,17 @@
             .filter-tabs {
                 flex-wrap: wrap;
             }
+			@media (max-width: 1024px) and (orientation: landscape) {
+  .header-content,
+  .main-content {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    box-sizing: border-box;
+  }
+}
         }
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
