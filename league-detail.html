@@ -1092,6 +1092,20 @@ html {
     margin: 0.5rem auto 0 !important;
   }
 }
+/* Fix for main matchup container on mobile */
+@media (max-width: 600px) {
+  #matchupContainer > div {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+    padding: 1.5rem !important;
+  }
+  
+  #matchupContainer .btn-secondary {
+    width: calc(100% - 2rem) !important;
+    max-width: none !important;
+    margin: 1rem 1rem 0 1rem !important;
+  }
+}
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 </head>
@@ -2796,12 +2810,15 @@ function switchTab(tabName) {
                     ">
                         <!-- User's Team -->
                         <div style="text-align: center;">
-                            <div style="
-                                font-size: 1.2rem;
-                                font-weight: 600;
-                                color: #4ecdc4;
-                                margin-bottom: 1rem;
-                            ">
+<div style="
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #4ecdc4;
+    margin-bottom: 1rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    padding: 0 0.5rem;
+">
                                 ${userTeam.username || 'Unknown'}'s Team
                                 ${matchup.winner_id === userTeam.id ? '👑' : ''}
                             </div>
@@ -2836,12 +2853,15 @@ function switchTab(tabName) {
                         
                         <!-- Opponent's Team -->
                         <div style="text-align: center;">
-                            <div style="
-                                font-size: 1.2rem;
-                                font-weight: 600;
-                                color: #e74c3c;
-                                margin-bottom: 1rem;
-                            ">
+<div style="
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #4ecdc4;
+    margin-bottom: 1rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    padding: 0 0.5rem;
+">
                                 ${opponentTeam.username || 'Unknown'}'s Team
                                 ${matchup.winner_id === opponentTeam.id ? '👑' : ''}
                             </div>
