@@ -1114,6 +1114,71 @@ html {
     font-size: 1rem !important;
   }
 }
+/* Fix trades on mobile */
+@media (max-width: 600px) {
+  /* Fix the main trade container */
+  #tradesContainer > div {
+    padding: 0 0.5rem;
+  }
+  
+  /* Fix the trade items */
+  #activeTradesList > div {
+    overflow: hidden;
+  }
+  
+  /* Fix the flex container in trade items */
+  #activeTradesList div[style*="display: flex; justify-content: space-between"] {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+  
+  /* Fix the grid layout for offers */
+  #activeTradesList div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  /* Make buttons full width on mobile */
+  #activeTradesList .btn {
+    width: 100% !important;
+  }
+  
+  /* Fix text overflow for corps names */
+  #activeTradesList div[style*="color: #4ecdc4"],
+  #activeTradesList div[style*="color: #ff6b6b"] {
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+  
+  /* Reduce padding on trade items */
+  #activeTradesList > div > div {
+    padding: 1rem !important;
+  }
+  
+  /* Fix the create trade modal */
+  .modal div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  
+  /* Fix free agents section in the free agents tab */
+  #freeAgentsContainer div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+}
+
+/* Extra safety for very small screens */
+@media (max-width: 400px) {
+  #activeTradesList > div > div {
+    padding: 0.75rem !important;
+  }
+  
+  /* Make trade text smaller */
+  #activeTradesList {
+    font-size: 0.9rem !important;
+  }
+}
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 </head>
