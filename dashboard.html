@@ -949,8 +949,10 @@ grid.innerHTML = reminders.map(reminder => `
 
         // Load predictions leaderboard
 async function loadPredictionsLeaderboard() {
+
     try {
         let orderBy = leaderboardMode === 'accuracy' ? 'average_accuracy' : 'total_score';
+		const container = document.getElementById('predictionsLeaderboard');
         const { data: stats } = await supabaseClient
             .from('prediction_leaderboard')
             .select('*')
