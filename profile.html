@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - Fantasy Marching</title>
+    <link rel="icon" href="/images/favicon.png" type="image/png">
     <style>
         * {
             margin: 0;
@@ -12,39 +13,21 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
-            color: #e0e0e0;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            position: relative;
             overflow-x: hidden;
         }
 
-        /* Animated Background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(circle at 20% 30%, rgba(78, 205, 196, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(69, 183, 209, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(108, 92, 231, 0.1) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* Header */
+        /* Header Styles */
         .header {
-            background: rgba(26, 26, 46, 0.95);
+            background: rgba(15, 15, 35, 0.98);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
         }
 
         .header-content {
@@ -54,32 +37,33 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 2rem;
-        }
-
-        .logo-link {
-            text-decoration: none;
         }
 
         .logo {
-            height: 40px;
+            height: 75px;
             width: auto;
+            display: block;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
         }
 
         .nav-tabs {
             display: flex;
-            gap: 0.5rem;
+            gap: 2rem;
             flex: 1;
             justify-content: center;
         }
 
         .nav-tab {
-            padding: 0.75rem 1.5rem;
-            background: transparent;
             color: #a0a0a0;
             text-decoration: none;
-            border-radius: 12px;
             font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
             transition: all 0.3s ease;
             position: relative;
         }
@@ -90,19 +74,17 @@
         }
 
         .nav-tab.active {
-            color: white;
-            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
         }
 
         .nav-tab.active::after {
             content: '';
             position: absolute;
             bottom: -1rem;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
+            left: 0;
+            right: 0;
             height: 3px;
-            background: linear-gradient(90deg, #4ecdc4, #45b7d1);
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
             border-radius: 2px;
         }
 
@@ -451,35 +433,6 @@
             color: #4ecdc4;
         }
 
-        /* Rank badges */
-        .rank-badge {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.9rem;
-            flex-shrink: 0;
-            line-height: 1;
-        }
-
-        .rank-1 {
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
-            color: #333;
-        }
-
-        .rank-2 {
-            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
-            color: #333;
-        }
-
-        .rank-3 {
-            background: linear-gradient(135deg, #cd7f32, #da9550);
-            color: white;
-        }
-
         /* Responsive Design */
         @media (max-width: 768px) {
             .header-content {
@@ -614,12 +567,9 @@
                     <div style="text-align: center;">
                         <div class="stat-title">Predictions Performance</div>
                         <div style="display: flex; align-items: center; justify-content: center; gap: 2rem; margin-top: 1rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <div id="predictionRankBadge" style="display: none;"></div>
-                                <div>
-                                    <div class="stat-label">Rank</div>
-                                    <div class="stat-value-blue" id="predictionRank">-</div>
-                                </div>
+                            <div>
+                                <div class="stat-label">Rank</div>
+                                <div class="stat-value-blue" id="predictionRank">-</div>
                             </div>
                             <div>
                                 <div class="stat-label">Score</div>
@@ -634,12 +584,9 @@
                     <div style="text-align: center;">
                         <div class="stat-title">Global League</div>
                         <div style="display: flex; align-items: center; justify-content: center; gap: 2rem; margin-top: 1rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <div id="globalRankBadge" style="display: none;"></div>
-                                <div>
-                                    <div class="stat-label">Rank</div>
-                                    <div class="stat-value-blue" id="globalRank">-</div>
-                                </div>
+                            <div>
+                                <div class="stat-label">Rank</div>
+                                <div class="stat-value-blue" id="globalRank">-</div>
                             </div>
                             <div>
                                 <div class="stat-label">Points</div>
@@ -761,14 +708,6 @@
                     document.getElementById('predictionRank').textContent = `#${rank}`;
                     document.getElementById('predictionScore').textContent = stats.total_score || '0';
                     document.getElementById('predictionAccuracy').textContent = `${accuracy}%`;
-                    
-                    // Show rank badge if top 3
-                    if (rank <= 3) {
-                        const badge = document.getElementById('predictionRankBadge');
-                        badge.style.display = 'block';
-                        badge.className = `rank-badge rank-${rank}`;
-                        badge.textContent = rank;
-                    }
                 } else {
                     document.getElementById('predictionRank').textContent = 'N/A';
                     document.getElementById('predictionScore').textContent = '0';
@@ -806,14 +745,6 @@
                     document.getElementById('globalRank').textContent = `#${rank}`;
                     document.getElementById('globalPoints').textContent = stats.total_points || '0';
                     document.getElementById('globalAverage').textContent = avgPoints;
-                    
-                    // Show rank badge if top 3
-                    if (rank <= 3) {
-                        const badge = document.getElementById('globalRankBadge');
-                        badge.style.display = 'block';
-                        badge.className = `rank-badge rank-${rank}`;
-                        badge.textContent = rank;
-                    }
                 } else {
                     document.getElementById('globalRank').textContent = 'N/A';
                     document.getElementById('globalPoints').textContent = '0';
