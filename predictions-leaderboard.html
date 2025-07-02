@@ -728,10 +728,9 @@ html {
                             <div class="rank ${globalRank <= 3 ? `rank-${globalRank}` : 'rank-default'}">${globalRank}</div>
                             <div class="player-info">
                                 <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
-                                <span class="player-name">
-                                    ${player.username || 'User'} 
-                                    ${isCurrentUser ? '(You)' : ''}
-                                </span>
+<a class="player-name" href="/profile.html?userId=${player.user_id}">
+  ${player.username || 'User'}
+</a>
                             </div>
                             <div class="player-stats">
                                 <div class="stat-item">
