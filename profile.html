@@ -627,15 +627,22 @@
 
         // Initialize profile page
         async function initializeProfile() {
-            // Check authentication
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            
-            if (!user) {
-                window.location.href = '/';
-                return;
-            }
-            
-            currentUser = user;
+// try to get userId from the query string
+const urlParams = new URLSearchParams(window.location.search);
+const userIdFromUrl = urlParams.get("userId");
+
+if (userIdFromUrl) {
+    currentUser = { id: userIdFromUrl }; // treat as current for lookup
+} else {
+    // fallback to logged-in user
+    const { data: { user } } = await supabaseClient.auth.getUser();
+
+    if (!user) {
+        window.location.href = '/';
+        return;
+    }
+    currentUser = user;
+}
             
             // Load all profile data
             await Promise.all([
@@ -654,34 +661,36 @@
                 .eq('id', currentUser.id)
                 .single();
             
-            if (profile) {
-                const username = profile.username || currentUser.email.split('@')[0];
-                const initial = username[0].toUpperCase();
-                
-                // Update header
-                document.getElementById('userName').textContent = username;
-                document.getElementById('userAvatar').textContent = initial;
-                
-                // Update profile section
-                document.getElementById('profileUsername').textContent = username;
-                document.getElementById('profileAvatarLarge').textContent = initial;
-                
-                // Format join date
-                const joinDate = new Date(profile.created_at || currentUser.created_at);
-                const formattedDate = joinDate.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                document.getElementById('profileJoined').textContent = `Joined ${formattedDate}`;
-                
-                // Check admin status
-                isAdmin = profile.is_admin || false;
-                if (isAdmin) {
-                    document.getElementById('adminLink').style.display = 'flex';
-                    document.getElementById('adminDivider').style.display = 'block';
-                }
-            }
+if (profile) {
+    const username = profile.username || profile.email?.split('@')[0] || "Unknown";
+    const initial = username[0].toUpperCase();
+    
+    // Only update header name if showing own profile
+    if (!userIdFromUrl || userIdFromUrl === currentUser.id) {
+        document.getElementById('userName').textContent = username;
+        document.getElementById('userAvatar').textContent = initial;
+    }
+    
+    // Always update profile section
+    document.getElementById('profileUsername').textContent = username;
+    document.getElementById('profileAvatarLarge').textContent = initial;
+    
+    // Format join date
+    const joinDate = new Date(profile.created_at);
+    const formattedDate = joinDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    document.getElementById('profileJoined').textContent = `Joined ${formattedDate}`;
+    
+    // Only show admin panel link if viewing own profile
+    if ((profile.is_admin || false) && (!userIdFromUrl || userIdFromUrl === currentUser.id)) {
+        document.getElementById('adminLink').style.display = 'flex';
+        document.getElementById('adminDivider').style.display = 'block';
+    }
+}
+
         }
 
         // Load prediction stats
