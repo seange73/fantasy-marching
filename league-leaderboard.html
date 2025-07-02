@@ -652,36 +652,36 @@ html {
         document.getElementById("paginationControls").style.display = "block";
 
         const container = document.getElementById("leaderboardContent");
-        container.innerHTML = stats.map((player, index) => {
-          const isCurrentUser = player.user_id === currentUser.id;
-          const globalRank = offset + index + 1;
-          return `
-            <div class="leaderboard-entry ${isCurrentUser ? 'highlight' : ''}">
-              <div class="rank ${globalRank <= 3 ? `rank-${globalRank}` : 'rank-default'}">${globalRank}</div>
-              <div class="player-info">
-                <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
-<a class="player-name" style="color: #4ecdc4; text-decoration: none;" href="/profile.html?userId=${player.user_id}">
-  ${player.username || 'User'}
-</a>
+container.innerHTML = stats.map((player, index) => {
+  const isCurrentUser = player.user_id === currentUser.id;
+  const globalRank = offset + index + 1;
+  return `
+    <div class="leaderboard-entry ${isCurrentUser ? 'highlight' : ''}">
+      <div class="rank ${globalRank <= 3 ? `rank-${globalRank}` : 'rank-default'}">${globalRank}</div>
+      <div class="player-info">
+        <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
+        <a class="player-name" style="color: #4ecdc4; text-decoration: none;" href="/profile.html?userId=${player.user_id}">
+          ${player.username || 'User'}
+        </a>
+      </div>
+      <div class="player-stats">
+        <div class="stat-item">
+          <div class="stat-value">${player.total_points}</div>
+          <div class="stat-label">Total Points</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${player.average_points}</div>
+          <div class="stat-label">Average Points</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${player.weeks_played || 0}</div>
+          <div class="stat-label">Weeks Played</div>
+        </div>
+      </div>
+    </div>
+  `;
+}).join("");
 
-              </div>
-              <div class="player-stats">
-                <div class="stat-item">
-                  <div class="stat-value">${player.total_points}</div>
-                  <div class="stat-label">Total Points</div>
-                </div>
-                <div class="stat-item">
-                  <div class="stat-value">${player.average_points}</div>
-                  <div class="stat-label">Average Points</div>
-                </div>
-                <div class="stat-item">
-                  <div class="stat-value">${player.weeks_played}</div>
-                  <div class="stat-label">Weeks Played</div>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join("");
 
       } catch (error) {
         console.error("Error loading leaderboard:", error);
