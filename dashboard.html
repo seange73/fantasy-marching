@@ -958,21 +958,22 @@ async function loadPredictionsLeaderboard() {
             .limit(5);
         
         if (stats && stats.length > 0) {
-            const container = document.getElementById('predictionsLeaderboard');
-            container.innerHTML = stats.map((player, index) => `
-                <div class="leaderboard-entry">
-                    <div class="rank ${index < 3 ? `rank-${index + 1}` : 'rank-default'}">${index + 1}</div>
-                    <div class="player-info">
-                        <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
-                        <span class="player-name">${player.username || 'User'}</span>
-                    </div>
-                    <span class="player-score">${
-                        leaderboardMode === 'accuracy'
-                        ? (player.average_accuracy * 100).toFixed(2) + '%'
-                        : player.total_score + ' pts'
-                    }</span>
-                </div>
-            `).join('');
+container.innerHTML = stats.map((player, index) => `
+    <div class="leaderboard-entry">
+        <div class="rank ${index < 3 ? `rank-${index + 1}` : 'rank-default'}">${index + 1}</div>
+        <div class="player-info">
+            <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
+            <a class="player-name" style="color: #4ecdc4; text-decoration: none;" href="/profile.html?userId=${player.user_id}">
+              ${player.username || 'User'}
+            </a>
+        </div>
+        <span class="player-score">${
+            leaderboardMode === 'accuracy'
+            ? (player.average_accuracy * 100).toFixed(2) + '%'
+            : player.total_score + ' pts'
+        }</span>
+    </div>
+`).join('');
         }
     } catch (error) {
         console.error('Error loading predictions leaderboard:', error);
@@ -1031,7 +1032,9 @@ async function loadLeagueLeaderboard() {
                     <div class="rank ${index < 3 ? `rank-${index + 1}` : 'rank-default'}">${index + 1}</div>
                     <div class="player-info">
                         <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
-                        <span class="player-name">${player.username || 'User'}</span>
+                        <a class="player-name" style="color: #4ecdc4; text-decoration: none;" href="/profile.html?userId=${player.user_id}">
+  ${player.username || 'User'}
+</a>
                     </div>
                     <span class="player-score">${
 leagueLeaderboardMode === 'average'
