@@ -498,37 +498,78 @@
             Marketing, Logistics, Design: Zachary Menendez & Krish Shenoy</p>
         </div>
     </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script>
+    let currentUser = null;
+    let isAdmin = false;
 
-    <script>
-        // Toggle user menu
-        function toggleUserMenu() {
-            const dropdown = document.getElementById('profileDropdown');
-            dropdown.classList.toggle('active');
+    // Initialize page
+    async function initializePage() {
+        // Check authentication
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        
+        if (!user) {
+            window.location.href = '/';
+            return;
         }
+        
+        currentUser = user;
+        
+        // Load user profile
+        await loadUserProfile();
+    }
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const userProfile = document.querySelector('.user-profile');
-            const dropdown = document.getElementById('profileDropdown');
+    // Load user profile
+    async function loadUserProfile() {
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('username, avatar_url, is_admin')
+            .eq('id', currentUser.id)
+            .single();
+        
+        if (profile) {
+            document.getElementById('userName').textContent = profile.username || currentUser.email.split('@')[0];
             
-            if (!userProfile.contains(event.target)) {
-                dropdown.classList.remove('active');
+            // Set avatar (initial letter for now)
+            const initial = (profile.username || currentUser.email)[0].toUpperCase();
+            document.getElementById('userAvatar').textContent = initial;
+            
+            // Check admin status
+            isAdmin = profile.is_admin || false;
+            if (isAdmin) {
+                document.getElementById('adminLink').style.display = 'flex';
+                document.getElementById('adminDivider').style.display = 'block';
             }
-        });
-
-        // Logout function
-        function logout() {
-            // Add logout logic here
-            window.location.href = '/login.html';
         }
+    }
 
-        // Load user info
-        window.addEventListener('DOMContentLoaded', function() {
-            // This would normally load from your backend
-            const userName = 'User';
-            document.getElementById('userName').textContent = userName;
-            document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
-        });
-    </script>
+    // Toggle user menu
+    function toggleUserMenu() {
+        const dropdown = document.getElementById('profileDropdown');
+        dropdown.classList.toggle('active');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const userProfile = document.querySelector('.user-profile');
+        const dropdown = document.getElementById('profileDropdown');
+        
+        if (!userProfile.contains(event.target)) {
+            dropdown.classList.remove('active');
+        }
+    });
+
+    // Logout function
+    async function logout() {
+        const { error } = await supabaseClient.auth.signOut();
+        if (!error) {
+            window.location.href = '/';
+        }
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', initializePage);
+</script>
 </body>
 </html>
