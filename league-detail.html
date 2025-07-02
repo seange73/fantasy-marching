@@ -3144,10 +3144,12 @@ ${hasScores ? `
                                     color: ${index === 0 ? '#ffd700' : index < 3 ? '#4ecdc4' : '#666'};
                                     text-align: center;
                                 ">${index + 1}</span>
-                                <span style="font-weight: 600;">
-                                    ${team.username}'s Team
-                                    ${team.id === currentTeam?.id ? ' (You)' : ''}
-                                </span>
+<a 
+  href="/profile.html?userId=${team.user_id}" 
+  style="font-weight: 600; color: #4ecdc4; text-decoration: none;">
+    ${team.username}'s Team${team.id === currentTeam?.id ? ' (You)' : ''}
+</a>
+
                                 <span style="color: #a0a0a0;">
                                     ${team.wins}-${team.losses}${team.ties > 0 ? `-${team.ties}` : ''}
                                 </span>
