@@ -525,6 +525,10 @@ html {
 }
 
 @media (max-width: 1024px) and (orientation: landscape) {
+  body {
+    overflow-x: hidden;  /* Add this to prevent horizontal scroll */
+  }
+  
   .header-content,
   .container {
     max-width: none !important;
@@ -533,8 +537,15 @@ html {
     padding-left: 1rem;
     padding-right: 1rem;
   }
+    .user-name {
+    display: none;
+  }
 }
-
+@media (max-width: 600px) and (orientation: portrait) {
+  .user-profile {
+    margin-left: auto;
+  }
+}
 
 
     </style>
