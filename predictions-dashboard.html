@@ -789,7 +789,12 @@ else{
 	buttonText = 'Make Predictions';
 	}
 }             
-
+if(daysUntil > 7) {
+	buttonDisabled = true;
+	buttonText = 'Predictions Not Yet Open';
+	status='upcoming';
+	statusText = 'Upcoming';
+}
 //unused logic  
 /*if (event.is_completed) {
     status = 'completed';
