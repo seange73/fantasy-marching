@@ -3544,7 +3544,13 @@ async function loadFreeAgents() {
     Free Agent Window ${isSunday ? 'Open' : 'Closed'} - Week ${currentWeek}
 </p>
 <p style="color: #e0e0e0; font-size: 0.9rem; margin-top: 0.5rem;">
-    ${isSunday ? 'You can make one roster change today' : 'Transactions available on Mondays only'}
+    ${
+        isSunday
+            ? existingTransaction
+                ? 'You have already made your one roster change for this week'
+                : 'You can make one roster change today'
+            : 'Transactions available on Mondays only'
+    }
 </p>
             </div>
             
