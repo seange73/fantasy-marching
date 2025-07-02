@@ -935,17 +935,26 @@ if (upcomingEvents && upcomingEvents.length > 0) {
         });
     }*/
 const grid = document.getElementById('remindersGrid');
-grid.innerHTML = reminders.map(reminder => `
-    <div class="reminder-card" 
-         ${reminder.dataAttrs || ''} 
-         ${reminder.onclick ? `onclick="${reminder.onclick}"` : `onclick="window.location.href='${reminder.link}'"`}>
-        <div class="reminder-icon">${reminder.icon}</div>
-        <h3 class="reminder-title">${reminder.title}</h3>
-        <p class="reminder-text">${reminder.text}</p>
-        <div class="reminder-action">${reminder.action} →</div>
-    </div>
-`).join('');
+if (reminders.length === 0) {
+    grid.innerHTML = `
+        <div style="text-align:center; color:#666; font-size:1rem; padding:2rem;">
+            No action items at this time.
+        </div>
+    `;
+} else {
+    grid.innerHTML = reminders.map(reminder => `
+        <div class="reminder-card" 
+             ${reminder.dataAttrs || ''} 
+             ${reminder.onclick ? `onclick="${reminder.onclick}"` : `onclick="window.location.href='${reminder.link}'"`}>
+            <div class="reminder-icon">${reminder.icon}</div>
+            <h3 class="reminder-title">${reminder.title}</h3>
+            <p class="reminder-text">${reminder.text}</p>
+            <div class="reminder-action">${reminder.action} →</div>
+        </div>
+    `).join('');
 }
+}
+
 
         // Load predictions leaderboard
 async function loadPredictionsLeaderboard() {
