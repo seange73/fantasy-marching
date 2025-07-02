@@ -433,133 +433,89 @@
             color: #4ecdc4;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-wrap: wrap;
-                padding: 1rem;
-            }
-
-            .nav-tabs {
-                order: 3;
-                width: 100%;
-                justify-content: space-around;
-                margin-top: 1rem;
-            }
-
-            .container {
-                padding: 1rem;
-            }
-
-            .profile-header {
-                padding: 2rem 1rem;
-            }
-            
-            .profile-header > div {
-                grid-template-columns: 1fr !important;
-                gap: 2rem !important;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .league-entry {
-                grid-template-columns: 1fr;
-                gap: 0.5rem;
-                text-align: center;
-            }
-
-            .league-stat {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.5rem 0;
-            }
-        }
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-content {
+        flex-wrap: nowrap;  /* Changed from wrap to nowrap */
+        padding: 1rem;
+    }
+    .nav-tabs {
+        flex: 1;  /* Changed to take available space */
+        justify-content: center;
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        scrollbar-width: thin;
+    }
+    .nav-tabs::-webkit-scrollbar {
+        height: 6px;
+    }
+    .nav-tabs::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.3);
+        border-radius: 4px;
+    }
+    .nav-tab {
+        flex: 0 0 auto;
+    }
+    .user-profile {
+        margin-left: auto;  /* This pushes it to the right */
+    }
+    .user-name {
+        display: none;
+    }
+    .container {
+        padding: 1rem;
+    }
+    .profile-header {
+        padding: 2rem 1rem;
+    }
+    
+    .profile-header > div {
+        grid-template-columns: 1fr !important;
+        gap: 2rem !important;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    .league-entry {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    .league-stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+    }
+}
 
 @media (max-width: 600px) and (orientation: portrait) {
-  .logo-link {
-    display: none;
-  }
-  .nav-tabs {
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    flex-wrap: nowrap;
-    scrollbar-width: thin;
-  }
-  .nav-tabs::-webkit-scrollbar {
-    height: 6px;
-  }
-  .nav-tabs::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.3);
-    border-radius: 4px;
-  }
-  .nav-tab {
-    flex: 0 0 auto;
-  }
-  .user-name {
-    display: none;
-  }
-  
+    .logo-link {
+        display: none;
+    }
 }
-@media (max-width: 600px) and (orientation: portrait) {
-  .header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: nowrap;  /* Ensure items stay on one line */
-  }
-  
-  .logo-link {
-    display: none;
-  }
-  
-  .nav-tabs {
-    flex: 1;  /* Takes up available space */
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    flex-wrap: nowrap;
-    scrollbar-width: thin;
-  }
-  
-  .user-profile {
-    order: 2;  /* Ensure it comes after nav-tabs */
-    margin-left: 1rem;  /* Add some spacing */
-    flex-shrink: 0;  /* Don't let it shrink */
-  }
-  
-  .user-name {
-    display: none;
-  }
-}
+
 html {
-  background-color: #0f0f23; 
+    background-color: #0f0f23; 
 }
 
 @media (max-width: 1024px) and (orientation: landscape) {
-  body {
-    overflow-x: hidden;  /* Add this to prevent horizontal scroll */
-  }
-  
-  .header-content,
-  .container {
-    max-width: none !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
+    body {
+        overflow-x: hidden;
+    }
+    
+    .header-content,
+    .container {
+        max-width: none !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
     .user-name {
-    display: none;
-  }
-}
-@media (max-width: 600px) and (orientation: portrait) {
-  .user-profile {
-    margin-left: auto;
-  }
+        display: none;
+    }
 }
 
 
