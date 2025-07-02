@@ -367,7 +367,6 @@
             padding: 1rem;
             border-radius: 12px;
             transition: all 0.2s ease;
-            cursor: pointer;
         }
 
         .league-entry:hover {
@@ -438,6 +437,34 @@
             padding: 2rem;
         }
 
+        /* Rank badges */
+        .rank-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .rank-1 {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #333;
+        }
+
+        .rank-2 {
+            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+            color: #333;
+        }
+
+        .rank-3 {
+            background: linear-gradient(135deg, #cd7f32, #da9550);
+            color: white;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .header-content {
@@ -458,6 +485,11 @@
 
             .profile-header {
                 padding: 2rem 1rem;
+            }
+            
+            .profile-header > div {
+                grid-template-columns: 1fr !important;
+                gap: 2rem !important;
             }
 
             .stats-grid {
@@ -559,7 +591,6 @@
                         <!-- Will be populated with user initial -->
                     </div>
                     <h1 class="profile-username" id="profileUsername">Loading...</h1>
-                    <p class="profile-email" id="profileEmail">Loading...</p>
                     <p class="profile-joined" id="profileJoined">Loading...</p>
                 </div>
                 
@@ -567,13 +598,25 @@
                 <div style="display: flex; flex-direction: column; gap: 2rem;">
                     <div style="text-align: center;">
                         <div class="stat-title">Predictions Performance</div>
-                        <div class="stat-value" id="predictionScore">-</div>
-                        <div class="stat-subtitle" id="predictionRank">Loading...</div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.5rem;">
+                            <div id="predictionRankBadge" style="display: none;"></div>
+                            <div style="font-size: 1.1rem; color: #e0e0e0;">
+                                <span id="predictionRank">-</span> • 
+                                <span id="predictionScore">-</span> pts • 
+                                <span id="predictionAccuracy">-</span>
+                            </div>
+                        </div>
                     </div>
                     <div style="text-align: center;">
                         <div class="stat-title">Global League</div>
-                        <div class="stat-value" id="globalLeaguePoints">-</div>
-                        <div class="stat-subtitle" id="globalLeagueRank">Loading...</div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.5rem;">
+                            <div id="globalRankBadge" style="display: none;"></div>
+                            <div style="font-size: 1.1rem; color: #e0e0e0;">
+                                <span id="globalRank">-</span> • 
+                                <span id="globalPoints">-</span> pts • 
+                                <span id="globalAverage">-</span> avg
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -641,7 +684,6 @@
                 
                 // Update profile section
                 document.getElementById('profileUsername').textContent = username;
-                document.getElementById('profileEmail').textContent = currentUser.email;
                 document.getElementById('profileAvatarLarge').textContent = initial;
                 
                 // Format join date
@@ -673,9 +715,6 @@
                     .single();
                 
                 if (stats) {
-                    // Display score
-                    document.getElementById('predictionScore').textContent = stats.total_score || '0';
-                    
                     // Get rank
                     const { count } = await supabaseClient
                         .from('prediction_leaderboard')
@@ -684,16 +723,29 @@
                     
                     const rank = (count || 0) + 1;
                     const accuracy = (stats.average_accuracy * 100).toFixed(1);
-                    document.getElementById('predictionRank').textContent = 
-                        `Rank #${rank} • ${accuracy}% accuracy`;
+                    
+                    // Update display
+                    document.getElementById('predictionRank').textContent = `#${rank}`;
+                    document.getElementById('predictionScore').textContent = stats.total_score || '0';
+                    document.getElementById('predictionAccuracy').textContent = `${accuracy}%`;
+                    
+                    // Show rank badge if top 3
+                    if (rank <= 3) {
+                        const badge = document.getElementById('predictionRankBadge');
+                        badge.style.display = 'block';
+                        badge.className = `rank-badge rank-${rank}`;
+                        badge.textContent = rank;
+                    }
                 } else {
+                    document.getElementById('predictionRank').textContent = 'N/A';
                     document.getElementById('predictionScore').textContent = '0';
-                    document.getElementById('predictionRank').textContent = 'No predictions yet';
+                    document.getElementById('predictionAccuracy').textContent = '0%';
                 }
             } catch (error) {
                 console.error('Error loading prediction stats:', error);
+                document.getElementById('predictionRank').textContent = 'Error';
                 document.getElementById('predictionScore').textContent = '-';
-                document.getElementById('predictionRank').textContent = 'Error loading data';
+                document.getElementById('predictionAccuracy').textContent = '-';
             }
         }
 
@@ -708,9 +760,6 @@
                     .single();
                 
                 if (stats) {
-                    // Display points
-                    document.getElementById('globalLeaguePoints').textContent = stats.total_points || '0';
-                    
                     // Get rank
                     const { count } = await supabaseClient
                         .from('global_league_leaderboard')
@@ -719,16 +768,29 @@
                     
                     const rank = (count || 0) + 1;
                     const avgPoints = stats.average_points || 0;
-                    document.getElementById('globalLeagueRank').textContent = 
-                        `Rank #${rank} • ${avgPoints} avg pts/week`;
+                    
+                    // Update display
+                    document.getElementById('globalRank').textContent = `#${rank}`;
+                    document.getElementById('globalPoints').textContent = stats.total_points || '0';
+                    document.getElementById('globalAverage').textContent = avgPoints;
+                    
+                    // Show rank badge if top 3
+                    if (rank <= 3) {
+                        const badge = document.getElementById('globalRankBadge');
+                        badge.style.display = 'block';
+                        badge.className = `rank-badge rank-${rank}`;
+                        badge.textContent = rank;
+                    }
                 } else {
-                    document.getElementById('globalLeaguePoints').textContent = '0';
-                    document.getElementById('globalLeagueRank').textContent = 'Not in global league';
+                    document.getElementById('globalRank').textContent = 'N/A';
+                    document.getElementById('globalPoints').textContent = '0';
+                    document.getElementById('globalAverage').textContent = '0';
                 }
             } catch (error) {
                 console.error('Error loading global league stats:', error);
-                document.getElementById('globalLeaguePoints').textContent = '-';
-                document.getElementById('globalLeagueRank').textContent = 'Error loading data';
+                document.getElementById('globalRank').textContent = 'Error';
+                document.getElementById('globalPoints').textContent = '-';
+                document.getElementById('globalAverage').textContent = '-';
             }
         }
 
@@ -855,7 +917,7 @@
                 
                 // Display leagues
                 const leaguesHTML = leagueStats.map(stats => `
-                    <div class="league-entry" onclick="window.location.href='/league-detail.html?id=${stats.league.id}'">
+                    <div class="league-entry">
                         <div class="league-name">
                             ${stats.league.name}
                             ${stats.league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
