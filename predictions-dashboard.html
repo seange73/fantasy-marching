@@ -750,8 +750,48 @@ const isPast = eventDateTime < now;
                 let statusText = 'Upcoming';
                 let buttonText = 'Make Predictions';
                 let buttonDisabled = false;
-                
-if (event.is_completed) {
+if(hasPredicted) {
+	status = 'predicted';
+	statusText = 'Predicted';
+	if(isPast && event.is_completed)
+	{
+		status = 'completed';
+		statusText = 'Completed';
+		buttonText = 'View Results';		
+	}
+	else if(isPast)
+	{
+		buttonText = 'Event Passed';
+		buttonDisabled = true;
+	}
+	else
+	{
+		buttonText = 'Edit Predictions';
+	}
+}
+else{
+	if(event.is_completed) {
+		status = 'completed';
+		statusText = 'Completed';
+		buttonText = 'Event Passed';
+		buttonDisabled = true;
+	}
+	else if(isPast)
+	{
+		status = 'completed';
+		statusText = 'Passed';
+		buttonText = 'Event Passed';
+		buttonDisabled = true;
+	}
+	else{
+	status = 'upcoming';
+	statusText = 'Upcoming';
+	buttonText = 'Make Predictions';
+	}
+}             
+
+//unused logic  
+/*if (event.is_completed) {
     status = 'completed';
     statusText = 'Completed';
     buttonText = 'View Results';
@@ -764,9 +804,16 @@ else if (hasPredicted && isPast) {
 } if (hasPredicted) {
     status = 'predicted';
     statusText = 'Predicted';
-	if(isPast)
+	if(isPast && event.is_completed)
+	{
+		status = 'completed';
+		statusText = 'Completed';
+		buttonText = 'View Results';
+	}
+	else if(isPast)
 	{
 		buttonText = 'Event Passed';
+		buttonDisabled = true;
 	}
 	else
 	{
@@ -778,7 +825,7 @@ else if (hasPredicted && isPast) {
 } else if (daysUntil > 7) {
     buttonDisabled = true;
     buttonText = 'Predictions Not Yet Open';
-}
+}*/
                 
                 return `
                     <div class="event-card" onclick="${!buttonDisabled ? `goToEvent('${event.id}')` : ''}">
