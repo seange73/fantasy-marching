@@ -755,7 +755,13 @@ if (event.is_completed) {
     status = 'completed';
     statusText = 'Completed';
     buttonText = 'View Results';
-} else if (hasPredicted) {
+} 
+else if (hasPredicted && isPast) {
+    status = 'predicted';
+    statusText = 'Predicted';
+    buttonText = 'Event Passed';
+    buttonDisabled = true;
+} if (hasPredicted) {
     status = 'predicted';
     statusText = 'Predicted';
     buttonText = 'Edit Predictions';
