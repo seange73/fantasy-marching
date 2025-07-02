@@ -437,6 +437,20 @@
             padding: 2rem;
         }
 
+        .stat-label {
+            color: #666;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value-blue {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #4ecdc4;
+        }
+
         /* Rank badges */
         .rank-badge {
             width: 32px;
@@ -448,6 +462,7 @@
             font-weight: 700;
             font-size: 0.9rem;
             flex-shrink: 0;
+            line-height: 1;
         }
 
         .rank-1 {
@@ -598,23 +613,41 @@
                 <div style="display: flex; flex-direction: column; gap: 2rem;">
                     <div style="text-align: center;">
                         <div class="stat-title">Predictions Performance</div>
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.5rem;">
-                            <div id="predictionRankBadge" style="display: none;"></div>
-                            <div style="font-size: 1.1rem; color: #e0e0e0;">
-                                <span id="predictionRank">-</span> • 
-                                <span id="predictionScore">-</span> pts • 
-                                <span id="predictionAccuracy">-</span>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 2rem; margin-top: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div id="predictionRankBadge" style="display: none;"></div>
+                                <div>
+                                    <div class="stat-label">Rank</div>
+                                    <div class="stat-value-blue" id="predictionRank">-</div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Score</div>
+                                <div class="stat-value-blue" id="predictionScore">-</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Accuracy</div>
+                                <div class="stat-value-blue" id="predictionAccuracy">-</div>
                             </div>
                         </div>
                     </div>
                     <div style="text-align: center;">
                         <div class="stat-title">Global League</div>
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.5rem;">
-                            <div id="globalRankBadge" style="display: none;"></div>
-                            <div style="font-size: 1.1rem; color: #e0e0e0;">
-                                <span id="globalRank">-</span> • 
-                                <span id="globalPoints">-</span> pts • 
-                                <span id="globalAverage">-</span> avg
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 2rem; margin-top: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div id="globalRankBadge" style="display: none;"></div>
+                                <div>
+                                    <div class="stat-label">Rank</div>
+                                    <div class="stat-value-blue" id="globalRank">-</div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Points</div>
+                                <div class="stat-value-blue" id="globalPoints">-</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Average</div>
+                                <div class="stat-value-blue" id="globalAverage">-</div>
                             </div>
                         </div>
                     </div>
