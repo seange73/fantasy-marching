@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Marching - Coming Soon</title>
+	<link rel="icon" href="/images/favicon.png" type="image/png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 600px;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            color: #a0a0a0;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        .coming-soon {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4ecdc4;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .description {
+            font-size: 1.1rem;
+            color: #e0e0e0;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+        }
+
+        .launch-date {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            display: inline-block;
+        }
+
+        .launch-date p {
+            font-size: 1rem;
+            color: #a0a0a0;
+            margin-bottom: 0.5rem;
+        }
+
+        .date {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .music-note {
+            font-size: 3rem;
+            animation: bounce 2s ease-in-out infinite;
+            margin: 2rem 0;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Admin Access Portal */
+        .admin-access {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+
+        .admin-access:hover {
+            opacity: 1;
+        }
+
+        .admin-btn {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a0a0a0;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .admin-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(78, 205, 196, 0.3);
+            color: #4ecdc4;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4ecdc4;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .cancel-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            color: white;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+        }
+
+        .error-msg {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+		/* Fix white bars in landscape */
+html {
+  background-color: #0f0f23;
+}
+
+@media (max-width: 1024px) and (orientation: landscape) {
+  .header-content,
+  .main-content {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  .logo-link {
+    display: none;
+  }
+  .nav-tabs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    scrollbar-width: thin; /* Firefox */
+  }
+  .nav-tabs::-webkit-scrollbar {
+    height: 6px; /* Chrome/Safari scrollbar height */
+  }
+  .nav-tabs::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 4px;
+  }
+  .nav-tab {
+    flex: 0 0 auto; /* prevent shrinking */
+  }
+  .main-content {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+  .leaderboard-card,
+  .leagues-container,
+  .reminder-card {
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fantasy Marching</h1>
+        <p class="tagline">Compete. Predict. Dominate.</p>
+        
+        <div class="music-note">🎺</div>
+        
+        <p class="coming-soon">Coming Soon</p>
+        
+        <p class="description">
+            Get ready for the ultimate drum corps fantasy experience. 
+            Make predictions, compete with friends, and prove your expertise 
+            in the marching arts.
+        </p>
+        
+        <div class="launch-date">
+            <p>Expected Launch</p>
+            <p class="date">Summer 2025</p>
+        </div>
+    </div>
+
+    <!-- Admin Access Portal -->
+    <div class="admin-access">
+        <button class="admin-btn" onclick="showAdminModal()">Admin Access</button>
+    </div>
+
+    <!-- Admin Modal -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-header">Admin Access</h2>
+            <input 
+                type="password" 
+                id="adminPassword" 
+                class="password-input" 
+                placeholder="Enter admin password"
+                onkeypress="if(event.key === 'Enter') checkPassword()"
+            >
+            <div id="errorMsg" class="error-msg">Incorrect password. Please try again.</div>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel-btn" onclick="closeAdminModal()">Cancel</button>
+                <button class="modal-btn submit-btn" onclick="checkPassword()">Enter</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Admin password (change this to your desired password)
+        const ADMIN_PASSWORD = 'sigma2025';
+
+        function showAdminModal() {
+            document.getElementById('adminModal').classList.add('show');
+            document.getElementById('adminPassword').focus();
+            document.getElementById('errorMsg').classList.remove('show');
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.remove('show');
+            document.getElementById('errorMsg').classList.remove('show');
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function checkPassword() {
+            const inputPassword = document.getElementById('adminPassword').value;
+            
+            if (inputPassword === ADMIN_PASSWORD) {
+                // Handle both local file and web server scenarios
+                if (window.location.protocol === 'file:') {
+                    // For local file system
+                    const currentPath = window.location.pathname;
+                    const directory = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                    window.location.href = 'file://' + directory + '/index-temp.html';
+                } else {
+                    // For web server (localhost or production)
+                    window.location.href = '/index-temp.html';
+                }
+            } else {
+                // Show error message
+                document.getElementById('errorMsg').classList.add('show');
+                document.getElementById('adminPassword').value = '';
+                
+                // Shake animation
+                const modalContent = document.querySelector('.modal-content');
+                modalContent.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    modalContent.style.animation = 'slideIn 0.3s ease-out';
+                }, 500);
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('adminModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAdminModal();
+            }
+        });
+
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+                20%, 40%, 60%, 80% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

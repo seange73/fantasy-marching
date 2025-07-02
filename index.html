@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fantasy Marching - Coming Soon</title>
+    <title>Fantasy Marching - Join the Competition</title>
 	<link rel="icon" href="/images/favicon.png" type="image/png">
     <style>
         * {
@@ -21,144 +21,28 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            overflow-x: hidden;
             position: relative;
         }
 
-        .container {
-            text-align: center;
-            max-width: 600px;
-        }
-
-        h1 {
-            font-size: clamp(3rem, 6vw, 5rem);
-            font-weight: 800;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-            letter-spacing: -0.02em;
-        }
-
-        .tagline {
-            font-size: 1.5rem;
-            color: #a0a0a0;
-            margin-bottom: 3rem;
-            font-weight: 300;
-        }
-
-        .coming-soon {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #4ecdc4;
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-
-        .description {
-            font-size: 1.1rem;
-            color: #e0e0e0;
-            line-height: 1.6;
-            margin-bottom: 3rem;
-        }
-
-        .launch-date {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 2rem;
-            display: inline-block;
-        }
-
-        .launch-date p {
-            font-size: 1rem;
-            color: #a0a0a0;
-            margin-bottom: 0.5rem;
-        }
-
-        .date {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: white;
-        }
-
-        .music-note {
-            font-size: 3rem;
-            animation: bounce 2s ease-in-out infinite;
-            margin: 2rem 0;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-
-        /* Admin Access Portal */
-        .admin-access {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            opacity: 0.3;
-            transition: opacity 0.3s ease;
-        }
-
-        .admin-access:hover {
-            opacity: 1;
-        }
-
-        .admin-btn {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #a0a0a0;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.3s ease;
-        }
-
-        .admin-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(78, 205, 196, 0.3);
-            color: #4ecdc4;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
+        .auth-container {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem;
-            max-width: 400px;
-            width: 90%;
-            animation: slideIn 0.3s ease-out;
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: slideInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @keyframes slideIn {
+        @keyframes slideInUp {
             from {
                 opacity: 0;
-                transform: translateY(-50px);
+                transform: translateY(50px);
             }
             to {
                 opacity: 1;
@@ -166,77 +50,269 @@
             }
         }
 
-        .modal-header {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #4ecdc4;
-            margin-bottom: 1.5rem;
+        .logo-section {
             text-align: center;
+            margin-bottom: 2.5rem;
         }
 
-        .password-input {
-            width: 100%;
+        .logo {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .tagline {
+            color: #a0a0a0;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .auth-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .tab-button {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #a0a0a0;
+            font-size: 1rem;
+            font-weight: 600;
             padding: 1rem;
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 2;
+        }
+
+        .tab-button.active {
+            color: white;
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
             color: white;
             font-size: 1rem;
-            transition: all 0.3s ease;
-            margin-bottom: 1rem;
-        }
-
-        .password-input:focus {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             outline: none;
+        }
+
+        .form-input::placeholder {
+            color: #999;
+        }
+
+        .form-input:focus {
             border-color: #4ecdc4;
-            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
             background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 4px rgba(78, 205, 196, 0.1);
+            transform: translateY(-2px);
         }
 
-        .modal-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
+        .password-container {
+            position: relative;
         }
 
-        .modal-btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
             border: none;
+            color: #a0a0a0;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: color 0.2s ease;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .cancel-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .password-toggle:hover {
+            color: #4ecdc4;
         }
 
-        .cancel-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
+        .eye-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
         }
 
-        .submit-btn {
+        .auth-button {
+            width: 100%;
             background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
             color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 1.25rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
         }
 
-        .submit-btn:hover {
+        .auth-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .auth-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+            box-shadow: 0 15px 35px rgba(78, 205, 196, 0.4);
         }
 
-        .error-msg {
+        .auth-button:hover::before {
+            left: 100%;
+        }
+
+        .auth-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+
+
+        .error-message {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
             color: #ff6b6b;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
             font-size: 0.9rem;
-            margin-top: 0.5rem;
             display: none;
         }
 
-        .error-msg.show {
+        .success-message {
+            background: rgba(52, 199, 89, 0.1);
+            border: 1px solid rgba(52, 199, 89, 0.3);
+            color: #4ecdc4;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .divider span {
+            padding: 0 1rem;
+        }
+
+        .social-login {
+            margin-bottom: 1.5rem;
+        }
+
+        .social-button {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 12px;
+            padding: 0.875rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .social-button:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .google-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        .forgot-password {
+            color: #4ecdc4;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
             display: block;
+            text-align: center;
+        }
+
+        .forgot-password:hover {
+            color: #45b7d1;
+        }
+
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .logo {
+                font-size: 1.8rem;
+            }
         }
 		/* Fix white bars in landscape */
 html {
@@ -293,112 +369,273 @@ html {
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Fantasy Marching</h1>
-        <p class="tagline">Compete. Predict. Dominate.</p>
-        
-        <div class="music-note">🎺</div>
-        
-        <p class="coming-soon">Coming Soon</p>
-        
-        <p class="description">
-            Get ready for the ultimate drum corps fantasy experience. 
-            Make predictions, compete with friends, and prove your expertise 
-            in the marching arts.
-        </p>
-        
-        <div class="launch-date">
-            <p>Expected Launch</p>
-            <p class="date">Summer 2025</p>
+    <div class="auth-container">
+        <div class="logo-section">
+            <div class="logo">Fantasy Marching</div>
+            <div class="tagline">Compete. Predict. Dominate.</div>
         </div>
-    </div>
 
-    <!-- Admin Access Portal -->
-    <div class="admin-access">
-        <button class="admin-btn" onclick="showAdminModal()">Admin Access</button>
-    </div>
-
-    <!-- Admin Modal -->
-    <div id="adminModal" class="modal">
-        <div class="modal-content">
-            <h2 class="modal-header">Admin Access</h2>
-            <input 
-                type="password" 
-                id="adminPassword" 
-                class="password-input" 
-                placeholder="Enter admin password"
-                onkeypress="if(event.key === 'Enter') checkPassword()"
-            >
-            <div id="errorMsg" class="error-msg">Incorrect password. Please try again.</div>
-            <div class="modal-buttons">
-                <button class="modal-btn cancel-btn" onclick="closeAdminModal()">Cancel</button>
-                <button class="modal-btn submit-btn" onclick="checkPassword()">Enter</button>
-            </div>
+        <div class="auth-tabs">
+            <button class="tab-button active" onclick="switchTab('login')">Login</button>
+            <button class="tab-button" onclick="switchTab('register')">Register</button>
         </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <!-- Login Form -->
+        <div id="loginForm" class="auth-form">
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label" for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" class="form-input" placeholder="your@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="loginPassword">Password</label>
+                    <div class="password-container">
+                        <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">
+                            <svg class="eye-icon" viewBox="0 0 24 24">
+                                <path id="loginPasswordEye" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-button" id="loginButton">
+                    Sign In
+                </button>
+            </form>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerForm" class="auth-form" style="display: none;">
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label" for="registerUsername">Username</label>
+                    <input type="text" id="registerUsername" class="form-input" placeholder="Choose a username" required minlength="3">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" class="form-input" placeholder="your@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="registerPassword">Password</label>
+                    <div class="password-container">
+                        <input type="password" id="registerPassword" class="form-input" placeholder="Create a strong password" required minlength="6">
+                        <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')">
+                            <svg class="eye-icon" viewBox="0 0 24 24">
+                                <path id="registerPasswordEye" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Confirm Password</label>
+                    <div class="password-container">
+                        <input type="password" id="confirmPassword" class="form-input" placeholder="Confirm your password" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                            <svg class="eye-icon" viewBox="0 0 24 24">
+                                <path id="confirmPasswordEye" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-button" id="registerButton">
+                    Create Account
+                </button>
+            </form>
+        </div>
+
+
     </div>
 
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Your Supabase configuration -->
+    <script src="js/supabase.js"></script>
+    
     <script>
-        // Admin password (change this to your desired password)
-        const ADMIN_PASSWORD = 'sigma2025';
+        function switchTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabs = document.querySelectorAll('.tab-button');
 
-        function showAdminModal() {
-            document.getElementById('adminModal').classList.add('show');
-            document.getElementById('adminPassword').focus();
-            document.getElementById('errorMsg').classList.remove('show');
-            document.getElementById('adminPassword').value = '';
-        }
+            // Clear any messages
+            hideMessages();
 
-        function closeAdminModal() {
-            document.getElementById('adminModal').classList.remove('show');
-            document.getElementById('errorMsg').classList.remove('show');
-            document.getElementById('adminPassword').value = '';
-        }
-
-        function checkPassword() {
-            const inputPassword = document.getElementById('adminPassword').value;
-            
-            if (inputPassword === ADMIN_PASSWORD) {
-                // Handle both local file and web server scenarios
-                if (window.location.protocol === 'file:') {
-                    // For local file system
-                    const currentPath = window.location.pathname;
-                    const directory = currentPath.substring(0, currentPath.lastIndexOf('/'));
-                    window.location.href = 'file://' + directory + '/index-temp.html';
-                } else {
-                    // For web server (localhost or production)
-                    window.location.href = '/index-temp.html';
-                }
+            if (tab === 'login') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                tabs[0].classList.add('active');
+                tabs[1].classList.remove('active');
             } else {
-                // Show error message
-                document.getElementById('errorMsg').classList.add('show');
-                document.getElementById('adminPassword').value = '';
-                
-                // Shake animation
-                const modalContent = document.querySelector('.modal-content');
-                modalContent.style.animation = 'shake 0.5s';
-                setTimeout(() => {
-                    modalContent.style.animation = 'slideIn 0.3s ease-out';
-                }, 500);
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                tabs[1].classList.add('active');
+                tabs[0].classList.remove('active');
             }
         }
 
-        // Close modal when clicking outside
-        document.getElementById('adminModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeAdminModal();
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const eyePath = document.getElementById(inputId + 'Eye');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                // Closed eye (crossed out)
+                eyePath.setAttribute('d', 'M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21');
+            } else {
+                input.type = 'password';
+                // Open eye
+                eyePath.setAttribute('d', 'M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z');
             }
-        });
+        }
 
-        // Add shake animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-                20%, 40%, 60%, 80% { transform: translateX(10px); }
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function setLoading(buttonId, isLoading) {
+            const button = document.getElementById(buttonId);
+            button.disabled = isLoading;
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            setLoading('loginButton', true);
+            hideMessages();
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                showSuccess('Welcome back! Redirecting...');
+                
+                // Redirect to dashboard after successful login
+                setTimeout(() => {
+                    if (window.location.protocol === 'file:') {
+                        // For local file system
+                        const currentPath = window.location.pathname;
+                        const directory = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                        window.location.href = 'file://' + directory + '/dashboard.html';
+                    } else {
+                        // For web server
+                        window.location.href = '/dashboard.html';
+                    }
+                }, 1500);
+
+            } catch (error) {
+                showError(error.message || 'Login failed. Please try again.');
+            } finally {
+                setLoading('loginButton', false);
             }
-        `;
-        document.head.appendChild(style);
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            hideMessages();
+
+            // Validation
+            if (password !== confirmPassword) {
+                showError('Passwords do not match.');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters long.');
+                return;
+            }
+
+            setLoading('registerButton', true);
+
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            username: username
+                        }
+                    }
+                });
+
+                if (error) throw error;
+
+                if (data.user && data.user.identities && data.user.identities.length === 0) {
+                    showError('This email is already registered. Please login instead.');
+                } else {
+                    showSuccess('Account created! Please check your email to verify your account.');
+                    
+                    // Switch to login tab after successful registration
+                    setTimeout(() => {
+                        switchTab('login');
+                        document.getElementById('loginEmail').value = email;
+                    }, 3000);
+                }
+
+            } catch (error) {
+                showError(error.message || 'Registration failed. Please try again.');
+            } finally {
+                setLoading('registerButton', false);
+            }
+        }
+
+
+        async function forgotPassword() {
+            const email = document.getElementById('loginEmail').value;
+            
+            if (!email) {
+                showError('Please enter your email address first.');
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + '/reset-password.html',
+                });
+                
+                if (error) throw error;
+                
+                showSuccess('Password reset instructions sent to your email!');
+            } catch (error) {
+                showError('Failed to send reset email. Please try again.');
+            }
+        }
     </script>
 </body>
 </html>
