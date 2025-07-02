@@ -502,6 +502,37 @@
   .user-name {
     display: none;
   }
+  @media (max-width: 600px) and (orientation: portrait) {
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;  /* Ensure items stay on one line */
+  }
+  
+  .logo-link {
+    display: none;
+  }
+  
+  .nav-tabs {
+    flex: 1;  /* Takes up available space */
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
+  }
+  
+  .user-profile {
+    order: 2;  /* Ensure it comes after nav-tabs */
+    margin-left: 1rem;  /* Add some spacing */
+    flex-shrink: 0;  /* Don't let it shrink */
+  }
+  
+  .user-name {
+    display: none;
+  }
+}
 }
 
 @media (max-width: 768px) {
