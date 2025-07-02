@@ -1600,29 +1600,6 @@ if (window.DEBUG_OVERRIDE_DATE) {
             // Load league data
             await loadLeagueData();
         }
-		async function checkMatchupsAndToggleControls() {
-  if (!isOwner) return;
-
-  try {
-    const { data, error } = await supabaseClient
-      .from('league_matchups')
-      .select('id')
-      .eq('league_id', leagueId)
-      .limit(1);
-
-    if (error) throw error;
-
-    if (data && data.length > 0) {
-      // hide the generate button if matchups exist
-      document.querySelector('#ownerControls button').style.display = 'none';
-    } else {
-      // otherwise leave it visible
-      document.querySelector('#ownerControls button').style.display = 'block';
-    }
-  } catch (err) {
-    console.error('Error checking matchups:', err);
-  }
-}
         // Load user profile
         async function loadUserProfile() {
             const { data: profile } = await supabaseClient
@@ -4665,7 +4642,7 @@ async function leaveLeague() {
             );
         }
         document.addEventListener('DOMContentLoaded', initializePage);
-        checkMatchupsAndToggleControls();
+        
         
         
         // Get caption color
@@ -4681,7 +4658,49 @@ async function leaveLeague() {
             return colors[caption] || '#4ecdc4';
         }
         
-
+        // Generate matchups for the league (owner only)
+        async function generateMatchups() {
+            if (!isOwner) {
+                showNotification('Error', 'Only the league owner can generate matchups', 'error');
+                return;
+            }
+            
+            showModal(
+                'Generate Season Matchups',
+                'This will create matchups for the entire 6-week season. Any existing matchups will be replaced. Continue?',
+                [
+                    {
+                        text: 'Cancel',
+                        primary: false,
+                        callback: null
+                    },
+                    {
+                        text: 'Generate Matchups',
+                        primary: true,
+                        callback: async () => {
+                            try {
+                                const { error } = await supabaseClient.rpc('create_league_matchups', {
+                                    p_league_id: leagueId
+                                });
+                                
+                                if (error) throw error;
+                                
+                                showNotification('Success', 'Season matchups generated successfully!', 'success');
+                                
+                                // Reload matchup display
+                                if (document.getElementById('matchup-content').classList.contains('hidden') === false) {
+                                    await loadMatchup();
+                                }
+                                
+                            } catch (error) {
+                                console.error('Error generating matchups:', error);
+                                showNotification('Error', 'Failed to generate matchups: ' + error.message, 'error');
+                            }
+                        }
+                    }
+                ]
+            );
+        }
     </script>
 </body>
 </html>
