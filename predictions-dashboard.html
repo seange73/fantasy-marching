@@ -764,7 +764,14 @@ else if (hasPredicted && isPast) {
 } if (hasPredicted) {
     status = 'predicted';
     statusText = 'Predicted';
-    buttonText = 'Edit Predictions';
+	if(isPast)
+	{
+		buttonText = 'Event Passted';
+	}
+	else
+	{
+	    buttonText = 'Edit Predictions';
+	}
 } else if (isPast) {
     buttonDisabled = true;
     buttonText = 'Event Passed';
