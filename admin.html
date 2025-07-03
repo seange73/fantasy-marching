@@ -790,6 +790,11 @@ const { data, error } = await supabaseClient
                 `;
                 content.innerHTML += `
   <div class="corps-score-section" style="margin-top: 2rem;">
+  <div style="margin-top: 2rem;">
+  <h4>Paste Scores JSON</h4>
+  <textarea id="pasteScoresJson" rows="8" style="width:100%;"></textarea>
+  <button class="btn" onclick="pasteScoresIntoFields()">Fill Scores From JSON</button>
+</div>
     <h4 class="corps-score-title">Caption Winners</h4>
     <div class="score-inputs">
       <div class="score-input-group">
@@ -1096,6 +1101,29 @@ function showDateTimeMessage(text, type) {
         el.style.display = 'none';
     }, 3000);
 }
+function pasteScoresIntoFields() {
+  try {
+    const raw = document.getElementById('pasteScoresJson').value;
+    const data = JSON.parse(raw);
+
+    data.forEach(item => {
+      const id = item.corps.replace(/\s+/g, '_');
+      document.getElementById(`brass_${id}`).value = item.brassScore;
+      document.getElementById(`percussion_${id}`).value = item.percussionScore;
+      document.getElementById(`guard_${id}`).value = item.guardScore;
+      document.getElementById(`ge_${id}`).value = item.geScore;
+      document.getElementById(`visual_${id}`).value = item.visScore;
+      document.getElementById(`music_${id}`).value = item.musicScore;
+      document.getElementById(`total_${id}`).value = item.totalScore;
+    });
+
+    alert("Scores pasted successfully!");
+  } catch (err) {
+    alert("Error parsing JSON, please check syntax.");
+    console.error(err);
+  }
+}
+
     </script>
 </body>
 </html>
