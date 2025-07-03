@@ -2611,7 +2611,6 @@ async function updateMatchupScores() {
     try {
         const currentWeek = await getCurrentWeekFromDB();
         
-        // Get the matchup for this week
         const { data: matchup } = await supabaseClient
             .from('league_matchups')
             .select('*')
@@ -2627,45 +2626,29 @@ async function updateMatchupScores() {
         
         console.log('Found matchup to update:', matchup.id);
         
-        // Calculate scores for both teams
         const team1Score = await calculateTeamWeeklyScore(matchup.team1_id);
         const team2Score = await calculateTeamWeeklyScore(matchup.team2_id);
         
         console.log('Calculated scores - Team1:', team1Score, 'Team2:', team2Score);
         
-        // Update the matchup with the calculated scores
-        const updateData = {
-            team1_score: team1Score,
-            team2_score: team2Score,
-            winner_id: team1Score > team2Score ? matchup.team1_id : matchup.team2_id
-        };
-        
-        console.log('Updating matchup with:', updateData);
-        
-const { error } = await supabaseClient.rpc('update_matchup_scores', {
-    p_matchup_id: matchup.id,
-    p_team1_score: team1Score,
-    p_team2_score: team2Score
-});
+        const { error } = await supabaseClient.rpc('update_matchup_scores', {
+            p_matchup_id: matchup.id,
+            p_team1_score: team1Score,
+            p_team2_score: team2Score
+        });
         
         if (error) {
             console.error('Error updating matchup:', error);
         } else {
             console.log('Update successful');
-            
-            // Verify the update
-            const { data: updatedMatchup } = await supabaseClient
-                .from('league_matchups')
-                .select('team1_score, team2_score')
-                .eq('id', matchup.id)
-                .single();
-                
-            console.log('Verified updated scores:', updatedMatchup);
+            // force page to reload fresh data:
+            await loadMatchup();
         }
     } catch (error) {
         console.error('Error in updateMatchupScores:', error);
     }
 }
+
         // Calculate stats
         async function calculateStats() {
             // Get matchups for this team
