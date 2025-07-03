@@ -2972,7 +2972,7 @@ function switchTab(tabName) {
     padding: 0 0.5rem;
 ">
                                 ${opponentTeam.username || 'Unknown'}'s Team
-                                ${matchup.winner_id === opponentTeam.id ? '👑' : ''}
+                                ${matchup.winner_id === opponentTeam.id ? '' : ''}
                             </div>
                             <div style="
                                 font-size: 3rem;
@@ -3316,7 +3316,7 @@ ${hasScores ? `
                                                 color: ${matchup.winner_id === matchup.team1_id ? '#4ecdc4' : '#e0e0e0'};
                                             ">
                                                 ${matchup.team1Username}
-                                                ${matchup.winner_id === matchup.team1_id ? ' 👑' : ''}
+                                                ${matchup.winner_id === matchup.team1_id ? '' : ''}
                                             </span>
                                             ${matchup.team1_score !== null ? `
                                                 <span style="
@@ -3333,7 +3333,7 @@ ${hasScores ? `
                                                 color: ${matchup.winner_id === matchup.team2_id ? '#4ecdc4' : '#e0e0e0'};
                                             ">
                                                 ${matchup.team2Username}
-                                                ${matchup.winner_id === matchup.team2_id ? ' 👑' : ''}
+                                                ${matchup.winner_id === matchup.team2_id ? '' : ''}
                                             </span>
                                             ${matchup.team2_score !== null ? `
                                                 <span style="
