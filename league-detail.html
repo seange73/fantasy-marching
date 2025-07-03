@@ -2649,95 +2649,111 @@ async function updateMatchupScores() {
     }
 }
 
-        // Calculate stats
-        async function calculateStats() {
-            // Get matchups for this team
-            const { data: matchups } = await supabaseClient
+// Calculate stats
+async function calculateStats() {
+    // Get current week
+    const currentWeek = await getCurrentWeekFromDB();
+
+    // Determine finalized week (only calculate up through previous week)
+    const today = new Date();
+    const nextMonday = new Date(today);
+    nextMonday.setDate(today.getDate() + (8 - today.getDay()) % 7);
+    nextMonday.setHours(0,0,0,0);
+    const finalizedWeek = today < nextMonday ? currentWeek - 1 : currentWeek;
+
+    console.log('Stats calculation: finalizedWeek =', finalizedWeek);
+
+    // Get matchups for this team up through finalized week
+    const { data: matchups } = await supabaseClient
+        .from('league_matchups')
+        .select('*')
+        .eq('league_id', leagueId)
+        .or(`team1_id.eq.${currentTeam?.id},team2_id.eq.${currentTeam?.id}`)
+        .lte('week_number', finalizedWeek)
+        .not('winner_id', 'is', null);
+
+    let wins = 0, losses = 0, totalScore = 0, gamesPlayed = 0;
+
+    if (matchups) {
+        matchups.forEach(matchup => {
+            if (matchup.winner_id) {
+                gamesPlayed++;
+                if (matchup.winner_id === currentTeam?.id) {
+                    wins++;
+                } else {
+                    losses++;
+                }
+
+                if (matchup.team1_id === currentTeam?.id) {
+                    totalScore += matchup.team1_score || 0;
+                } else {
+                    totalScore += matchup.team2_score || 0;
+                }
+            }
+        });
+    }
+
+    // Calculate actual rank
+    const { data: allTeams } = await supabaseClient
+        .from('league_teams')
+        .select('*')
+        .eq('league_id', leagueId);
+
+    if (allTeams) {
+        // Get all teams' records
+        const teamRecords = await Promise.all(allTeams.map(async (team) => {
+            const { data: teamMatchups } = await supabaseClient
                 .from('league_matchups')
                 .select('*')
                 .eq('league_id', leagueId)
-                .or(`team1_id.eq.${currentTeam?.id},team2_id.eq.${currentTeam?.id}`);
-            
-            let wins = 0, losses = 0, totalScore = 0, gamesPlayed = 0;
-            
-            if (matchups) {
-                matchups.forEach(matchup => {
-                    if (matchup.winner_id) {
-                        gamesPlayed++;
-                        if (matchup.winner_id === currentTeam?.id) {
-                            wins++;
-                        } else {
-                            losses++;
-                        }
-                        
-                        if (matchup.team1_id === currentTeam?.id) {
-                            totalScore += matchup.team1_score || 0;
-                        } else {
-                            totalScore += matchup.team2_score || 0;
-                        }
-                    }
-                });
-            }
-            
-            // Calculate actual rank
-            const { data: allTeams } = await supabaseClient
-                .from('league_teams')
-                .select('*')
-                .eq('league_id', leagueId);
-            
-            if (allTeams) {
-                // Get all teams' records
-                const teamRecords = await Promise.all(allTeams.map(async (team) => {
-                    const { data: teamMatchups } = await supabaseClient
-                        .from('league_matchups')
-                        .select('*')
-                        .eq('league_id', leagueId)
-                        .or(`team1_id.eq.${team.id},team2_id.eq.${team.id}`)
-                        .not('winner_id', 'is', null);
-                    
-                    let teamWins = 0;
-                    let teamTotal = 0;
-                    let teamGames = 0;
-                    
-                    teamMatchups?.forEach(m => {
-                        teamGames++;
-                        if (m.winner_id === team.id) teamWins++;
-                        if (m.team1_id === team.id) {
-                            teamTotal += m.team1_score || 0;
-                        } else {
-                            teamTotal += m.team2_score || 0;
-                        }
-                    });
-                    
-                    return {
-                        id: team.id,
-                        wins: teamWins,
-                        winPct: teamGames > 0 ? teamWins / teamGames : 0,
-                        avgScore: teamGames > 0 ? teamTotal / teamGames : 0
-                    };
-                }));
-                
-                // Sort by win percentage, then by average score
-                teamRecords.sort((a, b) => {
-                    if (b.winPct !== a.winPct) return b.winPct - a.winPct;
-                    return b.avgScore - a.avgScore;
-                });
-                
-                // Find current team's rank
-                const rank = teamRecords.findIndex(t => t.id === currentTeam.id) + 1;
-                const rankDisplay = rank === 1 ? '1st' : rank === 2 ? '2nd' : rank === 3 ? '3rd' : `${rank}th`;
-                
-                document.getElementById('leagueRank').textContent = rankDisplay;
-            } else {
-                document.getElementById('leagueRank').textContent = '-';
-            }
-            
-            // Update display
-            document.getElementById('record').textContent = `${wins}-${losses}`;
-            document.getElementById('avgScore').textContent = gamesPlayed > 0 
-                ? (totalScore / gamesPlayed).toFixed(1) 
-                : '0.0';
-        }
+                .or(`team1_id.eq.${team.id},team2_id.eq.${team.id}`)
+                .not('winner_id', 'is', null)
+                .lte('week_number', finalizedWeek);
+
+            let teamWins = 0;
+            let teamTotal = 0;
+            let teamGames = 0;
+
+            teamMatchups?.forEach(m => {
+                teamGames++;
+                if (m.winner_id === team.id) teamWins++;
+                if (m.team1_id === team.id) {
+                    teamTotal += m.team1_score || 0;
+                } else {
+                    teamTotal += m.team2_score || 0;
+                }
+            });
+
+            return {
+                id: team.id,
+                wins: teamWins,
+                winPct: teamGames > 0 ? teamWins / teamGames : 0,
+                avgScore: teamGames > 0 ? teamTotal / teamGames : 0
+            };
+        }));
+
+        // Sort by win percentage, then by average score
+        teamRecords.sort((a, b) => {
+            if (b.winPct !== a.winPct) return b.winPct - a.winPct;
+            return b.avgScore - a.avgScore;
+        });
+
+        // Find current team's rank
+        const rank = teamRecords.findIndex(t => t.id === currentTeam.id) + 1;
+        const rankDisplay = rank === 1 ? '1st' : rank === 2 ? '2nd' : rank === 3 ? '3rd' : `${rank}th`;
+
+        document.getElementById('leagueRank').textContent = rankDisplay;
+    } else {
+        document.getElementById('leagueRank').textContent = '-';
+    }
+
+    // Update display
+    document.getElementById('record').textContent = `${wins}-${losses}`;
+    document.getElementById('avgScore').textContent = gamesPlayed > 0 
+        ? (totalScore / gamesPlayed).toFixed(1) 
+        : '0.0';
+}
+
 
 // Tab switching
 function switchTab(tabName) {
