@@ -4102,7 +4102,7 @@ const weekEnd = weekRange.end;
         
 async function viewTeamLineup(teamId) {
     try {
-        // Get team info
+        // get team info
         const { data: team } = await supabaseClient
             .from('league_teams')
             .select('*')
@@ -4113,7 +4113,7 @@ async function viewTeamLineup(teamId) {
             return;
         }
 
-        // Get username
+        // get username
         const { data: profile } = await supabaseClient
             .from('profiles')
             .select('username')
@@ -4121,7 +4121,7 @@ async function viewTeamLineup(teamId) {
             .single();
         const username = profile?.username || 'Unknown';
 
-        // Get team roster
+        // get team roster
         const { data: roster } = await supabaseClient
             .from('league_team_roster')
             .select('*')
@@ -4133,7 +4133,7 @@ async function viewTeamLineup(teamId) {
             return;
         }
 
-        // determine finalized week
+        // finalized week logic
         const currentWeek = await getCurrentWeekFromDB();
         const today = new Date();
         const nextMonday = new Date(today);
@@ -4141,7 +4141,7 @@ async function viewTeamLineup(teamId) {
         nextMonday.setHours(0,0,0,0);
         const finalizedWeek = today < nextMonday ? currentWeek - 1 : currentWeek;
 
-        // fixed week ranges
+        // explicitly define week ranges
         const weekDateRanges = [
             { start: new Date('2025-06-28'), end: new Date('2025-06-29') },  // week 1
             { start: new Date('2025-06-30'), end: new Date('2025-07-06') },  // week 2
@@ -4151,16 +4151,18 @@ async function viewTeamLineup(teamId) {
             { start: new Date('2025-07-28'), end: new Date('2025-08-03') },  // week 6
         ];
 
-        // protect against finalizedWeek out of bounds
-        const weekRange = weekDateRanges[Math.max(0, finalizedWeek - 1)];
-        const weekStart = weekRange.start;
-        const weekEnd = weekRange.end;
+        // safeguard
+        const safeWeekIndex = Math.max(0, Math.min(finalizedWeek - 1, weekDateRanges.length - 1));
+        const weekRange = weekDateRanges[safeWeekIndex];
 
+        console.log(`Showing scores for finalizedWeek=${finalizedWeek} date range ${weekRange.start.toISOString()} to ${weekRange.end.toISOString()}`);
+
+        // fetch events in precisely this range
         const { data: weekEvents } = await supabaseClient
             .from('events')
             .select('id')
-            .gte('date', weekStart.toISOString().split('T')[0])
-            .lte('date', weekEnd.toISOString().split('T')[0])
+            .gte('date', weekRange.start.toISOString().split('T')[0])
+            .lte('date', weekRange.end.toISOString().split('T')[0])
             .eq('is_completed', true);
 
         const eventIds = weekEvents?.map(e => e.id) || [];
@@ -4194,7 +4196,6 @@ async function viewTeamLineup(teamId) {
 
         let totalScore = 0;
 
-        // show in modal
         showModal(
             `${username}'s Lineup - Week ${finalizedWeek}`,
             '',
@@ -4257,6 +4258,7 @@ async function viewTeamLineup(teamId) {
         showNotification('Error', 'Failed to load team lineup', 'error');
     }
 }
+
 
 
         
