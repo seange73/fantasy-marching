@@ -4161,7 +4161,7 @@ if (today <= currentWeekRange.end) {
 
 // safeguard
 finalizedWeek = Math.max(1, finalizedWeek);
-
+const finalizedWeek = currentWeek;
 // get its date range
 const weekRange = weekDateRanges[finalizedWeek - 1];
 
