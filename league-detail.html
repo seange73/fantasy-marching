@@ -2539,54 +2539,50 @@ function displayLineup(lineup, currentWeek=1) {
 }
 
 
-// Calculate team's total score for the current week
 async function calculateTeamWeeklyScore(teamId) {
     // Get team roster
     const { data: roster } = await supabaseClient
         .from('league_team_roster')
         .select('*')
         .eq('team_id', teamId);
-    
+
     if (!roster || roster.length === 0) return 0;
-    
-    // Get current week
+
     const currentWeek = await getCurrentWeekFromDB();
-    
-    // Calculate week date range
-const weekRange = getWeekDateRange(currentWeek);
-const weekStart = weekRange.start;
-const weekEnd = weekRange.end;
-    
-    // Get events for this week
+
+    const weekRange = getWeekDateRange(currentWeek);
+    const weekStart = weekRange.start;
+    const weekEnd = weekRange.end;
+
     const { data: weekEvents } = await supabaseClient
         .from('events')
         .select('id')
         .gte('date', weekStart.toISOString().split('T')[0])
         .lte('date', weekEnd.toISOString().split('T')[0])
         .eq('is_completed', true);
-    
+
     if (!weekEvents || weekEvents.length === 0) return 0;
-    
+
     const eventIds = weekEvents.map(e => e.id);
-    
-    // Get all scores for these events
+
     const { data: scores } = await supabaseClient
         .from('event_scores')
         .select('*')
         .in('event_id', eventIds);
-    
+
     if (!scores) return 0;
-    
+
     let totalScore = 0;
-    let scoreCount = 0;
-    
-    // Calculate total score
+
+    // Calculate per roster item
     roster.forEach(rosterItem => {
         const corpsScores = scores.filter(s => s.corps_name === rosterItem.corps_name);
-        
+
+        let captionScores = [];
+
         corpsScores.forEach(score => {
             let captionScore = 0;
-            switch(rosterItem.caption) {
+            switch (rosterItem.caption) {
                 case 'brass': captionScore = score.brass_score || 0; break;
                 case 'percussion': captionScore = score.percussion_score || 0; break;
                 case 'guard': captionScore = score.color_guard_score || 0; break;
@@ -2595,12 +2591,16 @@ const weekEnd = weekRange.end;
                 case 'music': captionScore = score.music_score || 0; break;
             }
             if (captionScore > 0) {
-                totalScore += captionScore;
-                scoreCount++;
+                captionScores.push(captionScore);
             }
         });
+
+        if (captionScores.length > 0) {
+            const avg = captionScores.reduce((sum, s) => sum + s, 0) / captionScores.length;
+            totalScore += avg;
+        }
     });
-    
+
     return totalScore;
 }
 
