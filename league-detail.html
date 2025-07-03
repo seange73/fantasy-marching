@@ -4133,29 +4133,40 @@ async function viewTeamLineup(teamId) {
             return;
         }
 
-        // finalized week logic
-        const currentWeek = await getCurrentWeekFromDB();
-        const today = new Date();
-        const nextMonday = new Date(today);
-        nextMonday.setDate(today.getDate() + (8 - today.getDay()) % 7);
-        nextMonday.setHours(0,0,0,0);
-        const finalizedWeek = today < nextMonday ? currentWeek - 1 : currentWeek;
+// determine week boundaries for current week
+const currentWeek = await getCurrentWeekFromDB();
 
-        // explicitly define week ranges
-        const weekDateRanges = [
-            { start: new Date('2025-06-28'), end: new Date('2025-06-29') },  // week 1
-            { start: new Date('2025-06-30'), end: new Date('2025-07-06') },  // week 2
-            { start: new Date('2025-07-07'), end: new Date('2025-07-13') },  // week 3
-            { start: new Date('2025-07-14'), end: new Date('2025-07-20') },  // week 4
-            { start: new Date('2025-07-21'), end: new Date('2025-07-27') },  // week 5
-            { start: new Date('2025-07-28'), end: new Date('2025-08-03') },  // week 6
-        ];
+// define hard-coded week ranges
+const weekDateRanges = [
+  { start: new Date('2025-06-28'), end: new Date('2025-06-29') },
+  { start: new Date('2025-06-30'), end: new Date('2025-07-06') },
+  { start: new Date('2025-07-07'), end: new Date('2025-07-13') },
+  { start: new Date('2025-07-14'), end: new Date('2025-07-20') },
+  { start: new Date('2025-07-21'), end: new Date('2025-07-27') },
+  { start: new Date('2025-07-28'), end: new Date('2025-08-03') },
+];
 
-        // safeguard
-        const safeWeekIndex = Math.max(0, Math.min(finalizedWeek - 1, weekDateRanges.length - 1));
-        const weekRange = weekDateRanges[safeWeekIndex];
+// get today
+const today = new Date();
 
-        console.log(`Showing scores for finalizedWeek=${finalizedWeek} date range ${weekRange.start.toISOString()} to ${weekRange.end.toISOString()}`);
+// finalized week logic
+let finalizedWeek = currentWeek;
+
+// if today is still within current week, do not finalize yet
+// finalize only if today is AFTER the end of the current week
+const currentWeekRange = weekDateRanges[Math.max(0, currentWeek - 1)];
+if (today <= currentWeekRange.end) {
+  finalizedWeek = currentWeek - 1;
+}
+
+// safeguard
+finalizedWeek = Math.max(1, finalizedWeek);
+
+// get its date range
+const weekRange = weekDateRanges[finalizedWeek - 1];
+
+console.log(`Showing scores for finalizedWeek=${finalizedWeek} date range ${weekRange.start.toISOString()} to ${weekRange.end.toISOString()}`);
+
 
         // fetch events in precisely this range
         const { data: weekEvents } = await supabaseClient
