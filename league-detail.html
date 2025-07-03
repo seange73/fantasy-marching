@@ -4152,16 +4152,9 @@ const today = new Date();
 // finalized week logic
 let finalizedWeek = currentWeek;
 
-// if today is still within current week, do not finalize yet
-// finalize only if today is AFTER the end of the current week
-const currentWeekRange = weekDateRanges[Math.max(0, currentWeek - 1)];
-if (today <= currentWeekRange.end) {
-  finalizedWeek = currentWeek - 1;
-}
-
 // safeguard
 finalizedWeek = Math.max(1, finalizedWeek);
-const finalizedWeek = currentWeek;
+
 // get its date range
 const weekRange = weekDateRanges[finalizedWeek - 1];
 
