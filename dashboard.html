@@ -1504,6 +1504,54 @@ async function loadUserLeagues() {
             showNotification('Error', 'Failed to process request: ' + error.message, 'error');
         }
     }
+	//MODAL FUNCTIONS
+        function showModal(title, message, buttons, showInput = false) {
+            const overlay = document.getElementById('modalOverlay');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalInput = document.getElementById('modalInput');
+            const modalButtons = document.getElementById('modalButtons');
+            
+            modalTitle.textContent = title;
+            modalMessage.innerHTML = message;
+            
+            // Show/hide input
+            if (showInput) {
+                modalInput.style.display = 'block';
+                modalInput.value = '';
+                modalInput.focus();
+            } else {
+                modalInput.style.display = 'none';
+            }
+            
+            // Clear and add buttons
+            modalButtons.innerHTML = '';
+            buttons.forEach(button => {
+                const btn = document.createElement('button');
+                btn.className = `modal-btn ${button.primary ? 'modal-btn-primary' : 'modal-btn-secondary'}`;
+                btn.textContent = button.text;
+                btn.onclick = () => {
+                    const inputValue = showInput ? modalInput.value : null;
+                    closeModal();
+                    if (button.callback) {
+                        button.callback(inputValue);
+                    }
+                };
+                modalButtons.appendChild(btn);
+            });
+            
+            overlay.classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
+        }
+
+        function closeModalOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeModal();
+            }
+        }
         async function getCurrentWeekFromDB() {
             try {
         // For testing with date override
