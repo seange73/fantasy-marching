@@ -793,76 +793,80 @@ html {
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script>
-        let currentUser = null;
-        let isAdmin = false;
-		let userIdFromUrl = null;
-        // Initialize profile page
-        async function initializeProfile() {
-// try to get userId from the query string
-const urlParams = new URLSearchParams(window.location.search);
-const userIdFromUrl = urlParams.get("userId");
+let currentUser = null;
+let isAdmin = false;
+let userIdFromUrl = null;
+let signedInUser = null; // just to keep header stable
 
-if (userIdFromUrl) {
-    currentUser = { id: userIdFromUrl }; // treat as current for lookup
-} else {
-    // fallback to logged-in user
-    const { data: { user } } = await supabaseClient.auth.getUser();
+// Initialize profile page
+async function initializeProfile() {
+  const urlParams = new URLSearchParams(window.location.search);
+  userIdFromUrl = urlParams.get("userId");
 
-    if (!user) {
-        window.location.href = '/';
-        return;
-    }
-    currentUser = user;
+  // always get the signed-in user first
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) {
+    window.location.href = "/";
+    return;
+  }
+  signedInUser = user;
+
+  // then decide whose profile is being viewed
+  if (userIdFromUrl) {
+    currentUser = { id: userIdFromUrl }; // viewing someone else
+  } else {
+    currentUser = user; // viewing your own profile
+  }
+
+  // Load everything
+  await Promise.all([
+    loadUserProfile(),
+    loadPredictionStats(),
+    loadGlobalLeagueStats(),
+    loadUserLeagues()
+  ]);
 }
-            
-            // Load all profile data
-            await Promise.all([
-                loadUserProfile(),
-                loadPredictionStats(),
-                loadGlobalLeagueStats(),
-                loadUserLeagues()
-            ]);
-        }
 
-        // Load user profile
-        async function loadUserProfile() {
-            const { data: profile } = await supabaseClient
-                .from('profiles')
-                .select('username, avatar_url, is_admin, created_at')
-                .eq('id', currentUser.id)
-                .single();
-            
-if (profile) {
-    const username = profile.username || profile.email?.split('@')[0] || "Unknown";
+// Load user profile
+async function loadUserProfile() {
+  const { data: profile } = await supabaseClient
+    .from("profiles")
+    .select("username, avatar_url, is_admin, created_at")
+    .eq("id", currentUser.id)
+    .single();
+
+  if (profile) {
+    const username = profile.username || profile.email?.split("@")[0] || "Unknown";
     const initial = username[0].toUpperCase();
-    
-    // Only update header name if showing own profile
-    if (!userIdFromUrl || userIdFromUrl === currentUser.id) {
-        document.getElementById('userName').textContent = username;
-        document.getElementById('userAvatar').textContent = initial;
-    }
-    
-    // Always update profile section
-    document.getElementById('profileUsername').textContent = username;
-    document.getElementById('profileAvatarLarge').textContent = initial;
-    
+
+    // use signedInUser to populate the header name *always*
+    const signedInName = signedInUser.email?.split("@")[0] || "User";
+    const signedInInitial = signedInName[0].toUpperCase();
+
+    document.getElementById("userName").textContent = signedInName;
+    document.getElementById("userAvatar").textContent = signedInInitial;
+
+    // update the profile section with current profile data
+    document.getElementById("profileUsername").textContent = username;
+    document.getElementById("profileAvatarLarge").textContent = initial;
+
     // Format join date
     const joinDate = new Date(profile.created_at);
-    const formattedDate = joinDate.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+    const formattedDate = joinDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
     });
-    document.getElementById('profileJoined').textContent = `Joined ${formattedDate}`;
-    
-    // Only show admin panel link if viewing own profile
-    if ((profile.is_admin || false) && (!userIdFromUrl || userIdFromUrl === currentUser.id)) {
-        document.getElementById('adminLink').style.display = 'flex';
-        document.getElementById('adminDivider').style.display = 'block';
+    document.getElementById("profileJoined").textContent = `Joined ${formattedDate}`;
+
+    // only show admin panel if on your own profile
+    if ((profile.is_admin || false) && (!userIdFromUrl || userIdFromUrl === signedInUser.id)) {
+      document.getElementById("adminLink").style.display = "flex";
+      document.getElementById("adminDivider").style.display = "block";
     }
+  }
 }
 
-        }
 
         // Load prediction stats
         async function loadPredictionStats() {
