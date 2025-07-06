@@ -997,133 +997,170 @@ function getCaptionColor(caption) {
     return colors[caption] || '#4ecdc4';
 }
 
-// Add the viewGlobalTeamLineup function
 async function viewGlobalTeamLineup() {
-    try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
+  try {
+    // get the userId in the profile page
+    const urlParams = new URLSearchParams(window.location.search);
+    const profileUserId = urlParams.get("userId");
 
-        // Get user's global team roster
-        const { data: roster, error: rosterError } = await supabaseClient
-            .from('global_league_rosters')
-            .select('*')
-            .eq('user_id', user.id);
-
-        if (rosterError) throw rosterError;
-
-        if (!roster || roster.length === 0) {
-            showModal(
-                'No Global Team',
-                'You haven\'t selected a global league team yet. Visit the Global Draft to create your team!',
-                [{ text: 'OK', primary: true, callback: null }]
-            );
-            return;
-        }
-
-        // Get the latest finalized week
-        const { data: finalizedWeeks } = await supabaseClient
-            .from('weeks')
-            .select('week_number')
-            .eq('scores_finalized', true)
-            .order('week_number', { ascending: false })
-            .limit(1);
-
-        const finalizedWeek = finalizedWeeks?.[0]?.week_number || 0;
-
-        // Get scores for the finalized week
-        let weekScores = {};
-        if (finalizedWeek > 0) {
-            const { data: scores } = await supabaseClient
-                .from('scores')
-                .select('*')
-                .lte('week', finalizedWeek);
-
-            scores?.forEach(score => {
-                if (!weekScores[score.corps_name]) {
-                    weekScores[score.corps_name] = {
-                        brass: [],
-                        percussion: [],
-                        guard: [],
-                        ge: [],
-                        visual: [],
-                        music: []
-                    };
-                }
-                if (score.brass_score !== null) weekScores[score.corps_name].brass.push(score.brass_score);
-                if (score.percussion_score !== null) weekScores[score.corps_name].percussion.push(score.percussion_score);
-                if (score.color_guard_score !== null) weekScores[score.corps_name].guard.push(score.color_guard_score);
-                if (score.general_effect_score !== null) weekScores[score.corps_name].ge.push(score.general_effect_score);
-                if (score.visual_score !== null) weekScores[score.corps_name].visual.push(score.visual_score);
-                if (score.music_score !== null) weekScores[score.corps_name].music.push(score.music_score);
-            });
-        }
-
-        let totalScore = 0;
-
-        showModal(
-            `Your Global League Lineup - Week ${finalizedWeek}`,
-            '',
-            [
-                { text: 'Close', primary: true, callback: null }
-            ]
-        );
-
-        const modalMessage = document.getElementById('modalMessage');
-        modalMessage.innerHTML = `
-            <div style="display: grid; gap: 1rem; margin-top: 1rem;">
-                ${['brass','percussion','guard','ge','visual','music'].map(caption => {
-                    const captionRoster = roster.filter(r => r.caption === caption);
-                    let captionTotal = 0;
-
-                    const rosterWithScores = captionRoster.map(r => {
-                        const corpsScores = weekScores[r.corps_name];
-                        let avgScore = 0;
-
-                        if (corpsScores && corpsScores[caption].length > 0) {
-                            avgScore = corpsScores[caption].reduce((sum,s) => sum+s, 0) / corpsScores[caption].length;
-                            captionTotal += avgScore;
-                            totalScore += avgScore;
-                        }
-                        return { ...r, avgScore };
-                    });
-
-                    return `
-                        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 1rem; border-left: 3px solid ${getCaptionColor(caption)};">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                                <div style="font-weight:600; color:${getCaptionColor(caption)}; text-transform:capitalize;">
-                                    ${caption === 'guard' ? 'Color Guard' : caption === 'ge' ? 'General Effect' : caption}
-                                </div>
-                                <div style="font-weight:700; color:${getCaptionColor(caption)};">
-                                    ${captionTotal.toFixed(2)}
-                                </div>
-                            </div>
-                            ${rosterWithScores.map(r => `
-                                <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-top:1px solid rgba(255,255,255,0.05);">
-                                    <span>${r.corps_name}</span>
-                                    <span style="color:#888;">${r.avgScore.toFixed(2)}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                }).join('')}
-            </div>
-            <div style="margin-top:2rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1); text-align:center;">
-                <div style="font-size:0.9rem; color:#666;">Total Score</div>
-                <div style="font-size:2.5rem; font-weight:800; background:linear-gradient(135deg,#4ecdc4 0%,#45b7d1 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
-                    ${totalScore.toFixed(2)}
-                </div>
-            </div>
-        `;
-
-    } catch (error) {
-        console.error('Error viewing global team lineup:', error);
-        showModal(
-            'Error',
-            'Failed to load your global team lineup. Please try again.',
-            [{ text: 'OK', primary: true, callback: null }]
-        );
+    // fallback to logged-in user if no profile id found
+    let userId = profileUserId;
+    if (!userId) {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      userId = user.id;
     }
+
+    // get their global team
+    const { data: team, error: teamError } = await supabaseClient
+      .from("global_league_teams")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (teamError) throw teamError;
+    if (!team) {
+      showModal(
+        "No Global Team",
+        "This user has not joined the Global League yet.",
+        [{ text: "OK", primary: true, callback: null }]
+      );
+      return;
+    }
+
+    // get their team roster
+    const { data: roster, error: rosterError } = await supabaseClient
+      .from("global_league_roster")
+      .select("*")
+      .eq("team_id", team.id);
+
+    if (rosterError) throw rosterError;
+    if (!roster || roster.length === 0) {
+      showModal(
+        "No Roster",
+        "This user has not drafted any corps for their global team.",
+        [{ text: "OK", primary: true, callback: null }]
+      );
+      return;
+    }
+
+    // get current week number
+    const currentWeek = await getCurrentWeekFromDB();
+
+    // hard-coded week ranges
+    const weekDateRanges = [
+      { start: new Date("2025-06-28"), end: new Date("2025-06-29") },
+      { start: new Date("2025-06-30"), end: new Date("2025-07-06") },
+      { start: new Date("2025-07-07"), end: new Date("2025-07-13") },
+      { start: new Date("2025-07-14"), end: new Date("2025-07-20") },
+      { start: new Date("2025-07-21"), end: new Date("2025-07-27") },
+      { start: new Date("2025-07-28"), end: new Date("2025-08-03") },
+    ];
+    const weekRange = weekDateRanges[Math.max(0, currentWeek - 1)];
+
+    // completed events in this week
+    const { data: weekEvents } = await supabaseClient
+      .from("events")
+      .select("id")
+      .gte("date", weekRange.start.toISOString().split("T")[0])
+      .lte("date", weekRange.end.toISOString().split("T")[0])
+      .eq("is_completed", true);
+
+    const eventIds = weekEvents?.map(e => e.id) || [];
+    let weekScores = {};
+
+    if (eventIds.length > 0) {
+      const { data: scores } = await supabaseClient
+        .from("event_scores")
+        .select("*")
+        .in("event_id", eventIds);
+
+      scores?.forEach(score => {
+        if (!weekScores[score.corps_name]) {
+          weekScores[score.corps_name] = {
+            brass: [],
+            percussion: [],
+            guard: [],
+            ge: [],
+            visual: [],
+            music: []
+          };
+        }
+        if (score.brass_score !== null) weekScores[score.corps_name].brass.push(score.brass_score);
+        if (score.percussion_score !== null) weekScores[score.corps_name].percussion.push(score.percussion_score);
+        if (score.color_guard_score !== null) weekScores[score.corps_name].guard.push(score.color_guard_score);
+        if (score.general_effect_score !== null) weekScores[score.corps_name].ge.push(score.general_effect_score);
+        if (score.visual_score !== null) weekScores[score.corps_name].visual.push(score.visual_score);
+        if (score.music_score !== null) weekScores[score.corps_name].music.push(score.music_score);
+      });
+    }
+
+    let totalScore = 0;
+
+    showModal(
+      `Global League Lineup - Week ${currentWeek}`,
+      "",
+      [{ text: "Close", primary: true, callback: null }]
+    );
+
+    const modalMessage = document.getElementById("modalMessage");
+    modalMessage.innerHTML = `
+      <div style="display: grid; gap: 1rem; margin-top: 1rem;">
+        ${['brass','percussion','guard','ge','visual','music'].map(caption => {
+          const captionRoster = roster.filter(r => r.caption === caption);
+          let captionTotal = 0;
+
+          const rosterWithScores = captionRoster.map(r => {
+            const corpsScores = weekScores[r.corps_name];
+            let avgScore = 0;
+            if (corpsScores && corpsScores[caption].length > 0) {
+              avgScore = corpsScores[caption].reduce((sum,s) => sum+s,0) / corpsScores[caption].length;
+              captionTotal += avgScore;
+              totalScore += avgScore;
+            }
+            return { ...r, avgScore };
+          });
+
+          return `
+            <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 1rem; border-left: 3px solid ${getCaptionColor(caption)};">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <div style="font-weight:600; color:${getCaptionColor(caption)};">
+                  ${caption === 'guard' ? 'Color Guard' : caption === 'ge' ? 'General Effect' : caption}
+                </div>
+                <div style="font-weight:700; color:#4ecdc4;">
+                  ${captionTotal.toFixed(2)}
+                </div>
+              </div>
+              ${rosterWithScores.map(r => `
+                <div style="padding:0.5rem 0; color:#e0e0e0; display:flex; justify-content:space-between;">
+                  ${r.corps_name}
+                  <span style="color:${r.avgScore>0?'#4ecdc4':'#666'};">
+                    ${r.avgScore>0 ? r.avgScore.toFixed(2) : 'No score'}
+                  </span>
+                </div>
+              `).join("") || '<div style="color:#666;">No selection</div>'}
+            </div>
+          `;
+        }).join("")}
+      </div>
+      <div style="margin-top:1.5rem; padding: 1rem; background:linear-gradient(135deg,#4ecdc4 0%,#45b7d1 100%); border-radius:12px; text-align:center;">
+        <div style="color: rgba(255,255,255,0.9); font-size:0.9rem;">Total Score</div>
+        <div style="color:white; font-size:2rem; font-weight:800;">
+          ${totalScore.toFixed(2)}
+        </div>
+      </div>
+    `;
+
+  } catch (error) {
+    console.error("Error viewing global team lineup:", error);
+    showModal(
+      "Error",
+      "Failed to load the global team lineup. Please try again.",
+      [{ text: "OK", primary: true, callback: null }]
+    );
+  }
 }
+
         // Load user's leagues
         async function loadUserLeagues() {
             try {
