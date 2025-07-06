@@ -1545,8 +1545,7 @@ async function loadUserLeagues() {
             .from('global_league_roster')
             .select('*')
             .eq('team_id', team.id)
-            .order('caption')
-            .order('position');
+            .order('caption');
 
         if (!roster || roster.length === 0) {
             showNotification('Error', 'No roster found for your global team', 'error');
