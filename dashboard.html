@@ -619,11 +619,7 @@ html {
             </div>
             <div class="view-more">
                 <a href="/predictions-leaderboard.html" class="view-more-btn">View Full Leaderboard →</a>
-            </div>
-			<div class="view-more" style="margin-top: 0.5rem;">
-				<a href="#" onclick="viewGlobalTeamLineup()" class="view-more-btn">View Your Lineup →</a>
-			</div>
-
+            </div>			
         </div>
 
         <!-- Global League Leaderboard -->
@@ -639,6 +635,19 @@ html {
             <div class="view-more">
                 <a href="/league-leaderboard.html" class="view-more-btn">View Full Leaderboard →</a>
             </div>
+			<button class="btn btn-secondary" style="
+    margin-top: 1rem;
+    width: calc(100% - 1rem);
+    max-width: 200px;
+    word-break: break-word;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+" onclick="viewGlobalTeamLineup()">View Your Lineup</button>
+
+			<div class="view-more" style="margin-top: 0.5rem;">
+				<a href="#" onclick="viewGlobalTeamLineup()" class="view-more-btn">View Your Lineup →</a>
+			</div>
+
         </div>
 
         <!-- User's Leagues -->
