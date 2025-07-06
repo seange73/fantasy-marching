@@ -1778,7 +1778,7 @@ return Math.min(weekNumber, 6);
         nextMonday.setHours(0,0,0,0);
         let finalizedWeek = today < nextMonday ? currentWeek - 1 : currentWeek;
         finalizedWeek = Math.max(1, finalizedWeek);
-
+const weekToDisplay = Math.max(1, currentWeek);
         // week ranges
         const weekDateRanges = [
             { start: new Date('2025-06-28'), end: new Date('2025-06-29') },
@@ -1788,7 +1788,7 @@ return Math.min(weekNumber, 6);
             { start: new Date('2025-07-21'), end: new Date('2025-07-27') },
             { start: new Date('2025-07-28'), end: new Date('2025-08-03') }
         ];
-        const weekRange = weekDateRanges[finalizedWeek - 1];
+        const weekRange = weekDateRanges[weekToDisplay - 1];
 
         // get week events
         const { data: weekEvents } = await supabaseClient
@@ -1830,7 +1830,7 @@ return Math.min(weekNumber, 6);
         let totalScore = 0;
 
         showModal(
-            `Your Global League Lineup - Week ${finalizedWeek}`,
+            `Your Global League Lineup - Week ${weekToDisplay}`,
             '',
             [
                 { text: 'Close', primary: true, callback: null }
