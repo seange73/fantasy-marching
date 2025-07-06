@@ -488,6 +488,15 @@
         align-items: center;
         padding: 0.5rem 0;
     }
+	    .btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .modal {
+        max-width: 95%;
+        padding: 1.5rem;
+    }
 }
 
 @media (max-width: 600px) and (orientation: portrait) {
@@ -517,8 +526,150 @@ html {
         display: none;
     }
 }
+.btn {
+    background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+    color: white;
+    border: none;
+    padding: 0.875rem 2rem;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 1rem;
+}
 
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+}
 
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal {
+    background: rgba(26, 26, 46, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    margin-bottom: 1.5rem;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4ecdc4;
+    margin-bottom: 0.5rem;
+}
+
+.modal-message {
+    color: #e0e0e0;
+    line-height: 1.5;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 0.875rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    font-size: 1rem;
+    margin: 1rem 0;
+    transition: all 0.2s ease;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: #4ecdc4;
+    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.modal-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 0.95rem;
+}
+
+.modal-btn-primary {
+    background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+    color: white;
+}
+
+.modal-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+}
+
+.modal-btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
     </style>
 </head>
 <body>
@@ -612,6 +763,11 @@ html {
                                 <div class="stat-value-blue" id="globalAverage">-</div>
                             </div>
                         </div>
+						        <button class="btn" style="
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+        " onclick="viewGlobalTeamLineup()">View Global League Lineup</button>
                     </div>
                 </div>
             </div>
@@ -781,7 +937,193 @@ if (profile) {
                 document.getElementById('globalAverage').textContent = '-';
             }
         }
+// Add the showModal function
+function showModal(title, message, buttons, showInput = false) {
+    const overlay = document.getElementById('modalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalInput = document.getElementById('modalInput');
+    const modalButtons = document.getElementById('modalButtons');
+    
+    modalTitle.textContent = title;
+    modalMessage.innerHTML = message;
+    
+    if (showInput) {
+        modalInput.style.display = 'block';
+        modalInput.value = '';
+        modalInput.focus();
+    } else {
+        modalInput.style.display = 'none';
+    }
+    
+    modalButtons.innerHTML = '';
+    buttons.forEach(button => {
+        const btn = document.createElement('button');
+        btn.className = `modal-btn ${button.primary ? 'modal-btn-primary' : 'modal-btn-secondary'}`;
+        btn.textContent = button.text;
+        btn.onclick = () => {
+            const inputValue = showInput ? modalInput.value : null;
+            closeModal();
+            if (button.callback) {
+                button.callback(inputValue);
+            }
+        };
+        modalButtons.appendChild(btn);
+    });
+    
+    overlay.classList.add('show');
+}
 
+function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('show');
+}
+
+function closeModalOnOverlay(event) {
+    if (event.target === event.currentTarget) {
+        closeModal();
+    }
+}
+
+// Add the getCaptionColor function
+function getCaptionColor(caption) {
+    const colors = {
+        brass: '#FFD700',
+        percussion: '#FF6B6B',
+        guard: '#9B59B6',
+        ge: '#3498DB',
+        visual: '#2ECC71',
+        music: '#E67E22'
+    };
+    return colors[caption] || '#4ecdc4';
+}
+
+// Add the viewGlobalTeamLineup function
+async function viewGlobalTeamLineup() {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        // Get user's global team roster
+        const { data: roster, error: rosterError } = await supabaseClient
+            .from('global_league_rosters')
+            .select('*')
+            .eq('user_id', user.id);
+
+        if (rosterError) throw rosterError;
+
+        if (!roster || roster.length === 0) {
+            showModal(
+                'No Global Team',
+                'You haven\'t selected a global league team yet. Visit the Global Draft to create your team!',
+                [{ text: 'OK', primary: true, callback: null }]
+            );
+            return;
+        }
+
+        // Get the latest finalized week
+        const { data: finalizedWeeks } = await supabaseClient
+            .from('weeks')
+            .select('week_number')
+            .eq('scores_finalized', true)
+            .order('week_number', { ascending: false })
+            .limit(1);
+
+        const finalizedWeek = finalizedWeeks?.[0]?.week_number || 0;
+
+        // Get scores for the finalized week
+        let weekScores = {};
+        if (finalizedWeek > 0) {
+            const { data: scores } = await supabaseClient
+                .from('scores')
+                .select('*')
+                .lte('week', finalizedWeek);
+
+            scores?.forEach(score => {
+                if (!weekScores[score.corps_name]) {
+                    weekScores[score.corps_name] = {
+                        brass: [],
+                        percussion: [],
+                        guard: [],
+                        ge: [],
+                        visual: [],
+                        music: []
+                    };
+                }
+                if (score.brass_score !== null) weekScores[score.corps_name].brass.push(score.brass_score);
+                if (score.percussion_score !== null) weekScores[score.corps_name].percussion.push(score.percussion_score);
+                if (score.color_guard_score !== null) weekScores[score.corps_name].guard.push(score.color_guard_score);
+                if (score.general_effect_score !== null) weekScores[score.corps_name].ge.push(score.general_effect_score);
+                if (score.visual_score !== null) weekScores[score.corps_name].visual.push(score.visual_score);
+                if (score.music_score !== null) weekScores[score.corps_name].music.push(score.music_score);
+            });
+        }
+
+        let totalScore = 0;
+
+        showModal(
+            `Your Global League Lineup - Week ${finalizedWeek}`,
+            '',
+            [
+                { text: 'Close', primary: true, callback: null }
+            ]
+        );
+
+        const modalMessage = document.getElementById('modalMessage');
+        modalMessage.innerHTML = `
+            <div style="display: grid; gap: 1rem; margin-top: 1rem;">
+                ${['brass','percussion','guard','ge','visual','music'].map(caption => {
+                    const captionRoster = roster.filter(r => r.caption === caption);
+                    let captionTotal = 0;
+
+                    const rosterWithScores = captionRoster.map(r => {
+                        const corpsScores = weekScores[r.corps_name];
+                        let avgScore = 0;
+
+                        if (corpsScores && corpsScores[caption].length > 0) {
+                            avgScore = corpsScores[caption].reduce((sum,s) => sum+s, 0) / corpsScores[caption].length;
+                            captionTotal += avgScore;
+                            totalScore += avgScore;
+                        }
+                        return { ...r, avgScore };
+                    });
+
+                    return `
+                        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 1rem; border-left: 3px solid ${getCaptionColor(caption)};">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                                <div style="font-weight:600; color:${getCaptionColor(caption)}; text-transform:capitalize;">
+                                    ${caption === 'guard' ? 'Color Guard' : caption === 'ge' ? 'General Effect' : caption}
+                                </div>
+                                <div style="font-weight:700; color:${getCaptionColor(caption)};">
+                                    ${captionTotal.toFixed(2)}
+                                </div>
+                            </div>
+                            ${rosterWithScores.map(r => `
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-top:1px solid rgba(255,255,255,0.05);">
+                                    <span>${r.corps_name}</span>
+                                    <span style="color:#888;">${r.avgScore.toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            <div style="margin-top:2rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1); text-align:center;">
+                <div style="font-size:0.9rem; color:#666;">Total Score</div>
+                <div style="font-size:2.5rem; font-weight:800; background:linear-gradient(135deg,#4ecdc4 0%,#45b7d1 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+                    ${totalScore.toFixed(2)}
+                </div>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error('Error viewing global team lineup:', error);
+        showModal(
+            'Error',
+            'Failed to load your global team lineup. Please try again.',
+            [{ text: 'OK', primary: true, callback: null }]
+        );
+    }
+}
         // Load user's leagues
         async function loadUserLeagues() {
             try {
@@ -965,5 +1307,15 @@ if (profile) {
         // Initialize on load
         document.addEventListener('DOMContentLoaded', initializeProfile);
     </script>
+	<div id="modalOverlay" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">Title</h3>
+            <p class="modal-message" id="modalMessage">Message</p>
+        </div>
+        <input type="text" id="modalInput" class="modal-input" style="display: none;" />
+        <div class="modal-buttons" id="modalButtons"></div>
+    </div>
+</div>
 </body>
 </html>
