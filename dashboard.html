@@ -190,7 +190,31 @@
         .full-width {
             grid-column: 1 / -1;
         }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
 
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
+        }
+        .modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+  /* Fix button overflow */
+  #matchupContainer .btn-secondary {
+    width: calc(100% - 2rem) !important;
+    max-width: none !important;
+    margin: 1rem auto 0 !important;
+    display: block !important;
+  }
         /* Reminder Cards */
         .reminders-section {
             grid-column: 1 / -1;
