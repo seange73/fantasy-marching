@@ -1051,6 +1051,7 @@ async function viewGlobalTeamLineup() {
     }
 
     // get their global team
+	console.log("Checking for team with user_id =", userId);
     const { data: team, error: teamError } = await supabaseClient
       .from("global_league_teams")
       .select("*")
