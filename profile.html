@@ -838,10 +838,15 @@ async function loadUserProfile() {
   if (profile) {
     const username = profile.username || profile.email?.split("@")[0] || "Unknown";
     const initial = username[0].toUpperCase();
+const { data: signedInProfile } = await supabaseClient
+  .from("profiles")
+  .select("username")
+  .eq("id", signedInUser.id)
+  .single();
 
     // use signedInUser to populate the header name *always*
-    const signedInName = signedInUser.email?.split("@")[0] || "User";
-    const signedInInitial = signedInName[0].toUpperCase();
+const signedInName = signedInProfile?.username || signedInUser.email?.split("@")[0] || "User";
+const signedInInitial = signedInName[0].toUpperCase();
 
     document.getElementById("userName").textContent = signedInName;
     document.getElementById("userAvatar").textContent = signedInInitial;
