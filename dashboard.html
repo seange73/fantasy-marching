@@ -887,6 +887,15 @@ html {
                 }
             }
         }
+		function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('show');
+}
+
+function closeModalOnOverlay(event) {
+    if (event.target === event.currentTarget) {
+        closeModal();
+    }
+}
 // Simple notification function for dashboard
 function showNotification(title, message, type = 'info') {
     // Create notification element
@@ -1624,6 +1633,17 @@ async function loadUserLeagues() {
             showNotification('Error', 'Failed to process request: ' + error.message, 'error');
         }
     }
+	function getCaptionColor(caption) {
+    const colors = {
+        brass: '#FFD700',
+        percussion: '#FF6B6B',
+        guard: '#9B59B6',
+        ge: '#3498DB',
+        visual: '#2ECC71',
+        music: '#E67E22'
+    };
+    return colors[caption] || '#4ecdc4';
+}
 	//MODAL FUNCTIONS
         function showModal(title, message, buttons, showInput = false) {
             const overlay = document.getElementById('modalOverlay');
@@ -1650,13 +1670,13 @@ async function loadUserLeagues() {
                 const btn = document.createElement('button');
                 btn.className = `modal-btn ${button.primary ? 'modal-btn-primary' : 'modal-btn-secondary'}`;
                 btn.textContent = button.text;
-                btn.onclick = () => {
-                    const inputValue = showInput ? modalInput.value : null;
-                    closeModal();
-                    if (button.callback) {
-                        button.callback(inputValue);
-                    }
-                };
+btn.onclick = () => {
+    const inputValue = showInput ? modalInput.value : null;
+    closeModal();
+    if (button.callback) {
+        button.callback(inputValue);
+    }
+};
                 modalButtons.appendChild(btn);
             });
             
@@ -1872,5 +1892,16 @@ return Math.min(weekNumber, 6);
 }
 
     </script>
+	<!-- Modal Overlay -->
+<div id="modalOverlay" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">Title</h3>
+            <p class="modal-message" id="modalMessage">Message</p>
+        </div>
+        <input type="text" id="modalInput" class="modal-input" style="display: none;" />
+        <div class="modal-buttons" id="modalButtons"></div>
+    </div>
+</div>
 </body>
 </html>
