@@ -575,7 +575,40 @@ html {
 }
 
 
+.btn {
+    background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+    color: white;
+    border: none;
+    padding: 0.875rem 2rem;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 1rem;
+}
 
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
+}
 }
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
@@ -659,14 +692,16 @@ html {
             <div class="view-more">
                 <a href="/league-leaderboard.html" class="view-more-btn">View Full Leaderboard →</a>
             </div>
-			<button class="btn" style="
-    margin-top: 1rem;
-    width: calc(100% - 1rem);
-    max-width: 200px;
-    word-break: break-word;
-    margin-left: 0.5rem;
-    margin-right: 0.5rem;
-" onclick="viewGlobalTeamLineup()">View Your Lineup</button>
+<div style="text-align: center;">
+    <button class="btn" style="
+        margin-top: 1rem;
+        width: calc(100% - 1rem);
+        max-width: 200px;
+        word-break: break-word;
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+    " onclick="viewGlobalTeamLineup()">View Your Lineup</button>
+</div>
 
 			<div class="view-more" style="margin-top: 0.5rem;">
 				<a href="#" onclick="viewGlobalTeamLineup()" class="view-more-btn">View Your Lineup →</a>
