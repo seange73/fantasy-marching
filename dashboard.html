@@ -1504,7 +1504,37 @@ async function loadUserLeagues() {
             showNotification('Error', 'Failed to process request: ' + error.message, 'error');
         }
     }
+        async function getCurrentWeekFromDB() {
+            try {
+        // For testing with date override
+        if (window.DEBUG_OVERRIDE_DATE) {
+            const { data, error } = await supabaseClient.rpc('get_current_week_number_test', {
+                test_date: window.DEBUG_OVERRIDE_DATE
+            });
+            console.log('getCurrentWeekFromDB: Test mode, week:', data);
+            if (!error) return data || 1;
+        }
+                const { data, error } = await supabaseClient.rpc('get_current_week_number');
+                if (error) throw error;
+                return data || 1;
+            } 
+			catch (error) {
+                console.error('Error getting current week:', error);
+                // Fallback calculation - calendar week based
+// If before season start, return week 1
+if (now < new Date('2025-06-28')) return 1;
 
+// Week 1 is June 28-29
+if (now <= new Date('2025-06-29T23:59:59')) return 1;
+
+// For week 2+, calculate based on days since June 30
+const week2Start = new Date('2025-06-30');
+const daysSinceWeek2 = Math.floor((now - week2Start) / (24 * 60 * 60 * 1000));
+const weekNumber = Math.floor(daysSinceWeek2 / 7) + 2;
+
+return Math.min(weekNumber, 6);
+            }
+        }
     async function rejectJoinRequest() {
         if (!currentRequestId) return;
         
