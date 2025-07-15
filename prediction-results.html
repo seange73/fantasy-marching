@@ -866,8 +866,6 @@ async function loadPredictionData() {
         console.error(e);
         alert("Error loading prediction");
     }
-	  document.getElementById("loadingState").style.display = "none";
-  document.getElementById("mainContent").style.display = "block";
 }
 function renderPredictionPage(prediction, result, event) {
     // event name/date
@@ -923,7 +921,7 @@ if (event.final_scores) {
             <div class="leaderboard-entry ${cls}">
                 <div class="rank-number">${result.placement}</div>
                 <strong>${result.corps_name}</strong>
-                <div class="corps-total">${result.total_score.toFixed(3)}</div>
+                <div class="corps-total">${result.total_score ? result.total_score.toFixed(3) : 'N/A'}</div>
             </div>
         `;
     }).join("");
