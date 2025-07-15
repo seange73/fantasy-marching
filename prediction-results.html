@@ -736,6 +736,15 @@ html {
                 </div>
             </div>
         </div>
+		<!-- Actual Placements -->
+		<div class="card">
+			<div class="leaderboard">
+				<h2 class="leaderboard-title">Actual Placements</h2>
+				<div id="actualLeaderboard">
+					
+				</div>
+			</div>
+		</div>
 
         <!-- Accuracy Summary -->
         <div class="card">
@@ -902,7 +911,29 @@ function renderPredictionPage(prediction, result, event) {
             </div>
         `;
     }).join("");
-
+// actual rankings
+if (event.final_scores) {
+    const actualLeaderboard = document.getElementById("actualLeaderboard");
+    actualLeaderboard.innerHTML = event.final_scores.map((result, index) => {
+        let cls = "default";
+        if(index === 0) cls = "gold";
+        else if(index === 1) cls = "silver";
+        else if(index === 2) cls = "bronze";
+        return `
+            <div class="leaderboard-entry ${cls}">
+                <div class="rank-number">${result.placement}</div>
+                <strong>${result.corps_name}</strong>
+                <div class="corps-total">${result.total_score.toFixed(3)}</div>
+            </div>
+        `;
+    }).join("");
+} else {
+    document.getElementById("actualLeaderboard").innerHTML = `
+        <div style="text-align: center; color: #a0a0a0; padding: 2rem;">
+            Actual results not yet available
+        </div>
+    `;
+}
     // caption awards
 const captions = ["brass","percussion","color_guard"];
 const captionContainer = document.querySelector(".caption-grid");
