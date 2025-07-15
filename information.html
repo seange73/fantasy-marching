@@ -402,7 +402,14 @@
     <!-- Main Content -->
     <div class="container">
         <h1 class="page-title">Information</h1>
-
+<!-- User Count Banner -->
+<div style="text-align: center; margin-bottom: 2rem;">
+    <div style="display: inline-block; background: rgba(78, 205, 196, 0.1); border: 1px solid rgba(78, 205, 196, 0.3); border-radius: 50px; padding: 0.75rem 2rem;">
+        <span style="color: #4ecdc4; font-weight: 600;">
+            <span style="font-size: 1.5rem;" id="userCount">0</span> registered users
+        </span>
+    </div>
+</div>
         <!-- Discord Community Section -->
         <section class="section" style="background: rgba(114, 137, 218, 0.1); border-color: rgba(114, 137, 218, 0.3);">
             <div class="content">
@@ -608,6 +615,31 @@
 
     // Initialize on page load
     window.addEventListener('DOMContentLoaded', initializePage);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // Initialize Supabase
+    const supabaseUrl = 'https://myjwqbfmgagpptgaoyel.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15andxYmZtZ2FncHB0Z2FveWVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMxODE0MDEsImV4cCI6MjA0ODc1NzQwMX0.CUVcTmN5hTXAemKazPSzaD98EBovhc1-_vHgIGf2qn0';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Load user count
+    async function loadUserCount() {
+        try {
+            const { count, error } = await supabaseClient
+                .from('profiles')
+                .select('*', { count: 'exact', head: true });
+            
+            if (!error && count !== null) {
+                document.getElementById('userCount').textContent = count.toLocaleString();
+            }
+        } catch (e) {
+            console.error('Error loading user count:', e);
+        }
+    }
+
+    // Load count when page loads
+    loadUserCount();
 </script>
 </body>
 </html>
