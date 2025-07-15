@@ -866,6 +866,8 @@ async function loadPredictionData() {
         console.error(e);
         alert("Error loading prediction");
     }
+	  document.getElementById("loadingState").style.display = "none";
+  document.getElementById("mainContent").style.display = "block";
 }
 function renderPredictionPage(prediction, result, event) {
     // event name/date
