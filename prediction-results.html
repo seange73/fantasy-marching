@@ -912,21 +912,29 @@ function renderPredictionPage(prediction, result, event) {
     }).join("");
 // actual rankings
 if (event.final_scores) {
-    const actualLeaderboard = document.getElementById("actualLeaderboard");
-    actualLeaderboard.innerHTML = event.final_scores.map((result, index) => {
-        let cls = "default";
-        if(index === 0) cls = "gold";
-        else if(index === 1) cls = "silver";
-        else if(index === 2) cls = "bronze";
-        return `
-            <div class="leaderboard-entry ${cls}">
-                <div class="rank-number">${result.placement}</div>
-                <strong>${result.corps_name}</strong>
-                <div class="corps-total">${result.total_score ? result.total_score.toFixed(3) : 'N/A'}</div>
-            </div>
-        `;
-    }).join("");
-} else {
+  const actualLeaderboard = document.getElementById("actualLeaderboard");
+  actualLeaderboard.innerHTML = event.final_scores.map((result, index) => {
+    let cls = "default";
+    if (index === 0)      cls = "gold";
+    else if (index === 1) cls = "silver";
+    else if (index === 2) cls = "bronze";
+
+    // use result.score (not total_score), and only N/A when null/undefined
+    const displayScore = result.score != null
+      ? result.score.toFixed(3)
+      : 'N/A';
+
+    return `
+      <div class="leaderboard-entry ${cls}">
+        <div class="rank-number">${result.placement}</div>
+        <strong>${result.corps_name}</strong>
+        <div class="corps-total">${displayScore}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+else {
     document.getElementById("actualLeaderboard").innerHTML = `
         <div style="text-align: center; color: #a0a0a0; padding: 2rem;">
             Actual results not yet available
