@@ -612,17 +612,6 @@
             window.location.href = '/';
         }
     }
-
-    // Initialize on page load
-    window.addEventListener('DOMContentLoaded', initializePage);
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    // Initialize Supabase
-    const supabaseUrl = 'https://myjwqbfmgagpptgaoyel.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15andxYmZtZ2FncHB0Z2FveWVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMxODE0MDEsImV4cCI6MjA0ODc1NzQwMX0.CUVcTmN5hTXAemKazPSzaD98EBovhc1-_vHgIGf2qn0';
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
     // Load user count
     async function loadUserCount() {
         try {
@@ -638,8 +627,12 @@
         }
     }
 
-    // Load count when page loads
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', initializePage);
+	    // Load count when page loads
     loadUserCount();
 </script>
+
 </body>
 </html>
