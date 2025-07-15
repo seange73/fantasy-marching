@@ -699,19 +699,61 @@ html {
     <p>Loading results...</p>
   </div>
         <div class="event-header animate-in">
+            <h1 class="event-title"></h1>
+            <p class="subtitle"></p>
         </div>
 
         <!-- Predicted Placements -->
         <div class="card">
             <div class="leaderboard">
-                <h2 class="leaderboard-title">Your Predicted Placements</h2>
+                <h2 class="leaderboard-title"></h2>
                 <div id="leaderboard">
+                    <div class="leaderboard-entry gold">
+                        <div class="rank-number"></div>
+                        <strong></strong>
+                        <div class="corps-total"></div>
+                    </div>
+                    <div class="leaderboard-entry silver">
+                        <div class="rank-number"></div>
+                        <strong></strong>
+                        <div class="corps-total"></div>
+                    </div>
+                    <div class="leaderboard-entry bronze">
+                        <div class="rank-number"></div>
+                        <strong></strong>
+                        <div class="corps-total"></div>
+                    </div>
+                    <div class="leaderboard-entry default">
+                        <div class="rank-number"></div>
+                        <strong></strong>
+                        <div class="corps-total"></div>
+                    </div>
+                    <div class="leaderboard-entry default">
+                        <div class="rank-number"></div>
+                        <strong></strong>
+                        <div class="corps-total"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Accuracy Summary -->
         <div class="card">
+            <h2 class="section-title"></h2>
+            <div class="accuracy-grid">
+                <div class="accuracy-item">
+                    <div class="accuracy-label"></div>
+                    <div class="accuracy-value"></div>
+                </div>
+                <div class="accuracy-item">
+                    <div class="accuracy-label"></div>
+                    <div class="accuracy-value"></div>
+                </div>
+                <div class="accuracy-item">
+                    <div class="accuracy-label"></div>
+                    <div class="accuracy-value accuracy-percentage"></div>
+                </div>
+            </div>
         </div>
 
         <!-- Points Breakdown -->
@@ -727,6 +769,34 @@ html {
             <h2 class="section-title">Caption Award Predictions</h2>
             <div class="caption-grid">
                 <div class="caption-item">
+                    <div class="caption-type"></div>
+                    <div class="caption-pick"></div>
+                    <div class="caption-result correct">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                        
+                    </div>
+                </div>
+                <div class="caption-item">
+                    <div class="caption-type"></div>
+                    <div class="caption-pick"></div>
+                    <div class="caption-result incorrect">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                        
+                    </div>
+                </div>
+                <div class="caption-item">
+                    <div class="caption-type"></div>
+                    <div class="caption-pick"></div>
+                    <div class="caption-result correct">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                        
+                    </div>
                 </div>
             </div>
         </div>
