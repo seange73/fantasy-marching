@@ -4684,12 +4684,12 @@ async function updateAllMatchupScoresForWeek(weekNumber) {
             );
         }
 document.addEventListener('DOMContentLoaded', () => {
-  await initializePage();
+  initializePage();
   
     const currentWeek = await getCurrentWeekFromDB();
-  await updateAllMatchupScoresForWeek(currentWeek);
+  updateAllMatchupScoresForWeek(currentWeek);
   
-  await checkIfMatchupsExist();
+  checkIfMatchupsExist();
 });
         
         
