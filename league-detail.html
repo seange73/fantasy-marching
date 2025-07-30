@@ -4034,8 +4034,7 @@ async function revokeTrade(tradeId) {
   loadTrades();
 }
 
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', initializePage);
+
         
         // Add helper functions for matchups
         async function loadWeekCompetitions(weekNumber) {
@@ -4543,7 +4542,23 @@ async function leaveLeague() {
             // Load available free agents for this caption
             loadFreeAgentsForCaption(caption);
         }
-        
+async function updateAllMatchupScoresForWeek(weekNumber) {
+  const { data: matchups } = await supabaseClient
+    .from('league_matchups')
+    .select('id, team1_id, team2_id')
+    .eq('league_id', leagueId)
+    .eq('week_number', weekNumber);
+
+  for (const m of matchups || []) {
+    const s1 = await calculateTeamWeeklyScore(m.team1_id);
+    const s2 = await calculateTeamWeeklyScore(m.team2_id);
+    await supabaseClient.rpc('update_matchup_scores', {
+      p_matchup_id: m.id,
+      p_team1_score: s1,
+      p_team2_score: s2
+    });
+  }
+}        
         // Load free agents for a specific caption
         async function loadFreeAgentsForCaption(caption) {
             const container = document.getElementById('freeAgentsList');
@@ -4669,8 +4684,12 @@ async function leaveLeague() {
             );
         }
 document.addEventListener('DOMContentLoaded', () => {
-  initializePage();
-  checkIfMatchupsExist();
+  await initializePage();
+  
+    const currentWeek = await getCurrentWeekFromDB();
+  await updateAllMatchupScoresForWeek(currentWeek);
+  
+  await checkIfMatchupsExist();
 });
         
         
