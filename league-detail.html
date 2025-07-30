@@ -4684,13 +4684,19 @@ async function updateAllMatchupScoresForWeek(weekNumber) {
             );
         }
 document.addEventListener('DOMContentLoaded', () => {
-  initializePage();
-  
- 
-  updateAllMatchupScoresForWeek(currentWeek);
-  
-  checkIfMatchupsExist();
+  (async () => {
+    // 1️⃣ wait for your league/team context to be ready
+    await initializePage();
+
+    // 2️⃣ back‑fill everyone's scores and wait for it to finish
+    const currentWeek = await getCurrentWeekFromDB();
+    await updateAllMatchupScoresForWeek(currentWeek);
+
+    // 3️⃣ now that the DB is up-to-date, render your matchups
+    await checkIfMatchupsExist();
+  })(); // ← immediately run it
 });
+
         
         
         // Get caption color
