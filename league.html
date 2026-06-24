@@ -4,274 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fantasy Marching - Leagues</title>
-	<link rel="icon" href="/images/favicon.png" type="image/png">
+    <link rel="icon" href="/images/favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/theme.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-            color: white;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Header Styles */
-        .header {
-            background: rgba(15, 15, 35, 0.98);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            height: 75px;
-            width: auto;
-            display: block;
-        }
-
-        .logo-link {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-        }
-
-        .nav-tabs {
-            display: flex;
-            gap: 2rem;
-            flex: 1;
-            justify-content: center;
-        }
-
-        .nav-tab {
-            color: #a0a0a0;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .nav-tab:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .nav-tab.active {
-            color: #4ecdc4;
-        }
-
-        .nav-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1rem;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            border-radius: 2px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .user-profile:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
-
-        .user-name {
-            font-weight: 600;
-            color: #e0e0e0;
-        }
-
-        /* Profile Dropdown */
-        .profile-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 0.5rem;
-            background: rgba(26, 26, 46, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 0.5rem;
-            min-width: 200px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s ease;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .profile-dropdown.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            color: #e0e0e0;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .dropdown-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .dropdown-item.admin {
-            color: #4ecdc4;
-        }
-
-        .dropdown-divider {
-            height: 1px;
-            background: rgba(255, 255, 255, 0.1);
-            margin: 0.5rem 0;
-        }
-
-        .dropdown-icon {
-            width: 20px;
-            text-align: center;
-        }
-
-        /* Main Content */
         .container {
-            max-width: 1400px;
+            max-width: 1300px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 2rem 1.75rem;
         }
 
         .page-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.4rem;
             text-align: center;
         }
 
         .page-subtitle {
             text-align: center;
-            color: #a0a0a0;
-            font-size: 1.1rem;
-            margin-bottom: 3rem;
+            color: var(--text-2);
+            font-size: 0.82rem;
+            margin-bottom: 2rem;
         }
 
-        /* My Leagues Section */
-        .section {
-            margin-bottom: 3rem;
-        }
+        .section { margin-bottom: 2.5rem; }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .section-title {
-            font-size: 1.8rem;
+            font-size: 1rem;
             font-weight: 700;
-            color: white;
+            color: var(--text);
         }
 
         .my-leagues-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem;
-            min-height: 200px;
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.25rem;
+            min-height: 100px;
         }
 
         .leagues-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
         }
 
         .league-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
+            background: var(--s2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.25rem;
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
+            transition: background 0.1s, border-color 0.1s;
         }
 
-        .league-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #4ecdc4, #45b7d1, #6c5ce7);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .league-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .league-card:hover::before {
-            transform: scaleX(1);
-        }
+        .league-card:hover { background: var(--s3); border-color: var(--teal-dim); }
 
         .league-name {
-            font-size: 1.3rem;
+            font-size: 0.95rem;
             font-weight: 700;
-            color: white;
+            color: var(--text);
             margin-bottom: 0.5rem;
         }
 
@@ -279,265 +80,178 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .league-members {
-            color: #a0a0a0;
-            font-size: 0.9rem;
+            color: var(--text-2);
+            font-size: 0.8rem;
         }
 
         .league-rank {
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
+            background: var(--teal-bg);
+            color: var(--teal);
+            padding: 0.15rem 0.6rem;
+            border-radius: 3px;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
+            border: 1px solid var(--teal-dim);
         }
 
         .league-stats {
             display: flex;
-            gap: 2rem;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 1.5rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
         }
 
-        .stat {
-            text-align: center;
-            flex: 1;
-        }
+        .stat { text-align: center; flex: 1; }
 
         .stat-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #4ecdc4;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--teal);
+            font-family: var(--mono);
         }
 
         .stat-label {
-            font-size: 0.8rem;
-            color: #a0a0a0;
-            margin-top: 0.25rem;
+            font-size: 0.72rem;
+            color: var(--text-2);
+            margin-top: 0.15rem;
         }
 
         .no-leagues {
             text-align: center;
-            padding: 3rem;
-            color: #666;
-        }
-
-        .no-leagues h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: #888;
-        }
-
-        .no-leagues p {
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-        }
-
-        .no-leagues .btn {
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            color: white;
-            border: none;
-            padding: 0.875rem 2rem;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .no-leagues .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
-        }
-
-        /* Join/Create Section */
-        .join-section {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
             padding: 2rem;
+            color: var(--text-2);
+        }
+
+        .no-leagues h3 { font-size: 1rem; margin-bottom: 0.5rem; color: var(--text); }
+        .no-leagues p { font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+        .join-section {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.25rem;
         }
 
         .tabs {
             display: flex;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 0.25rem;
-            margin-bottom: 2rem;
+            background: var(--s3);
+            border-radius: 4px;
+            padding: 0.2rem;
+            margin-bottom: 1.5rem;
+            gap: 0.2rem;
         }
 
         .tab {
             flex: 1;
-            padding: 0.75rem 1.5rem;
+            padding: 0.5rem 1rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
             font-weight: 600;
             border: none;
             background: transparent;
-            color: #a0a0a0;
-            border-radius: 10px;
-            font-size: 1rem;
+            color: var(--text-2);
+            border-radius: 3px;
+            font-size: 0.8rem;
+            transition: color 0.1s, background 0.1s;
+            font-family: var(--body);
         }
 
-        .tab:hover {
-            color: white;
-        }
+        .tab:hover { color: var(--text); }
+        .tab.active { background: var(--s1); color: var(--text); }
 
-        .tab.active {
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            color: white;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Available Leagues */
-        .available-leagues {
-            display: grid;
-            gap: 1rem;
-        }
+        .available-leagues { display: grid; gap: 0.75rem; }
 
         .available-league-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1.5rem;
+            background: var(--s2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.3s ease;
+            gap: 1rem;
+            transition: background 0.1s;
         }
 
-        .available-league-card:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateX(4px);
-        }
+        .available-league-card:hover { background: var(--s3); }
 
-        .available-league-info {
-            flex: 1;
-        }
+        .available-league-info { flex: 1; }
 
         .available-league-name {
-            font-size: 1.2rem;
+            font-size: 0.9rem;
             font-weight: 700;
-            color: white;
-            margin-bottom: 0.5rem;
+            color: var(--text);
+            margin-bottom: 0.3rem;
         }
 
         .global-badge {
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-            color: #000;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            background: var(--teal-bg);
+            color: var(--teal);
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.68rem;
             font-weight: 700;
-            margin-left: 0.5rem;
+            margin-left: 0.4rem;
             display: inline-block;
+            border: 1px solid var(--teal-dim);
         }
 
         .available-league-details {
-            color: #a0a0a0;
-            font-size: 0.9rem;
+            color: var(--text-2);
+            font-size: 0.78rem;
         }
 
         .join-controls {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
+            flex-shrink: 0;
         }
 
         .password-input {
-            padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: white;
-            font-size: 0.9rem;
-            width: 150px;
-            transition: all 0.2s ease;
+            padding: 0.45rem 0.75rem;
+            background: var(--s3);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-size: 0.8rem;
+            width: 130px;
+            transition: border-color 0.1s;
+            font-family: var(--body);
         }
 
-        .password-input:focus {
-            outline: none;
-            border-color: #4ecdc4;
-            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
-        }
+        .password-input:focus { outline: none; border-color: var(--teal-dim); }
 
-        .btn {
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            color: white;
-            border: none;
-            padding: 0.5rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.3);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
-        }
-
-        /* Create League Form */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
+        .form-group { margin-bottom: 1.25rem; }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
             font-weight: 600;
-            color: #e0e0e0;
+            color: var(--text);
+            font-size: 0.82rem;
         }
 
         .form-input {
             width: 100%;
-            padding: 0.875rem;
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            color: white;
-            font-size: 1rem;
-            transition: all 0.2s ease;
+            padding: 0.6rem 0.75rem;
+            background: var(--s3);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-size: 0.82rem;
+            transition: border-color 0.1s;
+            font-family: var(--body);
         }
 
-        .form-input:focus {
-            outline: none;
-            border-color: #4ecdc4;
-            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
-            background: rgba(255, 255, 255, 0.12);
-        }
+        .form-input:focus { outline: none; border-color: var(--teal-dim); }
 
         .form-row {
             display: grid;
@@ -546,236 +260,89 @@
         }
 
         .form-help {
-            font-size: 0.85rem;
-            color: #a0a0a0;
-            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-2);
+            margin-top: 0.4rem;
         }
 
-        .create-btn {
-            width: 100%;
-            padding: 1rem;
-            font-size: 1.1rem;
-            margin-top: 2rem;
-        }
+        .create-btn { width: 100%; margin-top: 1.5rem; }
 
-        /* Loading State */
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: #666;
-        }
-
-        /* Alert Styles */
         .alert {
             position: fixed;
-            top: 100px;
+            top: 72px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(26, 26, 46, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
-            min-width: 300px;
-            max-width: 500px;
+            background: var(--s2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem 1.25rem;
+            min-width: 260px;
+            max-width: 460px;
             z-index: 1001;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: opacity 0.15s, visibility 0.15s;
         }
 
-        .alert.show {
-            opacity: 1;
-            visibility: visible;
-        }
+        .alert.show { opacity: 1; visibility: visible; }
+        .alert.success { border-color: var(--teal-dim); background: var(--teal-bg); }
+        .alert.error { border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.07); }
 
-        .alert.success {
-            border-color: rgba(78, 205, 196, 0.3);
-            background: rgba(78, 205, 196, 0.1);
-        }
-
-        .alert.error {
-            border-color: rgba(255, 107, 107, 0.3);
-            background: rgba(255, 107, 107, 0.1);
-        }
-
-        .alert-content {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .alert-icon {
-            font-size: 1.5rem;
-        }
-
-        .alert.success .alert-icon {
-            color: #4ecdc4;
-        }
-
-        .alert.error .alert-icon {
-            color: #ff6b6b;
-        }
-
-        .alert-message {
-            flex: 1;
-            color: white;
-        }
-
-        .alert-close {
-            background: none;
-            border: none;
-            color: #666;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-
-        .alert-close:hover {
-            color: white;
-        }
+        .alert-content { display: flex; align-items: center; gap: 0.75rem; }
+        .alert-icon { font-size: 1rem; }
+        .alert.success .alert-icon { color: var(--teal); }
+        .alert.error .alert-icon { color: #ff6b6b; }
+        .alert-message { flex: 1; color: var(--text); font-size: 0.82rem; }
+        .alert-close { background: none; border: none; color: var(--text-2); font-size: 1rem; cursor: pointer; transition: color 0.1s; }
+        .alert-close:hover { color: var(--text); }
 
         @media (max-width: 768px) {
-            .nav-tabs {
-                gap: 1rem;
-                font-size: 0.9rem;
-            }
-
-            .header-content {
-                padding: 1rem;
-            }
-
-            .user-name {
-                display: none;
-            }
-
-            .leagues-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .league-stats {
-                gap: 1rem;
-            }
+            .leagues-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .league-stats { gap: 0.75rem; }
         }
-		/* Fix white bars in landscape */
-html {
-  background-color: #0f0f23;
-}
 
-@media (max-width: 1024px) and (orientation: landscape) {
-  .header-content,
-  .main-content {
-    max-width: none !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-      .user-name {
-        display: none;
-    }
-}
-@media (max-width: 600px) and (orientation: portrait) {
-  .logo-link {
-    display: none;
-  }
-  .nav-tabs {
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    flex-wrap: nowrap;
-    scrollbar-width: thin; /* Firefox */
-  }
-  .nav-tabs::-webkit-scrollbar {
-    height: 6px; /* Chrome/Safari scrollbar height */
-  }
-  .nav-tabs::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.3);
-    border-radius: 4px;
-  }
-  .nav-tab {
-    flex: 0 0 auto; /* prevent shrinking */
-  }
-  .main-content {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-    max-width: 100% !important;
-    margin: 0 !important;
-    box-sizing: border-box;
-  }
-  .leaderboard-card,
-  .leagues-container,
-  .reminder-card {
-    width: 100% !important;
-    margin: 0 !important;
-    box-sizing: border-box;
-  }
-}
-@media (max-width: 600px) and (orientation: portrait) {
-  .available-leagues {
-    grid-template-columns: 1fr;
-  }
-  .available-league-card {
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100% !important;
-    box-sizing: border-box;
-  }
-  .join-controls {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .join-controls .btn,
-  .join-controls .password-input {
-    width: 100%;
-  }
-}
-
+        @media (max-width: 600px) {
+            .container { padding: 1rem; }
+            .available-league-card { flex-direction: column; align-items: flex-start; }
+            .join-controls { width: 100%; flex-direction: column; align-items: stretch; }
+            .join-controls .btn, .join-controls .password-input { width: 100%; }
+        }
     </style>
-	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 </head>
 <body>
     <!-- Header -->
     <header class="header">
-        <div class="header-content">
+        <div class="header-inner">
             <a href="/dashboard.html" class="logo-link">
-                <img src="images/logo.png" alt="Fantasy Marching" class="logo">
+                <img src="images/logo.png" alt="Fantasy Marching" class="logo-img">
             </a>
-            
-            <nav class="nav-tabs">
-                <a href="/dashboard.html" class="nav-tab">Dashboard</a>
-                <a href="/predictions-dashboard.html" class="nav-tab">Predictions</a>
-                <a href="/league.html" class="nav-tab active">League</a>
-                <a href="/information.html" class="nav-tab">Information</a>
+            <nav class="nav">
+                <a href="/dashboard.html">Dashboard</a>
+                <a href="/predictions-dashboard.html">Predictions</a>
+                <a href="/league.html" class="active">League</a>
+                <a href="/information.html">Information</a>
             </nav>
-            
-            <div class="user-profile" onclick="toggleUserMenu()">
-                <div class="user-avatar" id="userAvatar">
-                    <!-- Will be populated with user initial or image -->
-                </div>
-                <span class="user-name" id="userName">Loading...</span>
-                
-                <!-- Profile Dropdown -->
-                <div class="profile-dropdown" id="profileDropdown">
-                    <a href="/profile.html" class="dropdown-item">
-                        <span class="dropdown-icon">👤</span>
-                        <span>Profile</span>
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
-                        <span class="dropdown-icon">🛡️</span>
-                        <span>Admin Panel</span>
-                    </a>
-                    <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
-                    <div class="dropdown-item" onclick="logout()">
-                        <span class="dropdown-icon">🚪</span>
-                        <span>Logout</span>
+            <div class="header-right">
+                <div class="user-profile" onclick="toggleUserMenu()">
+                    <div class="user-avatar" id="userAvatar"></div>
+                    <span class="user-name" id="userName">Loading...</span>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <a href="/profile.html" class="dropdown-item">
+                            <span class="dropdown-icon">👤</span>
+                            <span>Profile</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
+                            <span class="dropdown-icon">🛡️</span>
+                            <span>Admin Panel</span>
+                        </a>
+                        <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
+                        <div class="dropdown-item" onclick="logout()">
+                            <span class="dropdown-icon">🚪</span>
+                            <span>Logout</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -792,7 +359,7 @@ html {
             <div class="section-header">
                 <h2 class="section-title">My Leagues</h2>
             </div>
-            
+
             <div class="my-leagues-container">
                 <div id="myLeaguesContent">
                     <div class="loading">Loading your leagues...</div>
@@ -805,7 +372,7 @@ html {
             <div class="section-header">
                 <h2 class="section-title">Join or Create a League</h2>
             </div>
-            
+
             <div class="join-section">
                 <div class="tabs">
                     <button class="tab active" onclick="switchTab('join')">Join a League</button>
@@ -815,9 +382,9 @@ html {
                 <!-- Join League Tab -->
                 <div id="join-content" class="tab-content active">
                     <div class="search-section" style="margin-bottom: 1.5rem;">
-                        <input type="text" 
-                               id="leagueSearch" 
-                               class="form-input" 
+                        <input type="text"
+                               id="leagueSearch"
+                               class="form-input"
                                placeholder="Search by league name or creator..."
                                onkeyup="searchLeagues()">
                     </div>
@@ -904,14 +471,14 @@ async function initializePage() {
                 .select('username, avatar_url, is_admin')
                 .eq('id', currentUser.id)
                 .single();
-            
+
             if (profile) {
                 document.getElementById('userName').textContent = profile.username || currentUser.email.split('@')[0];
-                
+
                 // Set avatar (initial letter for now)
                 const initial = (profile.username || currentUser.email)[0].toUpperCase();
                 document.getElementById('userAvatar').textContent = initial;
-                
+
                 // Check admin status
                 isAdmin = profile.is_admin || false;
                 if (isAdmin) {
@@ -925,7 +492,7 @@ async function initializePage() {
         function toggleUserMenu() {
             const dropdown = document.getElementById('profileDropdown');
             dropdown.classList.toggle('show');
-            
+
             // Close dropdown when clicking outside
             document.addEventListener('click', function closeDropdown(e) {
                 if (!e.target.closest('.user-profile')) {
@@ -991,7 +558,7 @@ async function initializePage() {
 // Display user's leagues
 async function displayMyLeagues() {
     const container = document.getElementById('myLeaguesContent');
-    
+
     if (myLeagues.length === 0) {
         container.innerHTML = `
             <div class="no-leagues">
@@ -1002,7 +569,7 @@ async function displayMyLeagues() {
         `;
         return;
     }
-    
+
     // Get member counts for each league
     const leagueIds = myLeagues.map(l => l.leagues.id);
     const { data: memberCounts } = await supabaseClient
@@ -1010,30 +577,30 @@ async function displayMyLeagues() {
         .select('league_id')
         .in('league_id', leagueIds)
         .eq('status', 'active');
-    
+
     const memberCountMap = {};
     if (memberCounts) {
         memberCounts.forEach(m => {
             memberCountMap[m.league_id] = (memberCountMap[m.league_id] || 0) + 1;
         });
     }
-    
+
     // Get real stats for each league
     const leagueCardsPromises = myLeagues.map(async (item) => {
         const league = item.leagues;
         const memberCount = memberCountMap[league.id] || 1;
         const isOwner = item.role === 'owner';
-        
+
         // Check if draft has happened
         const { data: draftData } = await supabaseClient
             .from('league_drafts')
             .select('status')
             .eq('league_id', league.id)
             .maybeSingle();
-        
+
         let statsHtml = '';
-        let rankDisplay = isOwner ? '<div class="league-rank" style="background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #000;">Owner</div>' : '<div class="league-rank">Member</div>';
-        
+        let rankDisplay = isOwner ? '<div class="league-rank" style="background: var(--teal-bg); color: var(--teal); border-color: var(--teal-dim);">Owner</div>' : '<div class="league-rank">Member</div>';
+
         if (!draftData || draftData.status !== 'completed') {
             // Pre-draft - no stats yet
             statsHtml = `
@@ -1058,7 +625,7 @@ async function displayMyLeagues() {
                 .eq('league_id', league.id)
                 .eq('user_id', currentUser.id)
                 .maybeSingle();
-            
+
             if (team) {
                 // Get matchups
                 const { data: matchups } = await supabaseClient
@@ -1066,9 +633,9 @@ async function displayMyLeagues() {
                     .select('*')
                     .eq('league_id', league.id)
                     .or(`team1_id.eq.${team.id},team2_id.eq.${team.id}`);
-                
+
                 let wins = 0, losses = 0, totalScore = 0, gamesPlayed = 0;
-                
+
                 if (matchups) {
                     matchups.forEach(matchup => {
                         if (matchup.winner_id) {
@@ -1078,7 +645,7 @@ async function displayMyLeagues() {
                             } else {
                                 losses++;
                             }
-                            
+
                             if (matchup.team1_id === team.id) {
                                 totalScore += matchup.team1_score || 0;
                             } else {
@@ -1087,26 +654,26 @@ async function displayMyLeagues() {
                         }
                     });
                 }
-                
+
                 // Get rank
                 const { data: allTeams } = await supabaseClient
                     .from('league_teams')
                     .select('id')
                     .eq('league_id', league.id);
-                
+
                 const { data: allMatchups } = await supabaseClient
                     .from('league_matchups')
                     .select('*')
                     .eq('league_id', league.id)
                     .not('winner_id', 'is', null);
-                
+
                 const teamRecords = [];
                 if (allTeams) {
                     for (const t of allTeams) {
                         let teamWins = 0;
                         let teamGames = 0;
                         let teamTotal = 0;
-                        
+
                         allMatchups?.forEach(m => {
                             if (m.team1_id === t.id || m.team2_id === t.id) {
                                 teamGames++;
@@ -1118,7 +685,7 @@ async function displayMyLeagues() {
                                 }
                             }
                         });
-                        
+
                         teamRecords.push({
                             id: t.id,
                             wins: teamWins,
@@ -1127,21 +694,21 @@ async function displayMyLeagues() {
                         });
                     }
                 }
-                
+
                 teamRecords.sort((a, b) => {
                     if (b.winPct !== a.winPct) return b.winPct - a.winPct;
                     return b.avgScore - a.avgScore;
                 });
-                
+
                 const rank = teamRecords.findIndex(t => t.id === team.id) + 1;
                 const position = rank === 1 ? '1st' : rank === 2 ? '2nd' : rank === 3 ? '3rd' : `${rank}th`;
                 const avgScore = gamesPlayed > 0 ? (totalScore / gamesPlayed).toFixed(1) : '0.0';
-                
+
                 // Update rank display to show actual rank
                 if (!isOwner) {
                     rankDisplay = `<div class="league-rank">Rank #${rank}</div>`;
                 }
-                
+
                 statsHtml = `
                     <div class="stat">
                         <div class="stat-value">${wins}-${losses}</div>
@@ -1174,7 +741,7 @@ async function displayMyLeagues() {
                 `;
             }
         }
-        
+
         return `
             <div class="league-card" onclick="goToLeague('${league.id}')">
                 <div class="league-name">
@@ -1191,10 +758,10 @@ async function displayMyLeagues() {
             </div>
         `;
     });
-    
+
     // Wait for all league cards to be generated
     const leagueCards = await Promise.all(leagueCardsPromises);
-    
+
     container.innerHTML = `
         <div class="leagues-grid">
             ${leagueCards.join('')}
@@ -1225,7 +792,7 @@ async function loadAvailableLeagues() {
         .from('league_drafts')
         .select('league_id, status')
         .in('league_id', leagueIds);
-    
+
     // Create a map of league_id to draft status
     const draftStatusMap = {};
     drafts?.forEach(d => {
@@ -1248,7 +815,7 @@ console.log("draftStatusMap values", draftStatusMap);
 
     // Filter out leagues user is already in AND leagues with started/completed drafts
     const myLeagueIds = myLeagues.map(l => l.leagues.id);
-	
+
 availableLeagues = leaguesWithProfiles.filter(l => {
     const status = draftStatusMap[l.id];
     console.log(`filtering: league ${l.id} draft status=${status}`);
@@ -1265,21 +832,21 @@ availableLeagues = leaguesWithProfiles.filter(l => {
         // Display available leagues
         async function displayAvailableLeagues(searchTerm = '') {
             const container = document.getElementById('availableLeagues');
-            
+
             // Filter leagues based on search term
             let filteredLeagues = availableLeagues;
             if (searchTerm) {
                 const search = searchTerm.toLowerCase();
-                filteredLeagues = availableLeagues.filter(league => 
+                filteredLeagues = availableLeagues.filter(league =>
                     league.name.toLowerCase().includes(search) ||
                     (league.profiles?.username || '').toLowerCase().includes(search)
                 );
             }
-            
+
             if (filteredLeagues.length === 0) {
-                container.innerHTML = searchTerm 
-                    ? '<p style="text-align: center; color: #666;">No leagues found matching your search</p>'
-                    : '<p style="text-align: center; color: #666;">No available leagues at the moment</p>';
+                container.innerHTML = searchTerm
+                    ? '<p style="text-align: center; color: var(--text-2);">No leagues found matching your search</p>'
+                    : '<p style="text-align: center; color: var(--text-2);">No available leagues at the moment</p>';
                 return;
             }
 
@@ -1302,7 +869,7 @@ availableLeagues = leaguesWithProfiles.filter(l => {
                 const memberCount = memberCountMap[league.id] || 0;
                 const isFull = memberCount >= league.max_members;
                 const creatorName = league.is_global ? 'System' : (league.profiles?.username || 'Unknown');
-                
+
                 return `
                     <div class="available-league-card">
                         <div class="available-league-info">
@@ -1317,12 +884,12 @@ availableLeagues = leaguesWithProfiles.filter(l => {
                         </div>
                         <div class="join-controls">
                             ${league.password && !league.is_global ? `
-                                <input type="password" 
-                                       class="password-input" 
-                                       id="password_${league.id}" 
+                                <input type="password"
+                                       class="password-input"
+                                       id="password_${league.id}"
                                        placeholder="Enter password">
                             ` : ''}
-                            ${isFull ? 
+                            ${isFull ?
                                 '<button class="btn" disabled>League Full</button>' :
                                 `<button class="btn" onclick="joinLeague('${league.id}', ${!!league.password})">
                                     ${league.password && !league.is_global ? 'Join with Password' : 'Join League'}
@@ -1355,29 +922,29 @@ if (banCheck) {
     return;
 }
             let password = null;
-            
+
             if (requiresPassword) {
                 const passwordInput = document.getElementById(`password_${leagueId}`);
                 password = passwordInput.value.trim();
-                
+
                 if (!password) {
                     showAlert('Please enter the league password', 'error');
                     return;
                 }
-                
+
                 // Verify password
                 const { data: league } = await supabaseClient
                     .from('leagues')
                     .select('password')
                     .eq('id', leagueId)
                     .single();
-                
+
                 if (league.password !== password) {
                     showAlert('Incorrect password', 'error');
                     return;
                 }
             }
-            
+
             // Join the league
 			// Validate not in more than 20 leagues
 if (myLeagues.length >= 20) {
@@ -1392,7 +959,7 @@ if (myLeagues.length >= 20) {
                     role: 'member',
                     status: 'active'
                 });
-            
+
             if (error) {
                 if (error.code === '23505') { // Unique violation
                     showAlert('You are already in this league', 'error');
@@ -1401,9 +968,9 @@ if (myLeagues.length >= 20) {
                 }
                 return;
             }
-            
+
             showAlert('Successfully joined the league!', 'success');
-            
+
             // Reload leagues
             await loadMyLeagues();
             await loadAvailableLeagues();
@@ -1418,7 +985,7 @@ if (myLeagues.length >= 20) {
                     user_id: currentUser.id,
                     status: 'pending'
                 });
-            
+
             if (error) {
                 if (error.code === '23505') { // Unique violation
                     showAlert('You have already requested to join this league', 'error');
@@ -1427,14 +994,14 @@ if (myLeagues.length >= 20) {
                 }
                 return;
             }
-            
+
             showAlert('Join request sent! The league owner will review your request.', 'success');
         }
 
         // Create a new league
         async function createLeague(e) {
             e.preventDefault();
-            
+
             const name = document.getElementById('leagueName').value.trim();
             const password = document.getElementById('leaguePassword').value.trim() || null;
             const maxMembers = parseInt(document.getElementById('maxMembers').value);
@@ -1455,13 +1022,13 @@ if (myLeagues.length >= 20) {
                 showAlert('Max members must be an even number', 'error');
                 return;
             }
-            
+
             // Validate max members range
             if (maxMembers < 2 || maxMembers > 10) {
                 showAlert('Max members must be between 2 and 10', 'error');
                 return;
             }
-            
+
             // Create the league using the function
             const { data, error } = await supabaseClient.rpc('create_league_with_owner', {
                 p_name: name,
@@ -1470,21 +1037,21 @@ if (myLeagues.length >= 20) {
                 p_max_members: maxMembers,
                 p_draft_time: draftTime
             });
-            
+
             if (error) {
                 showAlert('Error creating league: ' + error.message, 'error');
                 return;
             }
-            
+
             showAlert('League created successfully!', 'success');
             document.getElementById('createLeagueForm').reset();
-            
+
             // Add small delay before reloading to ensure transaction commits
             setTimeout(async () => {
                 await loadMyLeagues();
                 await loadAvailableLeagues();
             }, 500);
-            
+
             // Switch to join tab
             switchTab('join');
         }
@@ -1501,7 +1068,7 @@ if (myLeagues.length >= 20) {
                 tab.classList.remove('active');
             });
             event.target.classList.add('active');
-            
+
             // Update tab content
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
@@ -1520,16 +1087,16 @@ if (myLeagues.length >= 20) {
             const alert = document.getElementById('alertContainer');
             const icon = alert.querySelector('.alert-icon');
             const messageEl = alert.querySelector('.alert-message');
-            
+
             // Set type
             alert.className = `alert ${type} show`;
-            
+
             // Set icon
             icon.textContent = type === 'success' ? '✓' : '⚠';
-            
+
             // Set message
             messageEl.textContent = message;
-            
+
             // Auto hide after 5 seconds
             setTimeout(() => {
                 hideAlert();
@@ -1543,7 +1110,7 @@ if (myLeagues.length >= 20) {
         // Initialize on load
         document.addEventListener('DOMContentLoaded', async () => {
             await initializePage();
-            
+
             // Add form submit handler
             document.getElementById('createLeagueForm').addEventListener('submit', createLeague);
         });

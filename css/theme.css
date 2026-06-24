@@ -1,0 +1,329 @@
+/* Fantasy Marching – shared design tokens, base styles, and header.
+   Loaded by every page. Page-specific styles are inline per page. */
+
+:root {
+    --bg:       #0D0E18;
+    --s1:       #13152A;
+    --s2:       #191C33;
+    --s3:       #1E2140;
+    --border:   #222540;
+
+    --teal:     #4ECDC4;
+    --teal-dim: #1E4A48;
+    --teal-bg:  rgba(78,205,196,0.07);
+    --purple:   #7060D8;
+    --purple-dim:#2E2660;
+    --purple-bg:rgba(112,96,216,0.08);
+
+    --text:     #DCE0F0;
+    --text-2:   #636880;
+    --text-3:   #343750;
+
+    --mono: 'JetBrains Mono', monospace;
+    --body: 'Inter', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { background: var(--bg); }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── HEADER ── */
+.header {
+    background: var(--s1);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-inner {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 1.75rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.logo-img {
+    height: 38px;
+    width: auto;
+}
+
+.nav {
+    display: flex;
+    gap: 0.125rem;
+    flex: 1;
+}
+
+.nav a {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-2);
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    transition: color 0.1s, background 0.1s;
+    white-space: nowrap;
+}
+
+.nav a:hover { color: var(--text); background: var(--s3); }
+.nav a.active { color: var(--teal); }
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-profile {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--s3);
+    border: 1.5px solid var(--teal-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--teal);
+    cursor: pointer;
+}
+
+.user-name { display: none; }
+
+.profile-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.25rem;
+    min-width: 180px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity 0.1s, transform 0.1s, visibility 0.1s;
+    z-index: 200;
+}
+
+.profile-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 4px;
+    color: var(--text-2);
+    text-decoration: none;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+}
+
+.dropdown-item:hover { background: var(--s3); color: var(--text); }
+.dropdown-item.admin { color: var(--teal); }
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0.25rem 0;
+}
+
+.dropdown-icon { width: 16px; text-align: center; }
+
+/* ── BUTTONS ── */
+.btn {
+    background: var(--teal);
+    color: var(--bg);
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.1s;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.82rem;
+    font-family: var(--body);
+}
+
+.btn:hover { opacity: 0.88; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary {
+    background: var(--s3);
+    color: var(--text-2);
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--s2);
+    color: var(--text);
+    box-shadow: none;
+    opacity: 1;
+}
+
+/* ── LOADING / SKELETON ── */
+.loading {
+    text-align: center;
+    color: var(--text-3);
+    padding: 1.5rem;
+    font-size: 0.78rem;
+}
+
+.skeleton {
+    background: var(--s2);
+    border-radius: 4px;
+    height: 48px;
+    margin-bottom: 0.5rem;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.5; }
+}
+
+/* ── MODAL ── */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+}
+
+.modal-overlay.show { display: flex; }
+
+.modal {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.75rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header { margin-bottom: 1.25rem; }
+
+.modal-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--teal);
+    margin-bottom: 0.4rem;
+}
+
+.modal-message {
+    color: var(--text-2);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: var(--s3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-size: 0.82rem;
+    margin: 0.75rem 0;
+    font-family: var(--body);
+    transition: border-color 0.1s;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: var(--teal-dim);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.modal-btn {
+    padding: 0.5rem 1.25rem;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-size: 0.82rem;
+    font-family: var(--body);
+    transition: opacity 0.1s;
+}
+
+.modal-btn-primary { background: var(--teal); color: var(--bg); }
+.modal-btn-primary:hover { opacity: 0.88; }
+
+.modal-btn-secondary {
+    background: var(--s3);
+    color: var(--text-2);
+    border: 1px solid var(--border);
+}
+
+.modal-btn-secondary:hover { background: var(--s2); color: var(--text); }
+
+/* ── RESPONSIVE HEADER ── */
+@media (max-width: 1024px) and (orientation: landscape) {
+    .header-inner {
+        max-width: none;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .logo-link { display: none; }
+
+    .nav {
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        flex-wrap: nowrap;
+        scrollbar-width: thin;
+    }
+
+    .nav::-webkit-scrollbar { height: 4px; }
+    .nav::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
+}
