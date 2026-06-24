@@ -5,138 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fantasy Marching - Dashboard</title>
 	<link rel="icon" href="/images/favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg:       #0D0E18;
+            --s1:       #13152A;
+            --s2:       #191C33;
+            --s3:       #1E2140;
+            --border:   #222540;
+
+            --teal:     #4ECDC4;
+            --teal-dim: #1E4A48;
+            --teal-bg:  rgba(78,205,196,0.07);
+            --purple:   #7060D8;
+            --purple-dim:#2E2660;
+            --purple-bg:rgba(112,96,216,0.08);
+
+            --text:     #DCE0F0;
+            --text-2:   #636880;
+            --text-3:   #343750;
+
+            --mono: 'JetBrains Mono', monospace;
+            --body: 'Inter', sans-serif;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { background: var(--bg); }
 
         body {
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-            color: white;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
             min-height: 100vh;
-            overflow-x: hidden;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Header Styles */
+        /* ── HEADER ── */
         .header {
-            background: rgba(15, 15, 35, 0.98);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--s1);
+            border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 100;
         }
 
-        .header-content {
-            max-width: 1400px;
+        .header-inner {
+            max-width: 1300px;
             margin: 0 auto;
-            padding: 1rem 2rem;
+            padding: 0 1.75rem;
+            height: 56px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-        }
-
-        .logo {
-            height: 75px;
-            width: auto;
-            display: block;
+            gap: 2rem;
         }
 
         .logo-link {
             display: flex;
             align-items: center;
             text-decoration: none;
+            flex-shrink: 0;
         }
 
-        .nav-tabs {
+        .logo-img {
+            height: 38px;
+            width: auto;
+        }
+
+        .nav {
             display: flex;
-            gap: 2rem;
+            gap: 0.125rem;
             flex: 1;
-            justify-content: center;
         }
 
-        .nav-tab {
-            color: #a0a0a0;
+        .nav a {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-2);
             text-decoration: none;
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            position: relative;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            transition: color 0.1s, background 0.1s;
+            white-space: nowrap;
         }
 
-        .nav-tab:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.05);
-        }
+        .nav a:hover { color: var(--text); background: var(--s3); }
+        .nav a.active { color: var(--teal); }
 
-        .nav-tab.active {
-            color: #4ecdc4;
-        }
-
-        .nav-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1rem;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            border-radius: 2px;
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
         .user-profile {
+            position: relative;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 1rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .user-profile:hover {
-            background: rgba(255, 255, 255, 0.05);
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
+            background: var(--s3);
+            border: 1.5px solid var(--teal-dim);
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 0.75rem;
             font-weight: 700;
-            font-size: 1.2rem;
+            color: var(--teal);
+            cursor: pointer;
         }
 
-        .user-name {
-            font-weight: 600;
-            color: #e0e0e0;
-        }
+        .user-name { display: none; }
 
-        /* Profile Dropdown */
         .profile-dropdown {
             position: absolute;
-            top: 100%;
+            top: calc(100% + 0.5rem);
             right: 0;
-            margin-top: 0.5rem;
-            background: rgba(26, 26, 46, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 0.5rem;
-            min-width: 200px;
+            background: var(--s2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.25rem;
+            min-width: 180px;
             opacity: 0;
             visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s ease;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(-4px);
+            transition: opacity 0.1s, transform 0.1s, visibility 0.1s;
+            z-index: 200;
         }
 
         .profile-dropdown.show {
@@ -148,627 +151,470 @@
         .dropdown-item {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            color: #e0e0e0;
+            gap: 0.6rem;
+            padding: 0.55rem 0.75rem;
+            border-radius: 4px;
+            color: var(--text-2);
             text-decoration: none;
-            transition: all 0.2s ease;
+            font-size: 0.8rem;
             cursor: pointer;
+            transition: background 0.1s, color 0.1s;
         }
 
-        .dropdown-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .dropdown-item.admin {
-            color: #4ecdc4;
-        }
+        .dropdown-item:hover { background: var(--s3); color: var(--text); }
+        .dropdown-item.admin { color: var(--teal); }
 
         .dropdown-divider {
             height: 1px;
-            background: rgba(255, 255, 255, 0.1);
-            margin: 0.5rem 0;
+            background: var(--border);
+            margin: 0.25rem 0;
         }
 
-        .dropdown-icon {
-            width: 20px;
-            text-align: center;
-        }
+        .dropdown-icon { width: 16px; text-align: center; }
 
-        /* Main Content */
+        /* ── MAIN LAYOUT ── */
         .main-content {
-            max-width: 1400px;
+            max-width: 1300px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 1.75rem;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 2rem;
+            gap: 1.25rem;
         }
 
-        .full-width {
-            grid-column: 1 / -1;
-        }
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
+        .full-width        { grid-column: 1 / -1; }
+        .reminders-section { grid-column: 1 / -1; }
+        .leagues-section   { grid-column: 1 / -1; }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
-        }
-        .modal-btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .modal-btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-  /* Fix button overflow */
-  #matchupContainer .btn-secondary {
-    width: calc(100% - 2rem) !important;
-    max-width: none !important;
-    margin: 1rem auto 0 !important;
-    display: block !important;
-  }
-        /* Reminder Cards */
-        .reminders-section {
-            grid-column: 1 / -1;
-        }
-
+        /* ── SECTION TITLES ── */
         .section-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: white;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        .reminders-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
-            margin-bottom: 3rem;
-        }
-
-        .reminder-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .reminder-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            border-color: rgba(78, 205, 196, 0.3);
-        }
-
-        .reminder-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .reminder-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: white;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        .reminder-text {
-            color: #a0a0a0;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        .reminder-action {
-            color: #4ecdc4;
+            font-size: 0.72rem;
             font-weight: 600;
-            font-size: 0.9rem;
-            margin-top: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-3);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
         }
 
-        /* Leaderboard Styles */
+        /* ── CARDS ── */
         .leaderboard-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem;
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
             height: fit-content;
         }
 
         .leaderboard-title {
-            font-size: 1.4rem;
+            font-size: 0.82rem;
             font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: #4ecdc4;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text);
+            letter-spacing: 0.01em;
+            padding: 0.8rem 1.25rem;
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            text-transform: none;
         }
 
-        .title-icon {
-            font-size: 1.6rem;
-            filter: saturate(0.8) hue-rotate(180deg) brightness(1.2);
-        }
+        .title-icon { font-size: 1rem; }
 
+        /* ── LEADERBOARD ENTRIES ── */
         .leaderboard-entry {
             display: flex;
             align-items: center;
-            padding: 0.875rem;
-            margin-bottom: 0.5rem;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            background: rgba(255, 255, 255, 0.03);
+            padding: 0.65rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.1s;
         }
 
-        .leaderboard-entry:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateX(4px);
-        }
+        .leaderboard-entry:last-of-type { border-bottom: none; }
+        .leaderboard-entry:hover { background: var(--s2); }
 
         .rank {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            margin-right: 1rem;
-            font-size: 0.9rem;
+            width: 2rem;
+            text-align: center;
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--text-3);
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+            border-radius: 0;
+            background: transparent;
+            height: auto;
         }
 
-        .rank-1 {
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-            color: #000;
-        }
-
-        .rank-2 {
-            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
-            color: #000;
-        }
-
-        .rank-3 {
-            background: linear-gradient(135deg, #cd7f32 0%, #e8a857 100%);
-            color: #000;
-        }
-
-        .rank-default {
-            background: rgba(255, 255, 255, 0.1);
-            color: #a0a0a0;
-        }
+        .rank-1 { color: var(--teal); }
+        .rank-2 { color: var(--text-2); }
+        .rank-3 { color: var(--text-2); }
+        .rank-default { color: var(--text-3); }
 
         .player-info {
             flex: 1;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.6rem;
         }
 
         .player-avatar {
-            width: 36px;
-            height: 36px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--s3);
+            border: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 0.7rem;
             font-weight: 600;
-            font-size: 0.9rem;
+            color: var(--text-2);
+            flex-shrink: 0;
         }
 
         .player-name {
+            font-size: 0.82rem;
             font-weight: 600;
-            color: #e0e0e0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text);
         }
 
         .player-score {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: white;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: var(--mono);
+            font-size: 0.78rem;
+            color: var(--text);
         }
 
+        /* ── TOGGLE BUTTONS ── */
+        .leaderboard-toggle-btn {
+            background: transparent;
+            color: var(--text-2);
+            border: 1px solid var(--border);
+            padding: 0.28rem 0.7rem;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.1s, background 0.1s, border-color 0.1s;
+            font-family: var(--body);
+        }
+
+        .leaderboard-toggle-btn:hover { background: var(--s3); color: var(--text); }
+
+        .leaderboard-toggle-btn.active {
+            background: var(--teal-bg);
+            color: var(--teal);
+            border-color: var(--teal-dim);
+        }
+
+        /* ── VIEW MORE ── */
         .view-more {
-            text-align: center;
-            margin-top: 1rem;
+            padding: 0.65rem 1.25rem;
+            border-top: 1px solid var(--border);
         }
 
         .view-more-btn {
-            color: #4ecdc4;
+            color: var(--teal);
             text-decoration: none;
+            font-size: 0.78rem;
             font-weight: 600;
-            font-size: 0.9rem;
-            transition: color 0.2s ease;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: color 0.1s;
         }
 
-        .view-more-btn:hover {
-            color: #45b7d1;
+        .view-more-btn:hover { color: var(--text); }
+
+        /* ── REMINDER CARDS ── */
+        .reminders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 0.75rem;
         }
 
-        /* League Section */
-        .leagues-section {
-            grid-column: 1 / -1;
-            margin-top: 2rem;
+        .reminder-card {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: background 0.1s, border-color 0.1s;
         }
 
+        .reminder-card:hover {
+            background: var(--s2);
+            border-color: var(--teal-dim);
+        }
+
+        .reminder-icon {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .reminder-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.3rem;
+        }
+
+        .reminder-text {
+            color: var(--text-2);
+            font-size: 0.78rem;
+            line-height: 1.5;
+        }
+
+        .reminder-action {
+            color: var(--teal);
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* ── LEAGUES ── */
         .leagues-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem;
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.25rem;
         }
 
         .leagues-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.25rem;
         }
 
         .no-leagues {
             text-align: center;
-            color: #666;
-            font-size: 1.1rem;
-            padding: 3rem;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-2);
+            font-size: 0.82rem;
+            padding: 2rem;
         }
 
         .no-leagues a {
-            color: #4ecdc4;
+            color: var(--teal);
             text-decoration: none;
             font-weight: 600;
         }
 
-        .no-leagues a:hover {
-            text-decoration: underline;
+        /* ── BUTTONS ── */
+        .btn {
+            background: var(--teal);
+            color: var(--bg);
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.1s;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.82rem;
+            font-family: var(--body);
         }
 
-        /* Responsive */
-        @media (max-width: 968px) {
-            .main-content {
-                grid-template-columns: 1fr;
-                padding: 1rem;
-            }
+        .btn:hover { opacity: 0.88; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-            .nav-tabs {
-                gap: 1rem;
-                font-size: 0.9rem;
-            }
-
-            .header-content {
-                padding: 1rem;
-            }
-
-            .user-name {
-                display: none;
-            }
+        .btn-secondary {
+            background: var(--s3);
+            color: var(--text-2);
+            border: 1px solid var(--border);
         }
 
-        /* Loading State */
+        .btn-secondary:hover {
+            background: var(--s2);
+            color: var(--text);
+            box-shadow: none;
+            opacity: 1;
+        }
+
+        /* ── LOADING / SKELETON ── */
         .loading {
             text-align: center;
-            color: #666;
-            padding: 2rem;
+            color: var(--text-3);
+            padding: 1.5rem;
+            font-size: 0.78rem;
         }
 
         .skeleton {
-            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-            border-radius: 8px;
-            height: 60px;
+            background: var(--s2);
+            border-radius: 4px;
+            height: 48px;
             margin-bottom: 0.5rem;
-        }
-        /* Leaderboard Toggle Buttons */
-        .leaderboard-toggle-btn {
-            background: rgba(255, 255, 255, 0.05);
-            color: #a0a0a0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            animation: pulse 1.5s ease-in-out infinite;
         }
 
-        .leaderboard-toggle-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.5; }
         }
 
-        .leaderboard-toggle-btn.active {
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            color: white;
-            border-color: transparent;
-        }
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-/* Fix white bars in landscape */
-html {
-  background-color: #0f0f23;
-}
-
-@media (max-width: 1024px) and (orientation: landscape) {
-  .header-content,
-  .main-content {
-    max-width: none !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-}
-
-@media (max-width: 600px) and (orientation: portrait) {
-  .logo-link {
-    display: none;
-  }
-  .nav-tabs {
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    flex-wrap: nowrap;
-    scrollbar-width: thin;
-  }
-  .nav-tabs::-webkit-scrollbar {
-    height: 6px;
-  }
-  .nav-tabs::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.3);
-    border-radius: 4px;
-  }
-  .nav-tab {
-    flex: 0 0 auto;
-  }
-  .main-content {
-    padding: 0.5rem !important;
-    margin: 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
-  }
-  .leaderboard-card,
-  .leagues-container,
-  .reminder-card {
-    width: 100% !important;
-    padding: 1rem !important;
-    margin: 0 !important;
-    box-sizing: border-box;
-  }
-  .leagues-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-
-.btn {
-    background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-    color: white;
-    border: none;
-    padding: 0.875rem 2rem;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 1rem;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
-}
-
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
-}
- /* Modal Styles */
+        /* ── MODAL ── */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 1100;
-            animation: fadeIn 0.3s ease;
         }
 
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        .modal-overlay.show { display: flex; }
 
         .modal {
-            background: rgba(26, 26, 46, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem;
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.75rem;
             max-width: 500px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-            animation: modalSlideIn 0.3s ease;
         }
 
-        @keyframes modalSlideIn {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            margin-bottom: 1.5rem;
-        }
+        .modal-header { margin-bottom: 1.25rem; }
 
         .modal-title {
-            font-size: 1.5rem;
+            font-size: 0.95rem;
             font-weight: 700;
-            color: #4ecdc4;
-            margin-bottom: 0.5rem;
+            color: var(--teal);
+            margin-bottom: 0.4rem;
         }
 
         .modal-message {
-            color: #e0e0e0;
+            color: var(--text-2);
+            font-size: 0.82rem;
             line-height: 1.5;
         }
 
         .modal-input {
             width: 100%;
-            padding: 0.875rem;
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            color: white;
-            font-size: 1rem;
-            margin: 1rem 0;
-            transition: all 0.2s ease;
+            padding: 0.6rem 0.75rem;
+            background: var(--s3);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-size: 0.82rem;
+            margin: 0.75rem 0;
+            font-family: var(--body);
+            transition: border-color 0.1s;
         }
 
         .modal-input:focus {
             outline: none;
-            border-color: #4ecdc4;
-            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
-            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--teal-dim);
         }
 
         .modal-buttons {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             justify-content: flex-end;
-            margin-top: 2rem;
+            margin-top: 1.5rem;
         }
 
         .modal-btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
+            padding: 0.5rem 1.25rem;
+            border-radius: 4px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
             border: none;
-            font-size: 0.95rem;
+            font-size: 0.82rem;
+            font-family: var(--body);
+            transition: opacity 0.1s;
         }
 
-        .modal-btn-primary {
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            color: white;
-        }
-
-        .modal-btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
-        }
+        .modal-btn-primary { background: var(--teal); color: var(--bg); }
+        .modal-btn-primary:hover { opacity: 0.88; }
 
         .modal-btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: var(--s3);
+            color: var(--text-2);
+            border: 1px solid var(--border);
         }
 
-        .modal-btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
+        .modal-btn-secondary:hover { background: var(--s2); color: var(--text); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
         }
-}
+
+        @media (max-width: 1024px) and (orientation: landscape) {
+            .header-inner,
+            .main-content {
+                max-width: none;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .logo-link { display: none; }
+
+            .nav {
+                overflow-x: auto;
+                overflow-y: hidden;
+                white-space: nowrap;
+                flex-wrap: nowrap;
+                scrollbar-width: thin;
+            }
+
+            .nav::-webkit-scrollbar { height: 4px; }
+            .nav::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
+
+            .main-content { padding: 0.75rem; }
+
+            .leaderboard-card,
+            .leagues-container,
+            .reminder-card {
+                width: 100%;
+            }
+
+            .leagues-grid { grid-template-columns: 1fr; }
+        }
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
 </head>
 <body>
     <!-- Header -->
     <header class="header">
-        <div class="header-content">
+        <div class="header-inner">
             <a href="/dashboard.html" class="logo-link">
-                <img src="images/logo.png" alt="Fantasy Marching" class="logo">
+                <img src="images/logo.png" alt="Fantasy Marching" class="logo-img">
             </a>
-            
-            <nav class="nav-tabs">
-                <a href="/dashboard.html" class="nav-tab active">Dashboard</a>
-                <a href="/predictions-dashboard.html" class="nav-tab">Predictions</a>
-                <a href="/league.html" class="nav-tab">League</a>
-                <a href="/information.html" class="nav-tab">Information</a>
+            <nav class="nav">
+                <a href="/dashboard.html" class="active">Dashboard</a>
+                <a href="/predictions-dashboard.html">Predictions</a>
+                <a href="/league.html">League</a>
+                <a href="/information.html">Information</a>
             </nav>
-            
-            <div class="user-profile" onclick="toggleUserMenu()">
-                <div class="user-avatar" id="userAvatar">
-                    <!-- Will be populated with user initial or image -->
-                </div>
-                <span class="user-name" id="userName">Loading...</span>
-                
-                <!-- Profile Dropdown -->
-                <div class="profile-dropdown" id="profileDropdown">
-                    <a href="/profile.html" class="dropdown-item">
-                        <span class="dropdown-icon">👤</span>
-                        <span>Profile</span>
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
-                        <span class="dropdown-icon">🛡️</span>
-                        <span>Admin Panel</span>
-                    </a>
-                    <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
-                    <div class="dropdown-item" onclick="logout()">
-                        <span class="dropdown-icon">🚪</span>
-                        <span>Logout</span>
+            <div class="header-right">
+                <div class="user-profile" onclick="toggleUserMenu()">
+                    <div class="user-avatar" id="userAvatar"></div>
+                    <span class="user-name" id="userName"></span>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <a href="/profile.html" class="dropdown-item">
+                            <span class="dropdown-icon">👤</span>
+                            <span>Profile</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
+                            <span class="dropdown-icon">🛡️</span>
+                            <span>Admin Panel</span>
+                        </a>
+                        <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
+                        <div class="dropdown-item" onclick="logout()">
+                            <span class="dropdown-icon">🚪</span>
+                            <span>Logout</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -787,7 +633,7 @@ html {
         <!-- Global Predictions Leaderboard -->
         <div class="leaderboard-card">
             <h3 class="leaderboard-title">Top Predictors</h3>
-            <div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem;">
+            <div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; padding: 0.75rem 1.25rem 0;">
                 <button class="leaderboard-toggle-btn active" id="scoreBtn" onclick="setLeaderboardMode('score')">Total Score</button>
                 <button class="leaderboard-toggle-btn" id="accuracyBtn" onclick="setLeaderboardMode('accuracy')">Average Accuracy</button>
             </div>
@@ -796,34 +642,25 @@ html {
             </div>
             <div class="view-more">
                 <a href="/predictions-leaderboard.html" class="view-more-btn">View Full Leaderboard →</a>
-            </div>			
+            </div>
         </div>
 
         <!-- Global League Leaderboard -->
         <div class="leaderboard-card">
             <h3 class="leaderboard-title">Global League</h3>
-			<div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem;">
-    <button class="leaderboard-toggle-btn active" id="leagueTotalBtn" onclick="setLeagueLeaderboardMode('total')">Total Score</button>
-    <button class="leaderboard-toggle-btn" id="leagueAvgBtn" onclick="setLeagueLeaderboardMode('average')">Weekly Average</button>
-</div>
+            <div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; padding: 0.75rem 1.25rem 0;">
+                <button class="leaderboard-toggle-btn active" id="leagueTotalBtn" onclick="setLeagueLeaderboardMode('total')">Total Score</button>
+                <button class="leaderboard-toggle-btn" id="leagueAvgBtn" onclick="setLeagueLeaderboardMode('average')">Weekly Average</button>
+            </div>
             <div id="leagueLeaderboard">
                 <div class="loading">Loading leaderboard...</div>
             </div>
             <div class="view-more">
                 <a href="/league-leaderboard.html" class="view-more-btn">View Full Leaderboard →</a>
             </div>
-<div style="text-align: center;">
-    <button class="btn" style="
-        margin-top: 1rem;
-        width: calc(100% - 1rem);
-        max-width: 200px;
-        word-break: break-word;
-        margin-left: 0.5rem;
-        margin-right: 0.5rem;
-    " onclick="viewGlobalTeamLineup()">View Your Lineup</button>
-</div>
-
-
+            <div style="text-align: center; padding: 0 1.25rem 1rem;">
+                <button class="btn" style="width: 100%; max-width: 200px;" onclick="viewGlobalTeamLineup()">View Your Lineup</button>
+            </div>
         </div>
 
         <!-- User's Leagues -->
@@ -847,17 +684,17 @@ html {
         async function initDashboard() {
             // Check authentication
             const { data: { user } } = await supabaseClient.auth.getUser();
-            
+
             if (!user) {
                 window.location.href = '/';
                 return;
             }
-            
+
             currentUser = user;
-            
+
             // Load user profile and check admin status
             await loadUserProfile();
-            
+
             // Load all dashboard data
             loadReminders();
             loadPredictionsLeaderboard();
@@ -871,14 +708,14 @@ html {
                 .select('username, avatar_url, is_admin')
                 .eq('id', currentUser.id)
                 .single();
-            
+
             if (profile) {
                 document.getElementById('userName').textContent = profile.username || currentUser.email.split('@')[0];
-                
+
                 // Set avatar (initial letter for now)
                 const initial = (profile.username || currentUser.email)[0].toUpperCase();
                 document.getElementById('userAvatar').textContent = initial;
-                
+
                 // Check admin status
                 isAdmin = profile.is_admin || false;
                 if (isAdmin) {
@@ -914,14 +751,14 @@ function showNotification(title, message, type = 'info') {
         min-width: 300px;
         animation: slideIn 0.3s ease-out;
     `;
-    
+
     notification.innerHTML = `
         <div style="font-weight: 700; margin-bottom: 0.25rem;">${title}</div>
         <div style="font-size: 0.9rem; color: #e0e0e0;">${message}</div>
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     // Auto remove after 3 seconds
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease-out';
@@ -946,7 +783,7 @@ document.head.appendChild(style);
         function toggleUserMenu() {
             const dropdown = document.getElementById('profileDropdown');
             dropdown.classList.toggle('show');
-            
+
             // Close dropdown when clicking outside
             document.addEventListener('click', function closeDropdown(e) {
                 if (!e.target.closest('.user-profile')) {
@@ -999,19 +836,19 @@ function handleJoinRequestFromElement(element) {
     const userId = element.getAttribute('data-user-id');
     const username = element.getAttribute('data-username');
     const leagueName = element.getAttribute('data-league-name');
-    
+
     handleJoinRequest(requestId, leagueId, userId, username, leagueName);
 }
 // Load reminders based on real data
 async function loadReminders() {
     const reminders = [];
-    
+
     // Check for league join requests (for league owners)
     const { data: ownedLeagues } = await supabaseClient
         .from('leagues')
         .select('id, name')
         .eq('owner_id', currentUser.id);
-    
+
     if (ownedLeagues && ownedLeagues.length > 0) {
         const leagueIds = ownedLeagues.map(l => l.id);
         const { data: joinRequests } = await supabaseClient
@@ -1019,7 +856,7 @@ async function loadReminders() {
             .select('*')
             .in('league_id', leagueIds)
             .eq('status', 'pending');
-        
+
         if (joinRequests && joinRequests.length > 0) {
             // Get usernames separately
             const userIds = joinRequests.map(r => r.user_id);
@@ -1027,17 +864,17 @@ async function loadReminders() {
                 .from('profiles')
                 .select('id, username')
                 .in('id', userIds);
-            
+
             const usernameMap = {};
             profiles?.forEach(p => {
                 usernameMap[p.id] = p.username;
             });
 
-			console.log('Username map:', usernameMap); 
-			console.log('Join requests user IDs:', userIds); 
+			console.log('Username map:', usernameMap);
+			console.log('Join requests user IDs:', userIds);
             const leagueMap = {};
             ownedLeagues.forEach(l => leagueMap[l.id] = l.name);
-            
+
             joinRequests.forEach(request => {
                 const username = usernameMap[request.user_id] || 'Unknown';
 				console.log('Request user_id:', request.user_id, 'Username:', username);
@@ -1054,7 +891,7 @@ reminders.push({
             });
         }
     }
-    
+
     // Check for upcoming events without predictions
     const { data: upcomingEvents } = await supabaseClient
         .from('events')
@@ -1062,7 +899,7 @@ reminders.push({
         .gte('date', new Date().toISOString())
         .order('date', { ascending: true })
         .limit(3);
-    
+
 if (upcomingEvents && upcomingEvents.length > 0) {
     for (const event of upcomingEvents) {
         const { data: prediction } = await supabaseClient
@@ -1110,7 +947,7 @@ if (upcomingEvents && upcomingEvents.length > 0) {
     }
 }
 
-    
+
     // Check for completed events with results
     /*const { data: completedEvents } = await supabaseClient
         .from('events')
@@ -1118,7 +955,7 @@ if (upcomingEvents && upcomingEvents.length > 0) {
         .eq('is_completed', true)
         .order('date', { ascending: false })
         .limit(1);
-    
+
     if (completedEvents && completedEvents.length > 0) {
         reminders.push({
             icon: '📊',
@@ -1137,8 +974,8 @@ if (reminders.length === 0) {
     `;
 } else {
     grid.innerHTML = reminders.map(reminder => `
-        <div class="reminder-card" 
-             ${reminder.dataAttrs || ''} 
+        <div class="reminder-card"
+             ${reminder.dataAttrs || ''}
              ${reminder.onclick ? `onclick="${reminder.onclick}"` : `onclick="window.location.href='${reminder.link}'"`}>
             <div class="reminder-icon">${reminder.icon}</div>
             <h3 class="reminder-title">${reminder.title}</h3>
@@ -1161,7 +998,7 @@ async function loadPredictionsLeaderboard() {
             .select('*')
             .order(orderBy, { ascending: false })
             .limit(5);
-        
+
         if (stats && stats.length > 0) {
 container.innerHTML = stats.map((player, index) => `
     <div class="leaderboard-entry">
@@ -1186,25 +1023,25 @@ container.innerHTML = stats.map((player, index) => `
 }
 function setLeaderboardMode(mode) {
     leaderboardMode = mode;
-    
+
     // Update button states
     document.getElementById('scoreBtn').classList.toggle('active', mode === 'score');
     document.getElementById('accuracyBtn').classList.toggle('active', mode === 'accuracy');
-    
+
     loadPredictionsLeaderboard();
 }
 function setLeagueLeaderboardMode(mode) {
     leagueLeaderboardMode = mode;
-    
+
     document.getElementById('leagueTotalBtn').classList.toggle('active', mode === 'total');
     document.getElementById('leagueAvgBtn').classList.toggle('active', mode === 'average');
-    
+
     loadLeagueLeaderboard();
 }
         // Fallback mock data for predictions
         function loadMockPredictionsLeaderboard() {
             const mockData = [];
-            
+
             const container = document.getElementById('predictionsLeaderboard');
             container.innerHTML = mockData.map(player => `
                 <div class="leaderboard-entry">
@@ -1305,14 +1142,14 @@ async function loadUserLeagues() {
         `)
         .eq('user_id', currentUser.id)
         .eq('status', 'active');
-    
+
     if (error) {
         console.error('Error loading user leagues:', error);
         return;
     }
-    
+
     const grid = document.getElementById('leaguesGrid');
-    
+
     // Check if user has no leagues
     if (!userLeagues || userLeagues.length === 0) {
         grid.innerHTML = `
@@ -1322,18 +1159,18 @@ async function loadUserLeagues() {
         `;
         return;
     }
-    
+
     // Get real stats for each league
     const leagueCards = await Promise.all(userLeagues.map(async (item) => {
         const league = item.leagues;
-        
+
         // Check if draft has happened
         const { data: draftData } = await supabaseClient
             .from('league_drafts')
             .select('status')
             .eq('league_id', league.id)
             .maybeSingle();
-        
+
         if (!draftData || draftData.status !== 'completed') {
             // Pre-draft league
             return `
@@ -1349,7 +1186,7 @@ async function loadUserLeagues() {
                 </div>
             `;
         }
-        
+
         // Get user's team
         const { data: team } = await supabaseClient
             .from('league_teams')
@@ -1357,27 +1194,27 @@ async function loadUserLeagues() {
             .eq('league_id', league.id)
             .eq('user_id', currentUser.id)
             .maybeSingle();
-        
+
         if (!team) {
             return ''; // Skip if no team found
         }
-        
+
         // Get all teams for ranking
         const { data: allTeams } = await supabaseClient
             .from('league_teams')
             .select('id, user_id')
             .eq('league_id', league.id);
-        
+
         // Get matchups for stats
         const { data: matchups } = await supabaseClient
             .from('league_matchups')
             .select('*')
             .eq('league_id', league.id)
             .or(`team1_id.eq.${team.id},team2_id.eq.${team.id}`);
-        
+
         // Calculate stats
         let wins = 0, losses = 0, totalScore = 0, gamesPlayed = 0;
-        
+
         if (matchups) {
             matchups.forEach(matchup => {
                 if (matchup.winner_id) {
@@ -1387,7 +1224,7 @@ async function loadUserLeagues() {
                     } else {
                         losses++;
                     }
-                    
+
                     if (matchup.team1_id === team.id) {
                         totalScore += matchup.team1_score || 0;
                     } else {
@@ -1396,21 +1233,21 @@ async function loadUserLeagues() {
                 }
             });
         }
-        
+
         // Calculate rank
         const { data: allMatchups } = await supabaseClient
             .from('league_matchups')
             .select('*')
             .eq('league_id', league.id)
             .not('winner_id', 'is', null);
-        
+
         const teamRecords = [];
         if (allTeams) {
             allTeams.forEach(t => {
                 let teamWins = 0;
                 let teamTotal = 0;
                 let teamGames = 0;
-                
+
                 allMatchups?.forEach(m => {
                     if (m.team1_id === t.id || m.team2_id === t.id) {
                         teamGames++;
@@ -1422,7 +1259,7 @@ async function loadUserLeagues() {
                         }
                     }
                 });
-                
+
                 teamRecords.push({
                     id: t.id,
                     user_id: t.user_id,
@@ -1432,17 +1269,17 @@ async function loadUserLeagues() {
                 });
             });
         }
-        
+
         // Sort by win percentage, then by average score
         teamRecords.sort((a, b) => {
             if (b.winPct !== a.winPct) return b.winPct - a.winPct;
             return b.avgScore - a.avgScore;
         });
-        
+
         const rank = teamRecords.findIndex(t => t.id === team.id) + 1;
         const totalTeams = allTeams ? allTeams.length : 0;
         const avgScore = gamesPlayed > 0 ? (totalScore / gamesPlayed).toFixed(1) : '0.0';
-        
+
         // Get top player info if not the owner
         let leaderInfo = '';
         if (item.role !== 'owner' && teamRecords.length > 0 && teamRecords[0].id !== team.id) {
@@ -1452,12 +1289,12 @@ async function loadUserLeagues() {
                 .select('username')
                 .eq('id', teamRecords[0].user_id)
                 .maybeSingle();
-            
+
             const leaderName = leaderProfile?.username || 'Unknown';
             const leaderScore = teamRecords[0].avgScore.toFixed(1);
             leaderInfo = `Leader: ${leaderName} (${leaderScore} pts)`;
         }
-        
+
         return `
             <div class="leaderboard-card">
                 <h3 class="leaderboard-title">${league.name}</h3>
@@ -1478,77 +1315,22 @@ async function loadUserLeagues() {
             </div>
         `;
     }));
-    
+
     grid.innerHTML = leagueCards.filter(card => card).join('');
 }
         // Initialize on load
         document.addEventListener('DOMContentLoaded', initDashboard);
     </script>
-    
+
     <!-- Join Request Modal -->
-    <div id="joinRequestModal" style="
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-    ">
-        <div style="
-            background: #1a1a2e;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-        ">
-            <h2 style="
-                font-size: 1.5rem;
-                font-weight: 700;
-                color: #4ecdc4;
-                margin-bottom: 1.5rem;
-            ">League Join Request</h2>
-            
-            <div id="requestDetails" style="margin-bottom: 2rem;">
-                <!-- Details will be populated here -->
-            </div>
-            
-            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                <button onclick="closeJoinRequestModal()" style="
-                    padding: 0.75rem 1.5rem;
-                    background: rgba(255, 255, 255, 0.1);
-                    color: white;
-                    border: 1px solid rgba(255, 255, 255, 0.2);
-                    border-radius: 12px;
-                    cursor: pointer;
-                    font-weight: 600;
-                ">Cancel</button>
-                <button onclick="rejectJoinRequest()" style="
-                    padding: 0.75rem 1.5rem;
-                    background: rgba(255, 107, 107, 0.2);
-                    color: #ff6b6b;
-                    border: 1px solid rgba(255, 107, 107, 0.3);
-                    border-radius: 12px;
-                    cursor: pointer;
-                    font-weight: 600;
-                ">Reject</button>
-                <button onclick="approveJoinRequest()" style="
-                    padding: 0.75rem 1.5rem;
-                    background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-                    color: white;
-                    border: none;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    font-weight: 600;
-                ">Approve</button>
+    <div id="joinRequestModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:var(--s1);border:1px solid var(--border);border-radius:6px;padding:1.75rem;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;">
+            <h2 style="font-size:0.95rem;font-weight:700;color:var(--teal);margin-bottom:1.25rem;">League Join Request</h2>
+            <div id="requestDetails" style="margin-bottom:1.5rem;color:var(--text-2);font-size:0.82rem;line-height:1.5;"></div>
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+                <button onclick="closeJoinRequestModal()" style="padding:0.5rem 1.25rem;background:var(--s3);color:var(--text-2);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-weight:600;font-size:0.82rem;font-family:var(--body);">Cancel</button>
+                <button onclick="rejectJoinRequest()" style="padding:0.5rem 1.25rem;background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.3);border-radius:4px;cursor:pointer;font-weight:600;font-size:0.82rem;font-family:var(--body);">Reject</button>
+                <button onclick="approveJoinRequest()" style="padding:0.5rem 1.25rem;background:var(--teal);color:var(--bg);border:none;border-radius:4px;cursor:pointer;font-weight:600;font-size:0.82rem;font-family:var(--body);">Approve</button>
             </div>
         </div>
     </div>
@@ -1561,12 +1343,12 @@ async function loadUserLeagues() {
 	let currentRequestUsername = null; // Add this line
 	let leaderboardMode = 'score';
 	let leagueLeaderboardMode = 'total';
-	
+
     function handleJoinRequest(requestId, leagueId, userId, username, leagueName) {
         currentRequestId = requestId;
         currentRequestLeagueId = leagueId;
         currentRequestUserId = userId;
-        
+
         document.getElementById('requestDetails').innerHTML = `
             <p style="color: #e0e0e0; font-size: 1.1rem; margin-bottom: 1rem;">
                 <strong>${username}</strong> wants to join your league:
@@ -1585,7 +1367,7 @@ async function loadUserLeagues() {
                 Approving this request will add them to your league immediately.
             </p>
         `;
-        
+
         document.getElementById('joinRequestModal').style.display = 'flex';
     }
 
@@ -1594,21 +1376,21 @@ async function loadUserLeagues() {
         currentRequestId = null;
         currentRequestLeagueId = null;
         currentRequestUserId = null;
-		currentRequestUsername = null; 
+		currentRequestUsername = null;
     }
 
     async function approveJoinRequest() {
         if (!currentRequestId) return;
-        
+
         try {
             // Update request status
             const { error: updateError } = await supabaseClient
                 .from('league_join_requests')
                 .update({ status: 'approved' })
                 .eq('id', currentRequestId);
-            
+
             if (updateError) throw updateError;
-            
+
             // Add user to league
             const { error: memberError } = await supabaseClient
                 .from('league_members')
@@ -1618,16 +1400,16 @@ async function loadUserLeagues() {
                     role: 'member',
                     status: 'active'
                 });
-            
+
             if (memberError) {
                 // If already a member, just update the request
                 console.log('User might already be a member');
             }
-            
+
             showNotification('Request Approved', 'The user has been added to your league!', 'success');
             closeJoinRequestModal();
             loadReminders(); // Refresh reminders
-            
+
         } catch (error) {
             console.error('Error approving request:', error);
             showNotification('Error', 'Failed to process request: ' + error.message, 'error');
@@ -1651,10 +1433,10 @@ async function loadUserLeagues() {
             const modalMessage = document.getElementById('modalMessage');
             const modalInput = document.getElementById('modalInput');
             const modalButtons = document.getElementById('modalButtons');
-            
+
             modalTitle.textContent = title;
             modalMessage.innerHTML = message;
-            
+
             // Show/hide input
             if (showInput) {
                 modalInput.style.display = 'block';
@@ -1663,7 +1445,7 @@ async function loadUserLeagues() {
             } else {
                 modalInput.style.display = 'none';
             }
-            
+
             // Clear and add buttons
             modalButtons.innerHTML = '';
             buttons.forEach(button => {
@@ -1679,7 +1461,7 @@ btn.onclick = () => {
 };
                 modalButtons.appendChild(btn);
             });
-            
+
             overlay.classList.add('show');
         }
 
@@ -1705,7 +1487,7 @@ btn.onclick = () => {
                 const { data, error } = await supabaseClient.rpc('get_current_week_number');
                 if (error) throw error;
                 return data || 1;
-            } 
+            }
 			catch (error) {
                 console.error('Error getting current week:', error);
                 // Fallback calculation - calendar week based
@@ -1725,20 +1507,20 @@ return Math.min(weekNumber, 6);
         }
     async function rejectJoinRequest() {
         if (!currentRequestId) return;
-        
+
         try {
             const { error } = await supabaseClient
                 .from('league_join_requests')
                 .update({ status: 'rejected' })
                 .eq('id', currentRequestId);
-            
+
             if (error) throw error;
-            
+
 			showNotification('Request Denied', `Request Rejected`, 'success');
 
             closeJoinRequestModal();
             loadReminders(); // Refresh reminders
-            
+
         } catch (error) {
             console.error('Error rejecting request:', error);
             showNotification('Error', 'Failed to process request: ' + error.message, 'error');

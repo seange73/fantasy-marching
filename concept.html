@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Marching — Design Concept</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:       #0D0E18;
+            --s1:       #13152A;
+            --s2:       #191C33;
+            --s3:       #1E2140;
+            --border:   #222540;
+
+            /* from the logo */
+            --teal:     #4ECDC4;
+            --teal-dim: #1E4A48;
+            --teal-bg:  rgba(78,205,196,0.07);
+            --purple:   #7060D8;
+            --purple-dim:#2E2660;
+            --purple-bg:rgba(112,96,216,0.08);
+
+            --text:     #DCE0F0;
+            --text-2:   #636880;
+            --text-3:   #343750;
+
+            --mono: 'JetBrains Mono', monospace;
+            --body: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── HEADER ────────────────────────────────────── */
+        .header {
+            background: var(--s1);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 1.75rem;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo-img {
+            height: 38px;
+            width: auto;
+            /* logo is on white bg in the file; invert it to work on dark */
+            filter: brightness(0) invert(1);
+            opacity: 0.92;
+        }
+
+        .nav {
+            display: flex;
+            gap: 0.125rem;
+            flex: 1;
+        }
+
+        .nav a {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-2);
+            text-decoration: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            transition: color 0.1s, background 0.1s;
+        }
+
+        .nav a:hover { color: var(--text); background: var(--s3); }
+        .nav a.active { color: var(--teal); }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .week-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-2);
+            background: var(--s3);
+            border: 1px solid var(--border);
+            padding: 0.28rem 0.65rem;
+            border-radius: 4px;
+            letter-spacing: 0.02em;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--s3);
+            border: 1.5px solid var(--teal-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--teal);
+            cursor: pointer;
+        }
+
+        /* ── LAYOUT ────────────────────────────────────── */
+        .page {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 1.75rem;
+            display: grid;
+            grid-template-columns: 1fr 290px;
+            gap: 1.25rem;
+        }
+
+        .full { grid-column: 1 / -1; }
+
+        /* ── NOTICE ─────────────────────────────────────── */
+        .notice {
+            background: rgba(78,205,196,0.06);
+            border: 1px solid var(--teal-dim);
+            border-radius: 6px;
+            padding: 0.65rem 1rem;
+            font-size: 0.8rem;
+            color: var(--text-2);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .notice strong { color: var(--teal); font-weight: 600; }
+
+        /* ── MATCHUP ─────────────────────────────────────── */
+        .matchup {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .matchup-inner {
+            padding: 1.5rem 1.75rem;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .team { display: flex; flex-direction: column; }
+        .team.right { align-items: flex-end; }
+
+        .team-eyebrow {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--teal);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .team.right .team-eyebrow { color: var(--text-3); }
+
+        .team-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.1;
+        }
+
+        .team-record {
+            font-size: 0.75rem;
+            color: var(--text-2);
+            margin-top: 0.2rem;
+        }
+
+        .corps-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            margin-top: 0.85rem;
+        }
+
+        .team.right .corps-list { justify-content: flex-end; }
+
+        .corps-tag {
+            font-size: 0.68rem;
+            font-weight: 500;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+            color: var(--text-3);
+        }
+
+        .corps-tag.starting {
+            border-color: var(--teal-dim);
+            color: var(--teal);
+            background: var(--teal-bg);
+        }
+
+        /* score */
+        .score-block {
+            text-align: center;
+        }
+
+        .scores {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .score {
+            font-family: var(--mono);
+            font-size: 2.4rem;
+            font-weight: 500;
+            color: var(--text-2);
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+
+        .score.winning { color: var(--text); }
+
+        .score-sep {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--text-3);
+        }
+
+        .event-label {
+            font-size: 0.7rem;
+            color: var(--text-3);
+            margin-top: 0.4rem;
+            letter-spacing: 0.03em;
+        }
+
+        .live {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: #4CAF80;
+            margin-top: 0.5rem;
+        }
+
+        .live-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #4CAF80;
+            animation: blink 1.6s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.2; }
+        }
+
+        /* ── SCORE ROW ──────────────────────────────────── */
+        .score-row {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.75rem;
+        }
+
+        .score-tile {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.85rem 1rem;
+        }
+
+        .score-tile.mine {
+            border-color: var(--teal-dim);
+        }
+
+        .tile-place {
+            font-size: 0.65rem;
+            color: var(--text-3);
+            margin-bottom: 0.3rem;
+            font-family: var(--mono);
+        }
+
+        .tile-corps {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.4rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tile-score {
+            font-family: var(--mono);
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: var(--teal);
+            line-height: 1;
+        }
+
+        .score-tile:not(.mine) .tile-score { color: var(--text-2); }
+
+        .tile-note {
+            font-size: 0.62rem;
+            color: var(--text-3);
+            margin-top: 0.3rem;
+        }
+
+        /* ── CARD SHELL ─────────────────────────────────── */
+        .card {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .card-head {
+            padding: 0.8rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.01em;
+        }
+
+        .card-sub {
+            font-size: 0.72rem;
+            color: var(--text-3);
+        }
+
+        /* ── ROSTER TABLE ───────────────────────────────── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-3);
+            text-align: left;
+            padding: 0.55rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            background: var(--bg);
+        }
+
+        thead th:last-child { text-align: right; }
+
+        tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: var(--s2); }
+
+        td { padding: 0.65rem 1.25rem; vertical-align: middle; }
+
+        .t-rank {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            color: var(--text-3);
+            width: 2rem;
+        }
+
+        .t-name { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+        .t-sub  { font-size: 0.65rem; color: var(--text-3); margin-top: 0.1rem; }
+
+        .chip {
+            font-size: 0.62rem;
+            font-weight: 600;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            border: 1px solid;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .chip.on  { color: var(--teal);   border-color: var(--teal-dim);   background: var(--teal-bg);   }
+        .chip.off { color: var(--text-3); border-color: var(--border);    background: transparent; }
+
+        .t-score {
+            text-align: right;
+            font-family: var(--mono);
+            font-size: 0.82rem;
+            color: var(--text);
+        }
+
+        .t-score.empty { color: var(--text-3); }
+
+        /* ── STANDINGS ──────────────────────────────────── */
+        .row {
+            display: grid;
+            grid-template-columns: 2rem 1fr auto auto;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.1s;
+        }
+
+        .row:last-child { border-bottom: none; }
+        .row:hover { background: var(--s2); }
+
+        .row.you {
+            background: var(--teal-bg);
+            border-left: 2px solid var(--teal-dim);
+        }
+
+        .r-pos {
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--text-3);
+            text-align: center;
+        }
+
+        /* just enough to distinguish top 3 without being garish */
+        .r-pos.p1 { color: var(--teal); }
+        .r-pos.p2 { color: var(--text-2); }
+
+        .r-name { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+        .r-you  { font-size: 0.62rem; color: var(--teal); font-weight: 600; display: block; }
+
+        .r-rec {
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--text-2);
+        }
+
+        .r-pts {
+            font-family: var(--mono);
+            font-size: 0.78rem;
+            color: var(--text);
+            text-align: right;
+        }
+
+        /* ── ACTIVITY ───────────────────────────────────── */
+        .activity { padding: 0.25rem 0; }
+
+        .act-item {
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.6rem;
+            align-items: start;
+        }
+
+        .act-item:last-child { border-bottom: none; }
+
+        .act-icon { font-size: 0.85rem; color: var(--text-3); padding-top: 0.1rem; }
+
+        .act-text { font-size: 0.78rem; color: var(--text-2); line-height: 1.45; }
+        .act-text strong { color: var(--text); font-weight: 600; }
+        .act-time { font-size: 0.65rem; color: var(--text-3); margin-top: 0.2rem; }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+    <div class="header-inner">
+        <a href="#"><img src="images/logo.png" class="logo-img" alt="Fantasy Marching"></a>
+        <nav class="nav">
+            <a href="#" class="active">Dashboard</a>
+            <a href="#">My League</a>
+            <a href="#">Draft</a>
+            <a href="#">Predictions</a>
+            <a href="#">Scores</a>
+        </nav>
+        <div class="header-right">
+            <div class="week-label">Week 5 · Semifinals</div>
+            <div class="avatar">SG</div>
+        </div>
+    </div>
+</header>
+
+<!-- PAGE -->
+<div class="page">
+
+    <!-- Notice -->
+    <div class="full">
+        <div class="notice">
+            ⏱ <strong>Lineup lock in 4h 22m</strong> — San Antonio Invitational begins tonight. Set your starters before 7:00 PM ET.
+        </div>
+    </div>
+
+    <!-- Matchup -->
+    <div class="full">
+        <div class="matchup">
+            <div class="matchup-inner">
+
+                <div class="team">
+                    <div class="team-eyebrow">You</div>
+                    <div class="team-name">Brass Titans</div>
+                    <div class="team-record">4–1 · 3rd place</div>
+                    <div class="corps-list">
+                        <span class="corps-tag starting">Blue Devils</span>
+                        <span class="corps-tag starting">Bluecoats</span>
+                        <span class="corps-tag starting">Phantom</span>
+                        <span class="corps-tag">Crown</span>
+                        <span class="corps-tag">Cadets</span>
+                    </div>
+                </div>
+
+                <div class="score-block">
+                    <div class="scores">
+                        <span class="score winning">287.6</span>
+                        <span class="score-sep">–</span>
+                        <span class="score">261.4</span>
+                    </div>
+                    <div class="event-label">San Antonio Invitational</div>
+                    <div style="display:flex;justify-content:center">
+                        <div class="live"><span class="live-dot"></span> Scoring live</div>
+                    </div>
+                </div>
+
+                <div class="team right">
+                    <div class="team-eyebrow">Opponent</div>
+                    <div class="team-name">The Pit Crew</div>
+                    <div class="team-record">3–2 · 5th place</div>
+                    <div class="corps-list">
+                        <span class="corps-tag starting">Cavaliers</span>
+                        <span class="corps-tag starting">SCV</span>
+                        <span class="corps-tag starting">Mandarins</span>
+                        <span class="corps-tag">Crossmen</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Tonight's scores -->
+    <div class="full">
+        <div style="font-size:0.72rem;color:var(--text-3);margin-bottom:0.6rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;">
+            Tonight · San Antonio
+        </div>
+        <div class="score-row">
+            <div class="score-tile mine">
+                <div class="tile-place">1st</div>
+                <div class="tile-corps">Blue Devils</div>
+                <div class="tile-score">98.125</div>
+                <div class="tile-note">Starting</div>
+            </div>
+            <div class="score-tile mine">
+                <div class="tile-place">2nd</div>
+                <div class="tile-corps">Bluecoats</div>
+                <div class="tile-score">97.450</div>
+                <div class="tile-note">Starting</div>
+            </div>
+            <div class="score-tile">
+                <div class="tile-place">3rd</div>
+                <div class="tile-corps">Cavaliers</div>
+                <div class="tile-score">96.800</div>
+                <div class="tile-note">Opponent</div>
+            </div>
+            <div class="score-tile mine">
+                <div class="tile-place">4th</div>
+                <div class="tile-corps">Phantom Reg.</div>
+                <div class="tile-score">95.250</div>
+                <div class="tile-note">Starting</div>
+            </div>
+            <div class="score-tile">
+                <div class="tile-place">5th</div>
+                <div class="tile-corps">SCV</div>
+                <div class="tile-score">94.700</div>
+                <div class="tile-note">Opponent</div>
+            </div>
+            <div class="score-tile">
+                <div class="tile-place">6th</div>
+                <div class="tile-corps">Crown</div>
+                <div class="tile-score">93.900</div>
+                <div class="tile-note">Bench</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Roster -->
+    <div>
+        <div class="card">
+            <div class="card-head">
+                <span class="card-title">Brass Titans</span>
+                <span class="card-sub">3 starting · 2 bench</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:2.5rem">#</th>
+                        <th>Corps</th>
+                        <th>Status</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="t-rank">1</td>
+                        <td><div class="t-name">Blue Devils</div><div class="t-sub">Concord, CA</div></td>
+                        <td><span class="chip on">Starting</span></td>
+                        <td class="t-score">98.125</td>
+                    </tr>
+                    <tr>
+                        <td class="t-rank">2</td>
+                        <td><div class="t-name">Bluecoats</div><div class="t-sub">Canton, OH</div></td>
+                        <td><span class="chip on">Starting</span></td>
+                        <td class="t-score">97.450</td>
+                    </tr>
+                    <tr>
+                        <td class="t-rank">4</td>
+                        <td><div class="t-name">Phantom Regiment</div><div class="t-sub">Rockford, IL</div></td>
+                        <td><span class="chip on">Starting</span></td>
+                        <td class="t-score">95.250</td>
+                    </tr>
+                    <tr>
+                        <td class="t-rank">6</td>
+                        <td><div class="t-name">Carolina Crown</div><div class="t-sub">Fort Mill, SC</div></td>
+                        <td><span class="chip off">Bench</span></td>
+                        <td class="t-score">93.900</td>
+                    </tr>
+                    <tr>
+                        <td class="t-rank">9</td>
+                        <td><div class="t-name">The Cadets</div><div class="t-sub">Allentown, PA</div></td>
+                        <td><span class="chip off">Bench</span></td>
+                        <td class="t-score empty">—</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+        <!-- Standings -->
+        <div class="card">
+            <div class="card-head">
+                <span class="card-title">The Pit Section</span>
+                <span class="card-sub">Week 5 of 8</span>
+            </div>
+            <div>
+                <div class="row">
+                    <div class="r-pos p1">1</div>
+                    <div><div class="r-name">The Rim Shots</div></div>
+                    <div class="r-rec">5–0</div>
+                    <div class="r-pts">312.4</div>
+                </div>
+                <div class="row">
+                    <div class="r-pos p2">2</div>
+                    <div><div class="r-name">Guard Galaxy</div></div>
+                    <div class="r-rec">4–1</div>
+                    <div class="r-pts">298.1</div>
+                </div>
+                <div class="row you">
+                    <div class="r-pos">3</div>
+                    <div><div class="r-name">Brass Titans</div><span class="r-you">You</span></div>
+                    <div class="r-rec">4–1</div>
+                    <div class="r-pts">287.6</div>
+                </div>
+                <div class="row">
+                    <div class="r-pos">4</div>
+                    <div><div class="r-name">Contra Corner</div></div>
+                    <div class="r-rec">3–2</div>
+                    <div class="r-pts">275.0</div>
+                </div>
+                <div class="row">
+                    <div class="r-pos">5</div>
+                    <div><div class="r-name">The Pit Crew</div></div>
+                    <div class="r-rec">3–2</div>
+                    <div class="r-pts">261.4</div>
+                </div>
+                <div class="row">
+                    <div class="r-pos">6</div>
+                    <div><div class="r-name">Flag Flyers</div></div>
+                    <div class="r-rec">2–3</div>
+                    <div class="r-pts">244.9</div>
+                </div>
+                <div class="row">
+                    <div class="r-pos">7</div>
+                    <div><div class="r-name">Hornline Heroes</div></div>
+                    <div class="r-rec">1–4</div>
+                    <div class="r-pts">230.2</div>
+                </div>
+                <div class="row">
+                    <div class="r-pos">8</div>
+                    <div><div class="r-name">Battery Kings</div></div>
+                    <div class="r-rec">0–5</div>
+                    <div class="r-pts">198.7</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity -->
+        <div class="card">
+            <div class="card-head">
+                <span class="card-title">Activity</span>
+            </div>
+            <div class="activity">
+                <div class="act-item">
+                    <div class="act-icon">↔</div>
+                    <div>
+                        <div class="act-text"><strong>Guard Galaxy</strong> dropped Crossmen, added Spirit.</div>
+                        <div class="act-time">2h ago</div>
+                    </div>
+                </div>
+                <div class="act-item">
+                    <div class="act-icon">📋</div>
+                    <div>
+                        <div class="act-text">Predictions for <strong>San Antonio</strong> are open.</div>
+                        <div class="act-time">5h ago</div>
+                    </div>
+                </div>
+                <div class="act-item">
+                    <div class="act-icon">⚖</div>
+                    <div>
+                        <div class="act-text"><strong>Rim Shots</strong> proposed a trade: Cavaliers for Crown.</div>
+                        <div class="act-time">Yesterday</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+</body>
+</html>

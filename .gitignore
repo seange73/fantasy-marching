@@ -27,3 +27,10 @@ Thumbs.db
 # Build output
 dist/
 build/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Claude Code project files
+CLAUDE.md
+headroom_memory.db
