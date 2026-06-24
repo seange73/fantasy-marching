@@ -5,709 +5,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - Fantasy Marching</title>
     <link rel="icon" href="/images/favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/theme.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-            color: white;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Header Styles */
-        .header {
-            background: rgba(15, 15, 35, 0.98);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            height: 75px;
-            width: auto;
-            display: block;
-        }
-
-        .logo-link {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-        }
-
-        .nav-tabs {
-            display: flex;
-            gap: 2rem;
-            flex: 1;
-            justify-content: center;
-        }
-
-        .nav-tab {
-            color: #a0a0a0;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .nav-tab:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .nav-tab.active {
-            color: #4ecdc4;
-        }
-
-        .nav-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1rem;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            border-radius: 2px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .user-profile:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
-
-        .user-name {
-            font-weight: 600;
-            color: #e0e0e0;
-        }
-
-        /* Profile Dropdown */
-        .profile-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 0.5rem;
-            background: rgba(26, 26, 46, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 0.5rem;
-            min-width: 200px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s ease;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .profile-dropdown.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            color: #e0e0e0;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .dropdown-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .dropdown-item.admin {
-            color: #4ecdc4;
-        }
-
-        .dropdown-divider {
-            height: 1px;
-            background: rgba(255, 255, 255, 0.1);
-            margin: 0.5rem 0;
-        }
-
-        .dropdown-icon {
-            width: 20px;
-            text-align: center;
-        }
-
-        /* Main Content */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Profile Header */
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.75rem; }
         .profile-header {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 3rem;
-            margin-bottom: 2rem;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .profile-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #4ecdc4, #45b7d1, #6c5ce7);
-        }
-
-        .profile-avatar-large {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 3rem;
-            margin: 0 auto 1.5rem;
-            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
-        }
-
-        .profile-username {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-        }
-
-        .profile-email {
-            color: #a0a0a0;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-        }
-
-        .profile-joined {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 6px;
             padding: 2rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #4ecdc4, #45b7d1);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .stat-icon {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        .stat-title {
-            color: #a0a0a0;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-subtitle {
-            color: #666;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-        }
-
-        /* Leagues Section */
-        .section {
-            margin-bottom: 3rem;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 1.5rem;
         }
-
-        .section-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: white;
-        }
-
-        .leagues-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 1.5rem;
-            overflow: hidden;
-        }
-
-        .league-entry {
-            display: grid;
-            grid-template-columns: 1fr auto auto auto;
-            align-items: center;
-            gap: 1.5rem;
-            padding: 1rem;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-        }
-
-        .league-entry:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .league-entry:not(:last-child) {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .league-name {
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .league-stat {
-            text-align: center;
-        }
-
-        .league-stat-label {
-            color: #666;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05rem;
-        }
-
-        .league-stat-value {
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: #4ecdc4;
-        }
-
-        .global-badge {
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05rem;
-            margin-left: 0.5rem;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 3rem;
-            color: #666;
-        }
-
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
+        .profile-avatar-large {
+            width: 80px; height: 80px;
             border-radius: 50%;
-            border-top-color: #4ecdc4;
-            animation: spin 1s ease-in-out infinite;
+            background: var(--s3);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 2rem; color: var(--teal);
             margin: 0 auto 1rem;
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .profile-username { font-size: 1.6rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem; }
+        .profile-email { color: var(--text-2); font-size: 0.85rem; }
+        .profile-joined { color: var(--text-2); font-size: 0.82rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
         }
-
-        .no-data {
-            text-align: center;
-            color: #666;
-            padding: 2rem;
+        .stat-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+        .stat-title { color: var(--text-2); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--teal); font-family: var(--mono); }
+        .stat-subtitle { color: var(--text-2); font-size: 0.82rem; margin-top: 0.4rem; }
+        .section { margin-bottom: 2rem; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .section-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+        .leagues-container { background: var(--s1); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; }
+        .league-entry {
+            display: grid; grid-template-columns: 1fr auto auto auto;
+            align-items: center; gap: 1.5rem;
+            padding: 0.75rem; border-radius: 4px;
         }
-
-        .stat-label {
-            color: #666;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05rem;
-            margin-bottom: 0.25rem;
+        .league-entry:hover { background: var(--s2); }
+        .league-entry:not(:last-child) { border-bottom: 1px solid var(--border); }
+        .league-name { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+        .league-stat { text-align: center; }
+        .league-stat-label { color: var(--text-2); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .league-stat-value { font-weight: 700; font-size: 1rem; color: var(--teal); font-family: var(--mono); }
+        .global-badge {
+            background: var(--teal-bg); color: var(--teal); border: 1px solid var(--teal-dim);
+            padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-left: 0.4rem;
         }
-
-        .stat-value-blue {
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: #4ecdc4;
+        .loading { text-align: center; padding: 2rem; color: var(--text-2); }
+        .no-data { text-align: center; color: var(--text-2); padding: 2rem; font-size: 0.85rem; }
+        .stat-label { color: var(--text-2); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.2rem; }
+        .stat-value-blue { font-weight: 700; font-size: 1rem; color: var(--teal); font-family: var(--mono); }
+        .btn {
+            background: var(--teal); color: var(--bg); border: none; border-radius: 4px;
+            padding: 0.65rem 1.5rem; font-weight: 700; cursor: pointer;
+            font-family: var(--body); font-size: 0.85rem; text-decoration: none; display: inline-block;
         }
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .header-content {
-        flex-wrap: nowrap;  /* Changed from wrap to nowrap */
-        padding: 1rem;
-    }
-    .nav-tabs {
-        flex: 1;  /* Changed to take available space */
-        justify-content: center;
-        overflow-x: auto;
-        overflow-y: hidden;
-        white-space: nowrap;
-        scrollbar-width: thin;
-    }
-    .nav-tabs::-webkit-scrollbar {
-        height: 6px;
-    }
-    .nav-tabs::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.3);
-        border-radius: 4px;
-    }
-    .nav-tab {
-        flex: 0 0 auto;
-    }
-    .user-profile {
-        margin-left: auto;  /* This pushes it to the right */
-    }
-    .user-name {
-        display: none;
-    }
-    .container {
-        padding: 1rem;
-    }
-    .profile-header {
-        padding: 2rem 1rem;
-    }
-    
-    .profile-header > div {
-        grid-template-columns: 1fr !important;
-        gap: 2rem !important;
-    }
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    .league-entry {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-        text-align: center;
-    }
-    .league-stat {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.5rem 0;
-    }
-	    .btn {
-        padding: 0.75rem 1.5rem;
-        font-size: 0.9rem;
-    }
-    
-    .modal {
-        max-width: 95%;
-        padding: 1.5rem;
-    }
-}
-
-@media (max-width: 600px) and (orientation: portrait) {
-    .logo-link {
-        display: none;
-    }
-}
-
-html {
-    background-color: #0f0f23; 
-}
-
-@media (max-width: 1024px) and (orientation: landscape) {
-    body {
-        overflow-x: hidden;
-    }
-    
-    .header-content,
-    .container {
-        max-width: none !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-    .user-name {
-        display: none;
-    }
-}
-.btn {
-    background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-    color: white;
-    border: none;
-    padding: 0.875rem 2rem;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 1rem;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
-}
-
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-/* Modal Styles */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1100;
-    animation: fadeIn 0.3s ease;
-}
-
-.modal-overlay.show {
-    display: flex;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.modal {
-    background: rgba(26, 26, 46, 0.98);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 2rem;
-    max-width: 600px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-    animation: modalSlideIn 0.3s ease;
-}
-
-@keyframes modalSlideIn {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.modal-header {
-    margin-bottom: 1.5rem;
-}
-
-.modal-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #4ecdc4;
-    margin-bottom: 0.5rem;
-}
-
-.modal-message {
-    color: #e0e0e0;
-    line-height: 1.5;
-}
-
-.modal-input {
-    width: 100%;
-    padding: 0.875rem;
-    background: rgba(255, 255, 255, 0.08);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    color: white;
-    font-size: 1rem;
-    margin: 1rem 0;
-    transition: all 0.2s ease;
-}
-
-.modal-input:focus {
-    outline: none;
-    border-color: #4ecdc4;
-    box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2);
-    background: rgba(255, 255, 255, 0.12);
-}
-
-.modal-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-    margin-top: 2rem;
-}
-
-.modal-btn {
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-    font-size: 0.95rem;
-}
-
-.modal-btn-primary {
-    background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-    color: white;
-}
-
-.modal-btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
-}
-
-.modal-btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.modal-btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.15);
-}
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1100;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--s1); border: 1px solid var(--border); border-radius: 6px;
+            padding: 1.75rem; max-width: 560px; width: 90%; max-height: 85vh; overflow-y: auto;
+        }
+        .modal-header { margin-bottom: 1.25rem; }
+        .modal-title { font-size: 1.1rem; font-weight: 700; color: var(--teal); margin-bottom: 0.4rem; }
+        .modal-message { color: var(--text); line-height: 1.6; font-size: 0.85rem; }
+        .modal-input {
+            width: 100%; padding: 0.65rem 0.875rem;
+            background: var(--s2); border: 1px solid var(--border); border-radius: 4px;
+            color: var(--text); font-size: 0.85rem; font-family: var(--body); margin: 0.75rem 0;
+            outline: none;
+        }
+        .modal-input:focus { border-color: var(--teal); }
+        .modal-buttons { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+        .modal-btn { padding: 0.55rem 1.25rem; border-radius: 4px; font-weight: 600; cursor: pointer; border: none; font-size: 0.85rem; font-family: var(--body); }
+        .modal-btn-primary { background: var(--teal); color: var(--bg); }
+        .modal-btn-secondary { background: var(--s3); color: var(--text); border: 1px solid var(--border); }
+        @media (max-width: 768px) {
+            .league-entry { grid-template-columns: 1fr; gap: 0.5rem; text-align: center; }
+            .league-stat { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; }
+        }
+        @media (max-width: 600px) { .stats-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
-        <div class="header-content">
+        <div class="header-inner">
             <a href="/dashboard.html" class="logo-link">
-                <img src="images/logo.png" alt="Fantasy Marching" class="logo">
+                <img src="images/logo.png" alt="Fantasy Marching" class="logo-img">
             </a>
-            
-            <nav class="nav-tabs">
-                <a href="/dashboard.html" class="nav-tab">Dashboard</a>
-                <a href="/predictions-dashboard.html" class="nav-tab">Predictions</a>
-                <a href="/league.html" class="nav-tab">League</a>
-                <a href="/information.html" class="nav-tab">Information</a>
+            <nav class="nav">
+                <a href="/dashboard.html">Dashboard</a>
+                <a href="/predictions-dashboard.html">Predictions</a>
+                <a href="/league.html">League</a>
+                <a href="/information.html">Information</a>
             </nav>
-            
-            <div class="user-profile" onclick="toggleUserMenu()">
-                <div class="user-avatar" id="userAvatar">
-                    <!-- Will be populated with user initial or image -->
-                </div>
-                <span class="user-name" id="userName">Loading...</span>
-                
-                <!-- Profile Dropdown -->
-                <div class="profile-dropdown" id="profileDropdown">
-                    <a href="/profile.html" class="dropdown-item">
-                        <span class="dropdown-icon">👤</span>
-                        <span>Profile</span>
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
-                        <span class="dropdown-icon">🛡️</span>
-                        <span>Admin Panel</span>
-                    </a>
-                    <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
-                    <div class="dropdown-item" onclick="logout()">
-                        <span class="dropdown-icon">🚪</span>
-                        <span>Logout</span>
+            <div class="header-right">
+                <div class="user-profile" onclick="toggleUserMenu()">
+                    <div class="user-avatar" id="userAvatar"></div>
+                    <span class="user-name" id="userName">Loading...</span>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <a href="/profile.html" class="dropdown-item"><span class="dropdown-icon">👤</span><span>Profile</span></a>
+                        <div class="dropdown-divider"></div>
+                        <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display:none;"><span class="dropdown-icon">🛡️</span><span>Admin Panel</span></a>
+                        <div class="dropdown-divider" id="adminDivider" style="display:none;"></div>
+                        <div class="dropdown-item" onclick="logout()"><span class="dropdown-icon">🚪</span><span>Logout</span></div>
                     </div>
                 </div>
             </div>

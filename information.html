@@ -5,394 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Information - Fantasy Marching</title>
     <link rel="icon" href="/images/favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/theme.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-            color: white;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Header Styles */
-        .header {
-            background: rgba(15, 15, 35, 0.98);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            height: 75px;
-            width: auto;
-            display: block;
-        }
-
-        .logo-link {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-        }
-
-        .nav-tabs {
-            display: flex;
-            gap: 2rem;
-            flex: 1;
-            justify-content: center;
-        }
-
-        .nav-tab {
-            color: #a0a0a0;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .nav-tab:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .nav-tab.active {
-            color: #4ecdc4;
-        }
-
-        .nav-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1rem;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            border-radius: 2px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .user-profile:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        .user-name {
-            font-weight: 600;
-        }
-
-        /* Profile Dropdown */
-        .profile-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 0.5rem;
-            background: rgba(15, 15, 35, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 0.5rem;
-            min-width: 200px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .profile-dropdown.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            color: #a0a0a0;
-            text-decoration: none;
-        }
-
-        .dropdown-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .dropdown-divider {
-            height: 1px;
-            background: rgba(255, 255, 255, 0.1);
-            margin: 0.5rem 0;
-        }
-
-        /* Main Content */
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 3rem 2rem;
-        }
-        .nav-tabs {
-            display: flex;
-            gap: 2rem;
-            flex: 1;
-            justify-content: center;
-        }
-
-        .nav-tab {
-            color: #a0a0a0;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .nav-tab:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .nav-tab.active {
-            color: #4ecdc4;
-        }
-
-        .nav-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1rem;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            border-radius: 2px;
-        }
-        .page-title {
-            font-size: 3rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 3rem;
-            text-align: center;
-        }
-
+        .container { max-width: 1000px; margin: 0 auto; padding: 2rem 1.75rem; }
+        .page-title { font-size: 1.6rem; font-weight: 700; color: var(--text); margin-bottom: 2rem; text-align: center; }
         .section {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2.5rem;
-            margin-bottom: 2rem;
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 2rem;
+            margin-bottom: 1.25rem;
         }
-
         .section-title {
-            font-size: 1.8rem;
+            font-size: 0.85rem;
             font-weight: 700;
-            color: #4ecdc4;
-            margin-bottom: 1.5rem;
+            color: var(--teal);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
         }
-
         .subsection-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #45b7d1;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
         }
-
-        .content {
-            line-height: 1.8;
-            color: #e0e0e0;
-        }
-
-        .content p {
-            margin-bottom: 1rem;
-        }
-
-        .content ul {
-            margin-left: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        .content li {
-            margin-bottom: 0.5rem;
-        }
-
+        .content { line-height: 1.8; color: var(--text-2); font-size: 0.85rem; }
+        .content p { margin-bottom: 0.75rem; }
+        .content ul { margin-left: 1.5rem; margin-bottom: 0.75rem; }
+        .content li { margin-bottom: 0.4rem; }
         .note-box {
-            background: rgba(78, 205, 196, 0.1);
-            border: 1px solid rgba(78, 205, 196, 0.3);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
+            background: var(--teal-bg);
+            border: 1px solid var(--teal-dim);
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
         }
-
         .example-box {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
+            background: var(--s2);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
         }
-
-        .example-box .icon {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .credits {
-            text-align: center;
-            padding: 3rem 0;
-            color: #a0a0a0;
-            line-height: 1.8;
-        }
-
-        .credits h3 {
-            color: #4ecdc4;
-            margin-bottom: 1rem;
-            font-size: 1.3rem;
-        }
-
-        /* Responsive */
+        .example-box .icon { font-size: 1.25rem; margin-bottom: 0.4rem; }
+        .credits { text-align: center; padding: 2rem 0; color: var(--text-2); line-height: 1.8; font-size: 0.82rem; }
+        .credits h3 { color: var(--teal); margin-bottom: 0.75rem; font-size: 1rem; font-weight: 700; }
+        /* information.html toggleUserMenu uses .active instead of .show */
+        .profile-dropdown.active { opacity: 1; visibility: visible; transform: translateY(0); }
         @media (max-width: 768px) {
-            .page-title {
-                font-size: 2rem;
-            }
-
-            .section {
-                padding: 1.5rem;
-            }
-
-            .container {
-                padding: 2rem 1rem;
-            }
-        }
-
-        /* Fix white bars in landscape */
-        html {
-            background-color: #0f0f23;
-        }
-
-        @media (max-width: 1024px) and (orientation: landscape) {
-            .header-content,
-            .container {
-                max-width: none !important;
-                width: 100% !important;
-                margin: 0 !important;
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-			      .user-name {
-        display: none;
-    }
-        }
-
-        @media (max-width: 600px) and (orientation: portrait) {
-            .logo-link {
-                display: none;
-            }
-  .nav-tabs {
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    flex-wrap: nowrap;
-    scrollbar-width: thin;
-  }
-  .nav-tabs::-webkit-scrollbar {
-    height: 6px;
-  }
-  .nav-tabs::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.3);
-    border-radius: 4px;
-  }
-  .nav-tab {
-    flex: 0 0 auto;
-  }
-            .user-name {
-                display: none;
-            }
+            .page-title { font-size: 1.3rem; }
+            .section { padding: 1.25rem; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
-        <div class="header-content">
-            <a href="/" class="logo-link">
-                <img src="/images/logo.png" alt="Fantasy Marching" class="logo">
+        <div class="header-inner">
+            <a href="/dashboard.html" class="logo-link">
+                <img src="images/logo.png" alt="Fantasy Marching" class="logo-img">
             </a>
-            
-            <nav class="nav-tabs">
-                <a href="/dashboard.html" class="nav-tab">Dashboard</a>
-                <a href="/predictions-dashboard.html" class="nav-tab">Predictions</a>
-                <a href="/league.html" class="nav-tab">League</a>
-                <a href="/information.html" class="nav-tab active">Information</a>
+            <nav class="nav">
+                <a href="/dashboard.html">Dashboard</a>
+                <a href="/predictions-dashboard.html">Predictions</a>
+                <a href="/league.html">League</a>
+                <a href="/information.html" class="active">Information</a>
             </nav>
-            
-            <div class="user-profile" onclick="toggleUserMenu()">
-                <div class="user-avatar" id="userAvatar">
-                    <!-- Will be populated with user initial or image -->
-                </div>
-                <span class="user-name" id="userName">Loading...</span>
-                
-                <!-- Profile Dropdown -->
-                <div class="profile-dropdown" id="profileDropdown">
-                    <a href="/profile.html" class="dropdown-item">
-                        <span class="dropdown-icon">👤</span>
-                        <span>Profile</span>
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
-                        <span class="dropdown-icon">🛡️</span>
-                        <span>Admin Panel</span>
-                    </a>
-                    <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
-                    <div class="dropdown-item" onclick="logout()">
-                        <span class="dropdown-icon">🚪</span>
-                        <span>Logout</span>
+            <div class="header-right">
+                <div class="user-profile" onclick="toggleUserMenu()">
+                    <div class="user-avatar" id="userAvatar"></div>
+                    <span class="user-name" id="userName">Loading...</span>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <a href="/profile.html" class="dropdown-item"><span class="dropdown-icon">👤</span><span>Profile</span></a>
+                        <div class="dropdown-divider"></div>
+                        <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display:none;"><span class="dropdown-icon">🛡️</span><span>Admin Panel</span></a>
+                        <div class="dropdown-divider" id="adminDivider" style="display:none;"></div>
+                        <div class="dropdown-item" onclick="logout()"><span class="dropdown-icon">🚪</span><span>Logout</span></div>
                     </div>
                 </div>
             </div>
