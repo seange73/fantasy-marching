@@ -4,556 +4,142 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fantasy Marching - Predictions Leaderboard</title>
-	<link rel="icon" href="/images/favicon.png" type="image/png">
+    <link rel="icon" href="/images/favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/theme.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-            color: white;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Header Styles */
-        .header {
-            background: rgba(15, 15, 35, 0.98);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            height: 75px;
-            width: auto;
-            display: block;
-        }
-
-        .logo-link {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-        }
-
-        .nav-tabs {
-            display: flex;
-            gap: 2rem;
-            flex: 1;
-            justify-content: center;
-        }
-
-        .nav-tab {
-            color: #a0a0a0;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .nav-tab:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .nav-tab.active {
-            color: #4ecdc4;
-        }
-
-        .nav-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1rem;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            border-radius: 2px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .user-profile:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
-
-        .user-name {
-            font-weight: 600;
-            color: #e0e0e0;
-        }
-
-        /* Profile Dropdown */
-        .profile-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 0.5rem;
-            background: rgba(26, 26, 46, 0.98);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 0.5rem;
-            min-width: 200px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s ease;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .profile-dropdown.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            color: #e0e0e0;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .dropdown-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
-        .dropdown-item.admin {
-            color: #4ecdc4;
-        }
-
-        .dropdown-divider {
-            height: 1px;
-            background: rgba(255, 255, 255, 0.1);
-            margin: 0.5rem 0;
-        }
-
-        .dropdown-icon {
-            width: 20px;
-            text-align: center;
-        }
-
-        /* Main Content */
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .page-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #6c5ce7 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-
-        .page-subtitle {
-            text-align: center;
-            color: #a0a0a0;
-            font-size: 1.1rem;
-            margin-bottom: 3rem;
-        }
-
-        /* Leaderboard Toggle */
-        .leaderboard-controls {
-            display: flex;
-            gap: 0.5rem;
-            justify-content: center;
-            margin-bottom: 2rem;
-        }
-
+        .container { max-width: 1000px; margin: 0 auto; padding: 2rem 1.75rem; }
+        .page-title { font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; text-align: center; }
+        .page-subtitle { text-align: center; color: var(--text-2); font-size: 0.82rem; margin-bottom: 1.5rem; }
+        .leaderboard-controls { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1.5rem; }
         .leaderboard-toggle-btn {
-            background: rgba(255, 255, 255, 0.05);
-            color: #a0a0a0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 0.75rem 1.5rem;
-            border-radius: 25px;
-            font-size: 0.95rem;
+            background: var(--s3);
+            color: var(--text-2);
+            border: 1px solid var(--border);
+            padding: 0.45rem 1rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: color 0.1s, background 0.1s;
+            font-family: var(--body);
         }
-
-        .leaderboard-toggle-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
-        }
-
-        .leaderboard-toggle-btn.active {
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            color: white;
-            border-color: transparent;
-        }
-
-        /* Leaderboard */
+        .leaderboard-toggle-btn:hover { color: var(--text); }
+        .leaderboard-toggle-btn.active { background: var(--teal); color: var(--bg); border-color: var(--teal); }
         .leaderboard-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem;
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.25rem;
         }
-
         .leaderboard-entry {
             display: flex;
             align-items: center;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: var(--s2);
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            transition: background 0.1s;
         }
-
-        .leaderboard-entry:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateX(4px);
-            border-color: rgba(78, 205, 196, 0.2);
-        }
-
-        .leaderboard-entry.highlight {
-            background: rgba(78, 205, 196, 0.1);
-            border-color: rgba(78, 205, 196, 0.3);
-        }
-
+        .leaderboard-entry:last-child { margin-bottom: 0; }
+        .leaderboard-entry:hover { background: var(--s3); }
+        .leaderboard-entry.highlight { background: var(--teal-bg); border-color: var(--teal-dim); }
         .rank {
-            width: 50px;
-            height: 50px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 800;
-            margin-right: 1.5rem;
-            font-size: 1.1rem;
-        }
-
-        .rank-1 {
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-            color: #000;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-        }
-
-        .rank-2 {
-            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
-            color: #000;
-            box-shadow: 0 4px 15px rgba(192, 192, 192, 0.3);
-        }
-
-        .rank-3 {
-            background: linear-gradient(135deg, #cd7f32 0%, #e8a857 100%);
-            color: #000;
-            box-shadow: 0 4px 15px rgba(205, 127, 50, 0.3);
-        }
-
-        .rank-default {
-            background: rgba(255, 255, 255, 0.1);
-            color: #a0a0a0;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .player-info {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .player-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-        }
-
-        .player-name {
-            font-weight: 600;
-            color: #e0e0e0;
-            font-size: 1.1rem;
-        }
-
-        .player-stats {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.3rem;
             font-weight: 700;
-            color: #4ecdc4;
+            margin-right: 1rem;
+            font-size: 0.78rem;
+            font-family: var(--mono);
+            flex-shrink: 0;
         }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: #a0a0a0;
-            margin-top: 0.25rem;
-        }
-
-        /* Loading State */
-        .loading {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: #666;
-        }
-
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #4ecdc4;
+        .rank-1 { background: #b8860b; color: #fff; }
+        .rank-2 { background: var(--s3); color: var(--text); border: 1px solid #888; }
+        .rank-3 { background: #7c4a1e; color: #fff; }
+        .rank-default { background: var(--s3); color: var(--text-2); border: 1px solid var(--border); }
+        .player-info { flex: 1; display: flex; align-items: center; gap: 0.75rem; }
+        .player-avatar {
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+            background: var(--s3);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.72rem;
+            color: var(--teal);
+            flex-shrink: 0;
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Back Link */
+        .player-name { font-weight: 600; color: var(--text); font-size: 0.85rem; }
+        .player-stats { display: flex; align-items: center; gap: 1.5rem; }
+        .stat-item { text-align: right; }
+        .stat-value { font-size: 0.9rem; font-weight: 700; color: var(--teal); font-family: var(--mono); }
+        .stat-label { font-size: 0.72rem; color: var(--text-2); margin-top: 0.1rem; }
         .back-link {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            color: #4ecdc4;
+            gap: 0.4rem;
+            color: var(--teal);
             text-decoration: none;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            transition: all 0.2s ease;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            transition: opacity 0.1s;
         }
-
-        .back-link:hover {
-            transform: translateX(-4px);
-        }
-/* Pagination */
+        .back-link:hover { opacity: 0.8; }
         .pagination-btn {
-            background: rgba(255, 255, 255, 0.05);
-            color: #e0e0e0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
+            background: var(--s3);
+            color: var(--text-2);
+            border: 1px solid var(--border);
+            padding: 0.45rem 1rem;
+            border-radius: 4px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: color 0.1s, background 0.1s;
+            font-family: var(--body);
+            font-size: 0.8rem;
         }
-
-        .pagination-btn:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(78, 205, 196, 0.3);
-            transform: translateY(-1px);
+        .pagination-btn:hover:not(:disabled) { color: var(--text); background: var(--s2); }
+        .pagination-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .loading { text-align: center; padding: 3rem 2rem; color: var(--text-2); }
+        @media (max-width: 600px) {
+            .container { padding: 1rem; }
+            .leaderboard-entry { flex-wrap: wrap; gap: 0.5rem; }
+            .rank { margin-right: 0.5rem; }
+            .player-stats { gap: 0.75rem; }
+            .stat-item { text-align: center; }
         }
-
-        .pagination-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        @media (max-width: 768px) {
-            .nav-tabs {
-                gap: 1rem;
-                font-size: 0.9rem;
-            }
-
-            .header-content {
-                padding: 1rem;
-            }
-
-            .user-name {
-                display: none;
-            }
-
-            .player-stats {
-                gap: 1rem;
-            }
-
-            .stat-value {
-                font-size: 1.1rem;
-            }
-        }
-		/* Fix white bars in landscape */
-html {
-  background-color: #0f0f23;
-}
-
-@media (max-width: 1024px) and (orientation: landscape) {
-  .header-content,
-  .main-content {
-    max-width: none !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-}
-@media (max-width: 600px) and (orientation: portrait) {
-  .logo-link {
-    display: none;
-  }
-  .nav-tabs {
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    flex-wrap: nowrap;
-    scrollbar-width: thin; /* Firefox */
-  }
-  .nav-tabs::-webkit-scrollbar {
-    height: 6px; /* Chrome/Safari scrollbar height */
-  }
-  .nav-tabs::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.3);
-    border-radius: 4px;
-  }
-  .nav-tab {
-    flex: 0 0 auto; /* prevent shrinking */
-  }
-  .main-content {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-    max-width: 100% !important;
-    margin: 0 !important;
-    box-sizing: border-box;
-  }
-  .leaderboard-card,
-  .leagues-container,
-  .reminder-card {
-    width: 100% !important;
-    margin: 0 !important;
-    box-sizing: border-box;
-  }
-}
-@media (max-width: 600px) and (orientation: portrait) {
-  .leaderboard-container {
-    padding: 1rem !important;
-  }
-
-  .leaderboard-entry {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .rank {
-    width: 50px !important;
-    height: 50px !important;
-    margin-bottom: 0.5rem;
-    margin-right: 0;
-  }
-
-  .player-info {
-    width: 100%;
-    justify-content: flex-start;
-    margin-bottom: 0.5rem;
-  }
-
-  .player-stats {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-    width: 100%;
-  }
-
-  .stat-item {
-    width: 100%;
-    text-align: left;
-  }
-}
-
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
-        <div class="header-content">
+        <div class="header-inner">
             <a href="/dashboard.html" class="logo-link">
-                <img src="images/logo.png" alt="Fantasy Marching" class="logo">
+                <img src="images/logo.png" alt="Fantasy Marching" class="logo-img">
             </a>
-            
-            <nav class="nav-tabs">
-                <a href="/dashboard.html" class="nav-tab">Dashboard</a>
-                <a href="/predictions-dashboard.html" class="nav-tab active">Predictions</a>
-                <a href="/league.html" class="nav-tab">League</a>
-                <a href="/information.html" class="nav-tab">Information</a>
+            <nav class="nav">
+                <a href="/dashboard.html">Dashboard</a>
+                <a href="/predictions-dashboard.html" class="active">Predictions</a>
+                <a href="/league.html">League</a>
+                <a href="/information.html">Information</a>
             </nav>
-            
-            <div class="user-profile" onclick="toggleUserMenu()">
-                <div class="user-avatar" id="userAvatar">
-                    <!-- Will be populated with user initial or image -->
-                </div>
-                <span class="user-name" id="userName">Loading...</span>
-                
-                <!-- Profile Dropdown -->
-                <div class="profile-dropdown" id="profileDropdown">
-                    <a href="/profile.html" class="dropdown-item">
-                        <span class="dropdown-icon">👤</span>
-                        <span>Profile</span>
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
-                        <span class="dropdown-icon">🛡️</span>
-                        <span>Admin Panel</span>
-                    </a>
-                    <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
-                    <div class="dropdown-item" onclick="logout()">
-                        <span class="dropdown-icon">🚪</span>
-                        <span>Logout</span>
+            <div class="header-right">
+                <div class="user-profile" onclick="toggleUserMenu()">
+                    <div class="user-avatar" id="userAvatar"></div>
+                    <span class="user-name" id="userName">Loading...</span>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <a href="/profile.html" class="dropdown-item"><span class="dropdown-icon">👤</span><span>Profile</span></a>
+                        <div class="dropdown-divider"></div>
+                        <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display:none;"><span class="dropdown-icon">🛡️</span><span>Admin Panel</span></a>
+                        <div class="dropdown-divider" id="adminDivider" style="display:none;"></div>
+                        <div class="dropdown-item" onclick="logout()"><span class="dropdown-icon">🚪</span><span>Logout</span></div>
                     </div>
                 </div>
             </div>
