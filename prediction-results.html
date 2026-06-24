@@ -50,6 +50,17 @@
             letter-spacing: 0.5px;
             margin-bottom: 0.75rem;
         }
+        /* Predicted vs Actual side-by-side; stacks on narrow screens */
+        .results-compare {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            align-items: start;
+        }
+        .results-compare .card { margin-bottom: 1.25rem; }
+        @media (max-width: 760px) {
+            .results-compare { grid-template-columns: 1fr; gap: 0; }
+        }
         .leaderboard-entry {
             display: flex;
             justify-content: space-between;
@@ -174,7 +185,8 @@
             <p class="subtitle"></p>
         </div>
 
-        <!-- Predicted Placements -->
+        <!-- Predicted vs Actual Placements (side-by-side, stacks on mobile) -->
+        <div class="results-compare">
         <div class="card">
             <div class="leaderboard">
                 <h2 class="leaderboard-title">Your Predicted Placements</h2>
@@ -212,9 +224,10 @@
 			<div class="leaderboard">
 				<h2 class="leaderboard-title">Actual Placements</h2>
 				<div id="actualLeaderboard">
-					
+
 				</div>
 			</div>
+		</div>
 		</div>
 
         <!-- Caption Awards -->
