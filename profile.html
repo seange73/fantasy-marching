@@ -256,6 +256,18 @@
                 </div>
             </div>
         </section>
+
+        <!-- Active Leagues (shown for any profile you view) -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Active Leagues</h2>
+            </div>
+            <div class="leagues-container">
+                <div id="leaguesContent">
+                    <div class="loading"><div class="loading-spinner"></div></div>
+                </div>
+            </div>
+        </section>
         <style>
             .social-box { background:var(--s1); border:1px solid var(--border); border-radius:6px; padding:1.5rem; }
             .friends-subhead { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); margin-bottom:0.5rem; font-family:var(--mono); }
@@ -330,7 +342,8 @@ async function initializeProfile() {
   await Promise.all([
     loadUserProfile(),
     loadPredictionStats(),
-    loadGlobalLeagueStats()
+    loadGlobalLeagueStats(),
+    loadUserLeagues()
   ]);
 }
 
@@ -379,8 +392,8 @@ async function loadUserProfile() {
       document.getElementById("friendsSection").style.display = "block";
       loadFriendsData();
     } else {
-      // viewing someone else -> offer to add them
-      document.getElementById("addFriendBtn").style.display = "inline-block";
+      // viewing someone else -> button reflects the current relationship
+      setupAddFriendButton(currentUser.id);
     }
 
     // admin panel link only on your own profile
@@ -586,6 +599,58 @@ async function addFriendFromProfile(btn) {
   if (error) { toast(error.message, 'error'); if (btn) { btn.disabled = false; btn.textContent = 'Add Friend'; } return; }
   if (btn) btn.textContent = 'Request sent';
   toast('Friend request sent');
+}
+
+// On another user's profile, show the button that matches the current relationship
+// (Add Friend / Request sent / Accept request / Friends) instead of always "Add Friend".
+async function setupAddFriendButton(viewedId) {
+  const btn = document.getElementById('addFriendBtn');
+  if (!btn) return;
+  btn.style.display = 'inline-block';
+  const me = signedInUser.id;
+  // Both queries are self-scoped (one side is always me); RLS (friendships_select_own)
+  // also limits friendships to rows where you are requester or addressee.
+  const [out, inc] = await Promise.all([
+    supabaseClient.from('friendships').select('id,status').eq('requester_id', me).eq('addressee_id', viewedId),
+    supabaseClient.from('friendships').select('id,status').eq('addressee_id', me).eq('requester_id', viewedId)
+  ]);
+  const rel = [...(out.data || []), ...(inc.data || [])][0];
+
+  if (!rel) {
+    btn.textContent = 'Add Friend';
+    btn.disabled = false;
+    btn.onclick = function () { addFriendFromProfile(btn); };
+  } else if (rel.status === 'accepted') {
+    btn.textContent = 'Friends ✓';
+    btn.title = 'Click to remove friend';
+    btn.disabled = false;
+    btn.onclick = async function () {
+      if (!confirm('Remove this friend?')) return;
+      btn.disabled = true;
+      const { error } = await supabaseClient.rpc('remove_friend', { p_other: viewedId });
+      if (error) { toast(error.message, 'error'); btn.disabled = false; return; }
+      toast('Friend removed');
+      btn.title = '';
+      btn.textContent = 'Add Friend';
+      btn.disabled = false;
+      btn.onclick = function () { addFriendFromProfile(btn); };
+    };
+  } else if (out.data && out.data.length) {
+    btn.textContent = 'Request sent';
+    btn.disabled = true;
+    btn.onclick = null;
+  } else {
+    // they sent you a request -> let you accept it here
+    btn.textContent = 'Accept friend request';
+    btn.disabled = false;
+    btn.onclick = async function () {
+      btn.disabled = true;
+      const { error } = await supabaseClient.rpc('respond_friend_request', { p_friendship_id: rel.id, p_accept: true });
+      if (error) { toast(error.message, 'error'); btn.disabled = false; return; }
+      btn.textContent = 'Friends ✓';
+      toast('Friend added');
+    };
+  }
 }
 
 function closeInviteMenu() { const m = document.getElementById('inviteMenu'); if (m) m.remove(); }
@@ -1032,7 +1097,7 @@ console.log("team data", team, "teamError", teamError);
               </div>
               ${rosterWithScores.map(r => `
                 <div style="padding:0.5rem 0; color:#e0e0e0; display:flex; justify-content:space-between;">
-                  ${r.corps_name}
+                  ${escapeHtml(r.corps_name)}
                   <span style="color:${r.avgScore>0?'#4ecdc4':'#666'};">
                     ${r.avgScore>0 ? r.avgScore.toFixed(2) : 'No score'}
                   </span>
@@ -1059,6 +1124,81 @@ console.log("team data", team, "teamError", teamError);
     );
   }
 }
+
+        // Load the viewed user's leagues with their record / avg points / rank.
+        // This is public profile info by design: any profile (yours or another user's,
+        // via the ?userId= param) shows that user's active leagues and standings, the
+        // same membership data already exposed on league pages and leaderboards. It is
+        // intentionally not restricted to the signed-in user.
+        async function loadUserLeagues() {
+            const el = document.getElementById('leaguesContent');
+            try {
+                const { data: memberships } = await supabaseClient
+                    .from('league_members')
+                    .select(`league_id, role, leagues ( id, name, is_global )`)
+                    .eq('user_id', currentUser.id)
+                    .eq('status', 'active');
+
+                if (!memberships || memberships.length === 0) {
+                    el.innerHTML = `<div class="no-data"><p>No leagues</p></div>`;
+                    return;
+                }
+
+                // Matchups where a team played, scoped with parameterized .eq (no filter-string interpolation).
+                async function decidedMatchups(leagueId, teamId) {
+                    const [a, b] = await Promise.all([
+                        supabaseClient.from('league_matchups').select('*').eq('league_id', leagueId).eq('team1_id', teamId).not('winner_id', 'is', null),
+                        supabaseClient.from('league_matchups').select('*').eq('league_id', leagueId).eq('team2_id', teamId).not('winner_id', 'is', null)
+                    ]);
+                    return [...(a.data || []), ...(b.data || [])];
+                }
+
+                const leagueStats = await Promise.all(memberships.map(async (membership) => {
+                    const league = membership.leagues;
+                    const { data: team } = await supabaseClient
+                        .from('league_teams').select('*')
+                        .eq('league_id', league.id).eq('user_id', currentUser.id).single();
+                    if (!team) return { league, record: '0-0', avgPoints: 0, rank: '-' };
+
+                    const matchups = await decidedMatchups(league.id, team.id);
+                    let wins = 0, losses = 0, totalScore = 0, gamesPlayed = 0;
+                    matchups.forEach(m => {
+                        const teamScore = m.team1_id === team.id ? m.team1_score : m.team2_score;
+                        if (m.winner_id === team.id) wins++; else losses++;
+                        totalScore += teamScore || 0; gamesPlayed++;
+                    });
+                    const avgPoints = gamesPlayed > 0 ? (totalScore / gamesPlayed).toFixed(1) : '0';
+
+                    const { data: allTeams } = await supabaseClient.from('league_teams').select('*').eq('league_id', league.id);
+                    const winPct = gamesPlayed > 0 ? wins / gamesPlayed : 0;
+                    let rank = 1;
+                    for (const otherTeam of allTeams || []) {
+                        if (otherTeam.id === team.id) continue;
+                        const om = await decidedMatchups(league.id, otherTeam.id);
+                        let otherWins = 0, otherGames = 0;
+                        om.forEach(m => { if (m.winner_id === otherTeam.id) otherWins++; otherGames++; });
+                        const otherWinPct = otherGames > 0 ? otherWins / otherGames : 0;
+                        if (otherWinPct > winPct) rank++;
+                    }
+                    return { league, record: `${wins}-${losses}`, avgPoints, rank: `${rank}/${allTeams?.length || 0}` };
+                }));
+
+                el.innerHTML = leagueStats.map(stats => `
+                    <div class="league-entry">
+                        <div class="league-name">
+                            ${escapeHtml(stats.league.name)}
+                            ${stats.league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
+                        </div>
+                        <div class="league-stat"><div class="league-stat-label">Record</div><div class="league-stat-value">${escapeHtml(stats.record)}</div></div>
+                        <div class="league-stat"><div class="league-stat-label">Avg Points</div><div class="league-stat-value">${escapeHtml(String(stats.avgPoints))}</div></div>
+                        <div class="league-stat"><div class="league-stat-label">Rank</div><div class="league-stat-value">${escapeHtml(stats.rank)}</div></div>
+                    </div>
+                `).join('') || `<div class="no-data"><p>No league data available.</p></div>`;
+            } catch (error) {
+                console.error('Error loading leagues:', error);
+                el.innerHTML = `<div class="no-data"><p style="color: #ff6b6b;">Error loading league data</p></div>`;
+            }
+        }
 
         // Toggle user menu
         function toggleUserMenu() {
