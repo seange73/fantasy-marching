@@ -111,23 +111,23 @@
         <section class="section">
             <h2 class="section-title">Predictions Scoring System</h2>
             <div class="content">
-                <p>The scoring system works by assigning two scores to a player: their total points and overall accuracy in predicting.</p>
-                
+                <p>The scoring system gives each prediction two numbers: a <strong>total points</strong> score (used for leaderboard ranking) and an <strong>accuracy</strong> percentage.</p>
+
                 <h3 class="subsection-title">For Points:</h3>
                 <ul>
                     <li>20 points for every correct placement, 10 points for being one place off and 5 points for being two places off</li>
                     <li>5 points for every correct caption award prediction</li>
-                    <li>For being close to the raw numerical score of each corps, x% away from the actual score * 5. Bonus points:
+                    <li>A smaller bonus for how close your predicted raw score is to each corps' actual score:
                         <ul style="margin-top: 0.5rem;">
-                            <li>If within 1 point +1 bonus point</li>
-                            <li>If within 0.5 points +2 bonus points</li>
-                            <li>If within 0.25 points +3 points</li>
-                            <li>If within 0.1 points +4 points</li>
-                            <li>If correct score +7 points</li>
+                            <li>Within 0.5 points: +1</li>
+                            <li>Within 0.25 points: +2</li>
+                            <li>Within 0.1 points: +3</li>
                         </ul>
                     </li>
                 </ul>
-                <p>Players' accuracy ratings will simply be their raw score over the total amount of points it has been possible to score across every competition the player predicted on.</p>
+
+                <h3 class="subsection-title">For Accuracy:</h3>
+                <p>Your accuracy is based on the calls that take skill: <strong>placements and caption winners</strong>. Predict every placement and caption winner correctly and you'll read 100%, even if your raw score guesses aren't exact. The score-closeness bonus above adds to your point total but does not affect your accuracy, so being slightly off on the numbers won't drag your accuracy down.</p>
             </div>
         </section>
 

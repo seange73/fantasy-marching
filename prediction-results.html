@@ -353,6 +353,14 @@ async function loadPredictionData() {
 	  document.getElementById("loadingState").style.display = "none";
 }
 function renderPredictionPage(prediction, result, event) {
+    // index the stored scoring breakdown: corps name -> {placement_points, score_points}, caption -> points
+    const bd = Array.isArray(result.breakdown) ? result.breakdown : [];
+    const corpsPts = {}, capPts = {};
+    bd.forEach(item => {
+        if (item && item.corps_name) corpsPts[item.corps_name] = item;
+        else if (item && item.caption) capPts[item.caption] = item.caption_points;
+    });
+
     // event name/date
     document.querySelector(".event-title").textContent = event.name;
     const eventDate = new Date(event.date).toLocaleDateString("en-US", {
@@ -361,10 +369,12 @@ function renderPredictionPage(prediction, result, event) {
     document.querySelector(".subtitle").textContent = `${eventDate} • ${event.location || "TBD"}`;
 
     // accuracy summary
+    const subStyle = 'font-size:0.68rem;color:var(--text-3);margin-top:0.2rem;';
     document.querySelector(".accuracy-grid").innerHTML = `
         <div class="accuracy-item">
             <div class="accuracy-label">Points Earned</div>
             <div class="accuracy-value">${result.total_points}</div>
+            <div style="${subStyle}">incl. score-closeness bonus</div>
         </div>
         <div class="accuracy-item">
             <div class="accuracy-label">Possible Points</div>
@@ -373,6 +383,7 @@ function renderPredictionPage(prediction, result, event) {
         <div class="accuracy-item">
             <div class="accuracy-label">Accuracy</div>
             <div class="accuracy-value accuracy-percentage">${Math.round(result.accuracy * 100)}%</div>
+            <div style="${subStyle}">placements + captions</div>
         </div>
     `;
 
@@ -380,17 +391,24 @@ function renderPredictionPage(prediction, result, event) {
     const ordered = Object.entries(prediction.score_predictions || {})
         .sort((a,b) => b[1] - a[1]);
 
+    const esc = window.escapeHtml || (s => String(s ?? ''));
     const leaderboard = document.getElementById("leaderboard");
     leaderboard.innerHTML = ordered.map(([corps,score],index) => {
         let cls = "default";
         if(index === 0) cls = "gold";
         else if(index === 1) cls = "silver";
         else if(index === 2) cls = "bronze";
+        const bp = corpsPts[corps];
+        const earned = bp ? ((bp.placement_points || 0) + (bp.score_points || 0)) : null;
+        const badge = earned != null
+            ? `<div class="corps-total" title="placement ${bp.placement_points || 0} + score ${bp.score_points || 0}" style="color:var(--teal);min-width:3.5rem;">+${earned} pts</div>`
+            : '';
         return `
             <div class="leaderboard-entry ${cls}">
                 <div class="rank-number">${index+1}</div>
-                <strong>${corps}</strong>
-                <div class="corps-total">${score.toFixed(3)}</div>
+                <strong>${esc(corps)}</strong>
+                <div class="corps-total">${Number(score).toFixed(3)}</div>
+                ${badge}
             </div>
         `;
     }).join("");
@@ -412,7 +430,7 @@ if (event.final_scores) {
     return `
       <div class="leaderboard-entry ${cls}">
         <div class="rank-number">${result.placement}</div>
-        <strong>${result.corps_name}</strong>
+        <strong>${esc(result.corps_name)}</strong>
         <div class="corps-total">${displayScore}</div>
       </div>
     `;
@@ -440,13 +458,15 @@ captionContainer.innerHTML = captions.map(caption => {
 
     const actual = event.caption_winners?.[caption] || "N/A";
     const correct = userPick === actual;
+    const pts = capPts[caption];
+    const ptsLabel = (pts != null) ? ` (+${pts})` : '';
 
     return `
         <div class="caption-item">
             <div class="caption-type">${caption.replace("_"," ").toUpperCase()}</div>
-            <div class="caption-pick">Your Pick: ${userPick}</div>
+            <div class="caption-pick">Your Pick: ${esc(userPick)}</div>
             <div class="caption-result ${correct ? "correct" : "incorrect"}">
-                ${correct ? "✔ Correct" : `✖ Missed (Actual: ${actual})`}
+                ${correct ? `✔ Correct${ptsLabel}` : `✖ Missed (Actual: ${esc(actual)})`}
             </div>
         </div>
     `;
