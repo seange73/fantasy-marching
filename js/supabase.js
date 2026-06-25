@@ -79,3 +79,12 @@ window.fantasyMarching = {
     getCurrentUser,
     getUserProfile
 };
+
+// Load the shared notification bell on every page. It self-checks auth and only
+// renders when signed in, so it is a no-op on the login page.
+(function () {
+    const s = document.createElement('script');
+    s.src = '/js/notifications.js';
+    s.defer = true;
+    document.head.appendChild(s);
+})();
