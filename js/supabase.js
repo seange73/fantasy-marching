@@ -73,11 +73,45 @@ async function getUserProfile(userId) {
     return data;
 }
 
+// Render the signed-in user's header block (avatar, name, admin link) the same
+// way on every page. This is the single source of truth for that block: pages
+// call it instead of re-implementing the fetch + render, which is what caused the
+// avatar to load on some pages but not others. Returns the profile row so callers
+// can still use is_admin and other fields.
+async function renderHeaderUser(user) {
+    if (!user) return null;
+
+    const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('username, avatar_url, is_admin')
+        .eq('id', user.id)
+        .single();
+
+    const name = (profile && profile.username) || (user.email ? user.email.split('@')[0] : 'User');
+    const initial = (name[0] || 'U').toUpperCase();
+
+    const nameEl = document.getElementById('userName');
+    if (nameEl) nameEl.textContent = name;
+
+    const avatarEl = document.getElementById('userAvatar');
+    if (avatarEl) avatarEl.innerHTML = avatarHtml(profile && profile.avatar_url, initial);
+
+    if (profile && profile.is_admin) {
+        const link = document.getElementById('adminLink');
+        const divider = document.getElementById('adminDivider');
+        if (link) link.style.display = 'flex';
+        if (divider) divider.style.display = 'block';
+    }
+
+    return profile || null;
+}
+
 // Export functions for use in other scripts
 window.fantasyMarching = {
     supabase: supabaseClient,
     getCurrentUser,
-    getUserProfile
+    getUserProfile,
+    renderHeaderUser
 };
 
 // Load the shared notification bell on every page. It self-checks auth and only
