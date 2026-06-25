@@ -651,13 +651,18 @@
                 <button class="tab" onclick="switchTab('matchup')">Weekly Matchup</button>
                 <button class="tab" onclick="switchTab('standings')">Standings</button>
                 <button class="tab" onclick="switchTab('recruitment')">Free Agents</button>
-				<button class="tab" onclick="switchTab('trades')">Trades</button>
             </div>
 
             <div class="content">
                 <!-- My Lineup Tab -->
                 <div id="lineup-content" class="tab-content">
-                    <h2 class="section-title">Starting Lineup</h2>
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+                        <h2 class="section-title" style="margin:0;">Starting Lineup</h2>
+                        <button id="tradeOffersBtn" class="btn btn-secondary" onclick="openTradeInbox()" style="display:none; align-items:center; gap:0.5rem;">
+                            Trade Offers
+                            <span id="tradeOffersBadge" style="display:none; background:#4ecdc4; color:#06231f; font-weight:700; border-radius:999px; padding:0.05rem 0.5rem; font-size:0.75rem;">0</span>
+                        </button>
+                    </div>
                     <div class="lineup-grid" id="lineupGrid">
                         <!-- Lineup will be populated here -->
                     </div>
@@ -686,13 +691,6 @@
                         <!-- Free agents will be populated here -->
                     </div>
                 </div>
-				<!-- Trades Tab -->
-				<div id="trades-content" class="tab-content hidden">
-					<h2 class="section-title">Trades</h2>
-					<div id="tradesContainer">
-						<!-- Trades will be populated here -->
-					</div>
-				</div>
             </div>
         </div>
     </div>
@@ -1553,7 +1551,12 @@ function getWeekDateRange(weekNumber) {
             
             // Load lineup from draft picks
             await loadLineupFromDraft();
-            
+
+            // Trade offers: inbox badge + deep-link from a notification (?trade=<id>)
+            refreshTradeOffersBadge();
+            const _tradeParam = new URLSearchParams(window.location.search).get('trade');
+            if (_tradeParam) { setTimeout(() => openTradeInbox(_tradeParam), 300); }
+
             // Calculate stats
             await calculateStats();
             
@@ -2088,9 +2091,6 @@ function switchTab(tabName) {
         case 'recruitment':
             loadFreeAgents();
             break;
-		case 'trades':
-			loadTrades();
-			break;
     }
 }
 
@@ -2506,7 +2506,7 @@ ${hasScores ? `
                         ${standings.map((team, index) => `
                             <div style="
                                 display: grid;
-                                grid-template-columns: 40px 1fr auto auto auto;
+                                grid-template-columns: 40px 1fr auto auto auto auto;
                                 gap: 1rem;
                                 align-items: center;
                                 padding: 1rem 1.5rem;
@@ -2532,6 +2532,7 @@ ${hasScores ? `
                                 </span>
                                 <span style="color: #a0a0a0;">${(team.winPct * 100).toFixed(0)}%</span>
                                 <span style="color: #4ecdc4; font-weight: 600;">${team.avgScore.toFixed(1)}</span>
+                                ${team.id === currentTeam?.id ? '<span></span>' : `<button class="btn btn-secondary" style="padding:0.4rem 0.75rem; font-size:0.8rem; white-space:nowrap;" onclick="viewTeamLineup('${team.id}')">View Lineup</button>`}
                             </div>
                         `).join('')}
                     </div>
@@ -3052,347 +3053,160 @@ async function loadFreeAgents() {
         container.innerHTML = '<p style="text-align: center; color: #ff6b6b;">Error loading free agents</p>';
     }
 }
-// Load trades
-async function loadTrades() {
-if (!currentTeam) {
-    console.log('No current team loaded');
-    await loadUserTeam();
-}
-    const container = document.getElementById('tradesContainer');
-    container.innerHTML = '<div class="loading">Loading trades...</div>';
-    // ✅ Actually fetch trades BEFORE checking them
-const { data: trades, error } = await supabaseClient
-  .from('league_trade_offers')
-  .select('*')
-  .eq('league_id', leagueId)
-  .or(`from_team_id.eq.${currentTeam.id},to_team_id.eq.${currentTeam.id}`)
-  .order('created_at', { ascending: false });
-    if (error) {
-        console.error('Error loading trades:', error);
-        container.innerHTML = '<p style="color: #ff6b6b;">Error loading trades</p>';
-        return;
-    }
-if (!trades || trades.length === 0) {
-console.log('Trades query result:', { data: trades});
-container.innerHTML = `
-    <div style="display: grid; gap: 2rem;">
-        <div>
-            <button class="btn" onclick="createNewTrade()">Create New Trade</button>
-        </div>
-        <div>
-            <h3 style="color: #4ecdc4; margin-bottom: 1rem;">Your Trades</h3>
-            <div>No pending trades</div>
-        </div>
-    </div>
-`;
-    return;
-}
-const teamIds = new Set();
-trades.forEach(trade => {
-    teamIds.add(trade.from_team_id);
-    teamIds.add(trade.to_team_id);
-});
+// ---- Trades (Phase 9: per-corps, one-for-one within the same caption) ----
 
-// Get team info
-const { data: teams } = await supabaseClient
-    .from('league_teams')
-    .select('id, user_id')
-    .in('id', Array.from(teamIds));
+// Step 1: from another team's lineup, pick which of MY corps (same caption) to give.
+async function requestTradeFor(toTeamId, getCorps, getCaption) {
+    if (!currentTeam) { showNotification('Error', 'Your team is not loaded yet', 'error'); return; }
+    if (toTeamId === currentTeam.id) { showNotification('Error', "That's your own corps", 'error'); return; }
 
-const userIds = [...new Set(teams?.map(t => t.user_id) || [])];
-const { data: profiles } = await supabaseClient
-    .from('profiles')
-    .select('id, username')
-    .in('id', userIds);
-
-// Create direct team to username map
-const teamToUsername = {};
-teams?.forEach(t => {
-    const profile = profiles?.find(p => p.id === t.user_id);
-    teamToUsername[t.id] = profile?.username || 'Unknown';
-});
-    
-    try {
-console.log('Trades loaded:', trades);
-container.innerHTML = `
-    <div style="display: grid; gap: 2rem;">
-        <div>
-            <button class="btn" onclick="createNewTrade()">Create New Trade</button>
-        </div>
-        <div>
-            <h3 style="color: #4ecdc4; margin-bottom: 1rem;">Your Trades</h3>
-            <div id="activeTradesList">
-                ${trades?.length ? trades.map(trade => {
-                    const isFromTeam = trade.from_team_id === currentTeam.id;
-                    const partnerUsername = teamToUsername[isFromTeam ? trade.to_team_id : trade.from_team_id] || 'Unknown';
-                    
-                    return `
-                        <div style="
-                            background: rgba(255, 255, 255, 0.05);
-                            border: 1px solid rgba(255, 255, 255, 0.1);
-                            border-radius: 12px;
-                            padding: 1.5rem;
-                            margin-bottom: 1rem;
-                        ">
-                            <div style="display: flex; justify-content: space-between; align-items: start;">
-                                <div>
-                                    <div style="font-weight: 600; color: #e0e0e0; margin-bottom: 0.5rem;">
-                                        Trade with ${partnerUsername}
-                                    </div>
-                                    <div style="font-size: 0.9rem; color: #a0a0a0;">
-                                        Status: <span style="color: ${trade.status === 'pending' ? '#ffd700' : trade.status === 'accepted' ? '#4ecdc4' : '#ff6b6b'};">
-                                            ${trade.status.charAt(0).toUpperCase() + trade.status.slice(1)}
-                                        </span>
-                                    </div>
-                                </div>
-${trade.status === 'pending' && !isFromTeam ? `
-  <div style="display: flex; gap: 0.5rem;">
-    <button class="btn" onclick="acceptTrade('${trade.id}')">Accept</button>
-    <button class="btn btn-secondary" onclick="rejectTrade('${trade.id}')">Reject</button>
-  </div>
-` 
-: trade.status === 'pending' && isFromTeam ? `
-  <div style="display: flex; gap: 0.5rem;">
-    <button class="btn btn-secondary" onclick="revokeTrade('${trade.id}')">Revoke</button>
-  </div>
-`
-: ''
-}
-
-<!-- details block ALWAYS shown below -->
-<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-    <div>
-      <div style="font-size: 0.85rem; color: #a0a0a0; margin-bottom: 0.5rem;">
-        ${isFromTeam ? 'Offering:' : 'You Receive:'}
-      </div>
-${trade.from_team_offers.map(offer => 
-  `<div style="color: ${isFromTeam ? '#ff6b6b' : '#4ecdc4'};">
-    ${isFromTeam ? '-' : '+'} ${offer.corps_name} (${formatCaption(offer.caption)})
-  </div>`
-).join('')}
-    </div>
-    <div>
-      <div style="font-size: 0.85rem; color: #a0a0a0; margin-bottom: 0.5rem;">
-        ${isFromTeam ? 'Requesting:' : 'You Give:'}
-      </div>
-${trade.to_team_offers.map(offer => 
-  `<div style="color: ${isFromTeam ? '#4ecdc4' : '#ff6b6b'};">
-    ${isFromTeam ? '+' : '-'} ${offer.corps_name} (${formatCaption(offer.caption)})
-  </div>`
-).join('')}
-    </div>
-  </div>
-</div>
-                            </div>
-                        </div>
-                    `;
-                }).join('') : 'No trades yet'}
-            </div>
-        </div>
-    </div>
-`;
-        
-    } catch (error) {
-        console.error('Error loading trades:', error);
-        container.innerHTML = '<p style="color: #ff6b6b;">Error loading trades</p>';
-    }
-}
-//load partner's roster
-async function loadPartnerRoster() {
-    const partnerId = document.getElementById('tradePartner').value;
-    if (!partnerId) return;
-    
-    const { data: roster } = await supabaseClient
+    const { data: mine, error } = await supabaseClient
         .from('league_team_roster')
-        .select('*')
-        .eq('team_id', partnerId)
-        .order('caption');
-    
-    document.getElementById('theirOffers').innerHTML = roster.map(r => `
-        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <input type="checkbox" value="${r.corps_name}|${r.caption}">
-            <span>${r.corps_name} (${formatCaption(r.caption)})</span>
-        </label>
-    `).join('');
-}
-
-// Create new trade
-async function createNewTrade() {
-    // Get all teams in league except current user's
-    const { data: teams } = await supabaseClient
-        .from('league_teams')
-        .select('*')
-        .eq('league_id', leagueId)
-        .neq('id', currentTeam.id);
-    
-    // Get usernames
-    const userIds = teams.map(t => t.user_id);
-    const { data: profiles } = await supabaseClient
-        .from('profiles')
-        .select('id, username')
-        .in('id', userIds);
-    
-    const usernameMap = {};
-    profiles?.forEach(p => usernameMap[p.id] = p.username);
-    
-    // Get user's roster
-    const { data: roster } = await supabaseClient
-        .from('league_team_roster')
-        .select('*')
+        .select('corps_name, caption')
         .eq('team_id', currentTeam.id)
-        .order('caption');
+        .eq('caption', getCaption)
+        .order('corps_name');
 
-showModal('Create Trade Offer', `
-    <div style="display: grid; gap: 1.5rem;">
-            <div>
-                <label style="color: #4ecdc4; font-weight: 600;">Trade With:</label>
-                <select id="tradePartner" class="form-input" style="width: 100%; margin-top: 0.5rem;">
-                    <option value="">Select a team...</option>
-                    ${teams.map(t => `<option value="${t.id}">${escapeHtml(usernameMap[t.user_id] || 'Unknown')}</option>`).join('')}
-                </select>
+    if (error) { showNotification('Error', 'Could not load your roster', 'error'); return; }
+    const candidates = (mine || []).filter(r => r.corps_name !== getCorps);
+    if (candidates.length === 0) {
+        showNotification('Nothing to offer', `You have no other ${escapeHtml(formatCaption(getCaption))} corps to trade.`, 'info');
+        return;
+    }
+
+    showModal(`Trade for ${getCorps}`, '', [
+        { text: 'Cancel', primary: false },
+        { text: 'Send Offer', primary: true, callback: () => submitTradeRequest(toTeamId, getCorps, getCaption) }
+    ]);
+    const m = document.getElementById('modalMessage');
+    m.innerHTML = `
+        <div style="margin-top:1rem;">
+            <div style="color:#a0a0a0; font-size:0.9rem; margin-bottom:1rem;">
+                You receive <strong style="color:#4ecdc4;">${escapeHtml(getCorps)}</strong> (${escapeHtml(formatCaption(getCaption))}).
+                Choose one of your ${escapeHtml(formatCaption(getCaption))} corps to give in return:
             </div>
-            
-            <div>
-                <label style="color: #4ecdc4; font-weight: 600;">You Give:</label>
-                <div id="yourOffers" style="margin-top: 0.5rem;">
-                    ${roster.map(r => `
-                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <input type="checkbox" value="${r.corps_name}|${r.caption}">
-                            <span>${r.corps_name} (${formatCaption(r.caption)})</span>
-                        </label>
-                    `).join('')}
+            <div style="display:grid; gap:0.5rem;">
+                ${candidates.map((r, i) => `
+                    <label style="display:flex; align-items:center; gap:0.6rem; padding:0.6rem 0.75rem; background:rgba(255,255,255,0.04); border-radius:10px; cursor:pointer;">
+                        <input type="radio" name="giveCorps" value="${escapeHtml(r.corps_name)}" ${i === 0 ? 'checked' : ''}>
+                        <span>${escapeHtml(r.corps_name)}</span>
+                    </label>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+async function submitTradeRequest(toTeamId, getCorps, getCaption) {
+    const sel = document.querySelector('#modalMessage input[name="giveCorps"]:checked');
+    if (!sel) { showNotification('Error', 'Pick a corps to give', 'error'); return; }
+    const giveCorps = sel.value;
+    const { error } = await supabaseClient.rpc('request_trade', {
+        p_from_team_id: currentTeam.id,
+        p_to_team_id: toTeamId,
+        p_give_corps: giveCorps,
+        p_give_caption: getCaption,
+        p_get_corps: getCorps,
+        p_get_caption: getCaption
+    });
+    if (error) { showNotification('Trade failed', error.message || 'Could not send offer', 'error'); return; }
+    closeModal();
+    showNotification('Offer sent', `Requested ${getCorps} for your ${giveCorps}.`, 'success');
+    refreshTradeOffersBadge();
+}
+
+// Inbox: pending offers involving me in this league. Incoming count drives the badge.
+let __tradeOffersCache = [];
+async function refreshTradeOffersBadge() {
+    if (!currentTeam || !leagueId) return;
+    const { data, error } = await supabaseClient.rpc('get_my_trade_offers', { p_league_id: leagueId });
+    if (error) { console.error('get_my_trade_offers', error); return; }
+    __tradeOffersCache = Array.isArray(data) ? data : [];
+    const incoming = __tradeOffersCache.filter(o => o.direction === 'incoming').length;
+    const btn = document.getElementById('tradeOffersBtn');
+    const badge = document.getElementById('tradeOffersBadge');
+    if (!btn || !badge) return;
+    btn.style.display = __tradeOffersCache.length ? 'inline-flex' : 'none';
+    if (incoming > 0) { badge.textContent = incoming; badge.style.display = 'inline-block'; }
+    else { badge.style.display = 'none'; }
+}
+
+async function openTradeInbox(focusTradeId) {
+    await refreshTradeOffersBadge();
+    showModal('Trade Offers', '', [{ text: 'Close', primary: true, callback: null }]);
+    renderTradeInbox(document.getElementById('modalMessage'), __tradeOffersCache, focusTradeId);
+}
+
+function renderTradeInbox(m, offers, focusTradeId) {
+    if (!offers || offers.length === 0) {
+        m.innerHTML = '<div style="color:#a0a0a0; margin-top:1rem;">No pending trade offers.</div>';
+        return;
+    }
+    const incoming = offers.filter(o => o.direction === 'incoming');
+    const outgoing = offers.filter(o => o.direction === 'outgoing');
+
+    const card = (o) => {
+        const isIncoming = o.direction === 'incoming';
+        // give_corps/get_corps are from the SENDER's perspective. Flip for an incoming offer.
+        const youGet = isIncoming ? o.give_corps : o.get_corps;
+        const youGive = isIncoming ? o.get_corps : o.give_corps;
+        const when = window.relativeTime ? window.relativeTime(o.created_at) : '';
+        const focus = focusTradeId && o.id === focusTradeId;
+        return `
+            <div style="background:${focus ? 'rgba(78,205,196,0.12)' : 'rgba(255,255,255,0.04)'};
+                        border:1px solid ${focus ? 'rgba(78,205,196,0.4)' : 'rgba(255,255,255,0.08)'};
+                        border-radius:12px; padding:1rem; margin-bottom:0.75rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <div style="font-weight:600; color:#e0e0e0;">${isIncoming ? 'From' : 'To'} ${escapeHtml(o.partner_username || 'Unknown')}</div>
+                    <div style="color:#666; font-size:0.75rem;">${when}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; color:#a0a0a0; font-size:0.9rem; margin-bottom:0.75rem;">
+                    <span>You give <strong style="color:#ff6b6b;">${escapeHtml(youGive)}</strong></span>
+                    <span style="color:#4ecdc4;">&#8644;</span>
+                    <span>You get <strong style="color:#4ecdc4;">${escapeHtml(youGet)}</strong></span>
+                    <span style="color:#666;">(${escapeHtml(formatCaption(o.give_caption))})</span>
+                </div>
+                <div style="display:flex; gap:0.5rem;">
+                    ${isIncoming
+                        ? `<button class="btn" style="padding:0.4rem 0.9rem; font-size:0.85rem;" onclick="acceptTrade('${jsStr(o.id)}')">Accept</button>
+                           <button class="btn btn-secondary" style="padding:0.4rem 0.9rem; font-size:0.85rem;" onclick="rejectTrade('${jsStr(o.id)}')">Decline</button>`
+                        : `<button class="btn btn-secondary" style="padding:0.4rem 0.9rem; font-size:0.85rem;" onclick="revokeTrade('${jsStr(o.id)}')">Revoke</button>`}
                 </div>
             </div>
-            
-            <div>
-                <label style="color: #4ecdc4; font-weight: 600;">You Receive:</label>
-                <div id="theirOffers" style="margin-top: 0.5rem;">
-                    <p style="color: #666;">Select a team first</p>
-                </div>
-            </div>   
+        `;
+    };
 
-`, [
-    { text: 'Cancel', primary: false },
-    { text: 'Send Offer', primary: true, callback: sendTradeOffer }
-]);
-    
-
-    // Load partner's roster when selected
-setTimeout(() => {
-    document.getElementById('tradePartner').addEventListener('change', loadPartnerRoster);
-}, 100);
+    m.innerHTML = `
+        <div style="margin-top:1rem;">
+            ${incoming.length ? `<h3 style="color:#4ecdc4; font-size:1rem; margin-bottom:0.75rem;">Incoming</h3>${incoming.map(card).join('')}` : ''}
+            ${outgoing.length ? `<h3 style="color:#4ecdc4; font-size:1rem; margin:1rem 0 0.75rem;">Outgoing</h3>${outgoing.map(card).join('')}` : ''}
+        </div>
+    `;
 }
 
-//send trade offer
-async function sendTradeOffer() {
-    const partnerId = document.getElementById('tradePartner').value;
-    if (!partnerId) {
-        showNotification('Error', 'Please select a trade partner', 'error');
-        return;
-    }
-    
-    const yourOffers = Array.from(document.querySelectorAll('#yourOffers input:checked')).map(cb => {
-        const [corps_name, caption] = cb.value.split('|');
-        return { corps_name, caption };
-    });
-    
-    const theirOffers = Array.from(document.querySelectorAll('#theirOffers input:checked')).map(cb => {
-        const [corps_name, caption] = cb.value.split('|');
-        return { corps_name, caption };
-    });
-    
-    if (yourOffers.length === 0 || theirOffers.length === 0) {
-        showNotification('Error', 'Both sides must offer at least one corps', 'error');
-        return;
-    }
-//enforce caption match
-const uniqueYouGive = [...new Set(yourOffers.map(o => o.caption))].sort();
-const uniqueYouReceive = [...new Set(theirOffers.map(o => o.caption))].sort();
-
-if (uniqueYouGive.length !== uniqueYouReceive.length ||
-    !uniqueYouGive.every((val, i) => val === uniqueYouReceive[i])) {
-  showNotification(
-    'Caption Mismatch',
-    'Trades must offer the same set of captions on both sides.',
-    'error'
-  );
-  return;
-}
-    // Check 10 offer limit
-    const { count } = await supabaseClient
-        .from('league_trade_offers')
-        .select('*', { count: 'exact', head: true })
-        .eq('from_team_id', currentTeam.id)
-        .eq('status', 'pending');
-    
-    if (count >= 10) {
-        showNotification('Error', 'You can only have 10 pending offers', 'error');
-        return;
-    }
-    
-    // Create trade
-    const { error } = await supabaseClient
-        .from('league_trade_offers')
-        .insert({
-            league_id: leagueId,
-            from_team_id: currentTeam.id,
-            to_team_id: partnerId,
-            from_team_offers: yourOffers,
-            to_team_offers: theirOffers
-        });
-    
-    if (error) {
-        showNotification('Error', 'Failed to create trade: ' + error.message, 'error');
-    } else {
-        showNotification('Success', 'Trade offer sent!', 'success');
-        closeModal();
-        loadTrades();
-    }
-}
 async function acceptTrade(tradeId) {
-  const { error } = await supabaseClient.rpc('accept_trade', { p_trade_id: tradeId });
-
-  if (error) {
-    showNotification('Error', 'Accepting trade failed', 'error');
-    console.error(error);
-    return;
-  }
-
-  showNotification('Success', 'Trade accepted!', 'success');
-  loadTrades();
-  loadLineupFromDraft();
+    const { error } = await supabaseClient.rpc('accept_trade', { p_trade_id: tradeId });
+    if (error) { showNotification('Error', error.message || 'Accepting trade failed', 'error'); return; }
+    showNotification('Trade accepted', 'Your roster has been updated.', 'success');
+    await loadLineupFromDraft();
+    await refreshTradeOffersBadge();
+    openTradeInbox();
 }
 
 async function rejectTrade(tradeId) {
-  const { error } = await supabaseClient
-      .from('league_trade_offers')
-      .delete()
-      .eq('id', tradeId);
-
-  if (error) {
-    showNotification('Error', 'Could not reject trade', 'error');
-    console.error(error);
-    return;
-  }
-
-  showNotification('Success', 'Trade rejected.', 'success');
-  loadTrades();                   // refresh list
+    const { error } = await supabaseClient.rpc('reject_trade', { p_trade_id: tradeId });
+    if (error) { showNotification('Error', error.message || 'Could not decline offer', 'error'); return; }
+    showNotification('Offer declined', '', 'info');
+    await refreshTradeOffersBadge();
+    openTradeInbox();
 }
+
 async function revokeTrade(tradeId) {
-  const { error } = await supabaseClient
-    .from('league_trade_offers')
-    .delete()
-    .eq('id', tradeId);
-
-  if (error) {
-    showNotification('Error', 'Could not revoke trade', 'error');
-    console.error(error);
-    return;
-  }
-
-  showNotification('Success', 'Trade revoked.', 'success');
-  loadTrades();
+    const { error } = await supabaseClient.rpc('revoke_trade', { p_trade_id: tradeId });
+    if (error) { showNotification('Error', error.message || 'Could not revoke offer', 'error'); return; }
+    showNotification('Offer revoked', '', 'info');
+    await refreshTradeOffersBadge();
+    openTradeInbox();
 }
 
 
@@ -3569,7 +3383,10 @@ console.log(`Showing scores for finalizedWeek=${finalizedWeek} date range ${week
         );
 
         const modalMessage = document.getElementById('modalMessage');
+        // Trading is only offered when looking at someone else's lineup.
+        const canTrade = !!(currentTeam && teamId !== currentTeam.id);
         modalMessage.innerHTML = `
+            ${canTrade ? '<div style="color:#a0a0a0; font-size:0.85rem; margin-top:0.5rem;">Tap <strong style="color:#4ecdc4;">Request Trade</strong> on a corps to offer one of yours in the same caption.</div>' : ''}
             <div style="display: grid; gap: 1rem; margin-top: 1rem;">
                 ${['brass','percussion','guard','ge','visual','music'].map(caption => {
                     const captionRoster = roster.filter(r => r.caption === caption);
@@ -3598,10 +3415,13 @@ console.log(`Showing scores for finalizedWeek=${finalizedWeek} date range ${week
                                 </div>
                             </div>
                             ${rosterWithScores.map(r => `
-                                <div style="padding:0.5rem 0; color:#e0e0e0; display:flex; justify-content:space-between;">
-                                    ${r.corps_name}
-                                    <span style="color:${r.avgScore>0?'#4ecdc4':'#666'};">
-                                        ${r.avgScore>0 ? r.avgScore.toFixed(3) : 'No score'}
+                                <div style="padding:0.5rem 0; color:#e0e0e0; display:flex; justify-content:space-between; align-items:center; gap:0.75rem;">
+                                    <span class="corps-link" data-corps-info="${escapeHtml(r.corps_name)}" style="cursor:pointer;">${escapeHtml(r.corps_name)}</span>
+                                    <span style="display:flex; align-items:center; gap:0.75rem; flex-shrink:0;">
+                                        <span style="color:${r.avgScore>0?'#4ecdc4':'#666'};">
+                                            ${r.avgScore>0 ? r.avgScore.toFixed(3) : 'No score'}
+                                        </span>
+                                        ${canTrade ? `<button class="btn btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.75rem; white-space:nowrap;" onclick="requestTradeFor('${jsStr(teamId)}', '${jsStr(r.corps_name)}', '${jsStr(r.caption)}')">Request Trade</button>` : ''}
                                     </span>
                                 </div>
                             `).join('') || '<div style="color:#666;">No selection</div>'}
