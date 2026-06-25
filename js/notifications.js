@@ -166,6 +166,19 @@
                                 return !(x.type === 'draft_turn' && x.data && x.data.league_id === n.data.league_id);
                             });
                         }
+                        // Chat: one notification per league. If the user is actively viewing
+                        // that league's chat, clear it instead of surfacing it (this deletes the
+                        // row server-side, keeping the bell and the chat's unread badge in sync).
+                        if (n.type === 'league_chat' && n.data && n.data.league_id) {
+                            notifications = notifications.filter(function (x) {
+                                return !(x.type === 'league_chat' && x.data && x.data.league_id === n.data.league_id);
+                            });
+                            if (window.__activeLeagueChat && String(window.__activeLeagueChat) === String(n.data.league_id)) {
+                                try { supabaseClient.rpc('mark_league_chat_read', { p_league_id: n.data.league_id }); } catch (e) { }
+                                render();
+                                return;
+                            }
+                        }
                         notifications = notifications.filter(function (x) { return x.id !== n.id; });
                         notifications.unshift(n);
                         if (notifications.length > 20) notifications.pop();

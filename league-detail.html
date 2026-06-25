@@ -1034,7 +1034,10 @@ if (league.draft_time) {
                 }, 2000);
                 return;
             }
-            
+
+            // Mount the league group chat (private leagues only).
+            mountLeagueChat();
+
             // Check draft status - handle 406 error gracefully
             try {
                 const { data: draft, error: draftError } = await supabaseClient
@@ -4068,7 +4071,270 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             return colors[caption] || '#4ecdc4';
         }
-        
+
+        // ===================== League group chat (Phase 5) =====================
+        // Floating chat for private leagues. The read marker (mark_league_chat_read)
+        // is the single sync point that clears BOTH the bell notification and the
+        // unread badge, so the two surfaces can't drift apart.
+        let lcMessages = [];
+        let lcRenderedIds = new Set();
+        let lcMembers = {};        // user_id -> { username, avatar_url }
+        let lcLastRead = null;     // Date or null
+        let lcChannel = null;
+        let lcOpen = false;
+
+        function mountLeagueChat() {
+            if (!currentLeague || currentLeague.is_global) return;   // private leagues only
+            if (document.getElementById('leagueChat')) return;       // mount once
+            injectChatStyles();
+            buildChatDom();
+            loadChatData();
+            subscribeChat();
+            if ((window.location.hash || '').toLowerCase() === '#chat') openChat();
+        }
+
+        function injectChatStyles() {
+            const css = `
+.lc-wrap { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 1100; font-family: var(--body); }
+.lc-launcher { position: relative; display: flex; align-items: center; gap: 0.5rem; background: var(--teal); color: #06231f; border: none; border-radius: 24px; padding: 0.6rem 1.05rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
+.lc-launcher:hover { filter: brightness(1.05); }
+.lc-launcher svg { width: 18px; height: 18px; }
+.lc-badge { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; background: #e74c3c; color: #fff; border-radius: 9px; font-size: 0.66rem; font-weight: 700; display: none; align-items: center; justify-content: center; box-sizing: border-box; }
+.lc-panel { position: absolute; right: 0; bottom: 56px; width: 340px; max-width: 88vw; height: 460px; max-height: 72vh; background: var(--s1); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,0.45); display: flex; flex-direction: column; overflow: hidden; }
+.lc-panel[hidden] { display: none; }
+.lc-head { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--border); }
+.lc-title { font-size: 0.85rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lc-close { background: transparent; border: none; color: var(--text-2); font-size: 1.2rem; line-height: 1; cursor: pointer; padding: 0 0.2rem; }
+.lc-close:hover { color: var(--text); }
+.lc-messages { flex: 1; overflow-y: auto; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.55rem; }
+.lc-empty { margin: auto; text-align: center; color: var(--text-2); font-size: 0.8rem; padding: 1rem; }
+.lc-msg { display: flex; gap: 0.5rem; align-items: flex-start; }
+.lc-msg.lc-mine { flex-direction: row-reverse; }
+.lc-avatar { width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; overflow: hidden; background: var(--s3); color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; }
+.lc-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.lc-bubble { max-width: 76%; }
+.lc-msg.lc-mine .lc-bubble { text-align: right; }
+.lc-meta { display: flex; align-items: center; gap: 0.4rem; font-size: 0.66rem; color: var(--text-3); margin-bottom: 0.12rem; }
+.lc-msg.lc-mine .lc-meta { flex-direction: row-reverse; }
+.lc-name { font-weight: 700; color: var(--text-2); }
+.lc-del { background: transparent; border: none; color: var(--text-3); cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 0; }
+.lc-del:hover { color: #e74c3c; }
+.lc-text { display: inline-block; background: var(--s2); border: 1px solid var(--border); color: var(--text); padding: 0.4rem 0.6rem; border-radius: 10px; font-size: 0.8rem; line-height: 1.35; word-break: break-word; white-space: pre-wrap; text-align: left; }
+.lc-msg.lc-mine .lc-text { background: var(--teal-bg); border-color: rgba(78,205,196,0.4); }
+.lc-composer { display: flex; gap: 0.45rem; padding: 0.6rem; border-top: 1px solid var(--border); }
+.lc-composer input { flex: 1; background: var(--s2); border: 1px solid var(--border); border-radius: 18px; color: var(--text); padding: 0.5rem 0.8rem; font-size: 0.8rem; font-family: var(--body); outline: none; }
+.lc-composer input:focus { border-color: var(--teal); }
+.lc-composer button { background: var(--teal); color: #06231f; border: none; border-radius: 18px; padding: 0 0.95rem; font-weight: 700; font-size: 0.78rem; cursor: pointer; }
+.lc-composer button:disabled { opacity: 0.5; cursor: default; }`;
+            const tag = document.createElement('style');
+            tag.textContent = css;
+            document.head.appendChild(tag);
+        }
+
+        function buildChatDom() {
+            const wrap = document.createElement('div');
+            wrap.className = 'lc-wrap';
+            wrap.id = 'leagueChat';
+            const bubbleIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+            wrap.innerHTML =
+                '<div class="lc-panel" id="lcPanel" hidden>' +
+                  '<div class="lc-head"><span class="lc-title" id="lcTitle">League chat</span>' +
+                  '<button class="lc-close" id="lcClose" aria-label="Close chat">&times;</button></div>' +
+                  '<div class="lc-messages" id="lcMessages"></div>' +
+                  '<form class="lc-composer" id="lcForm" autocomplete="off">' +
+                    '<input id="lcInput" maxlength="2000" placeholder="Message your league..." aria-label="Message" />' +
+                    '<button type="submit">Send</button>' +
+                  '</form>' +
+                '</div>' +
+                '<button class="lc-launcher" id="lcLauncher">' + bubbleIcon + '<span>Chat</span>' +
+                  '<span class="lc-badge" id="lcBadge">0</span></button>';
+            document.body.appendChild(wrap);
+            document.getElementById('lcTitle').textContent = (currentLeague.name || 'League') + ' chat';
+            document.getElementById('lcLauncher').addEventListener('click', toggleChat);
+            document.getElementById('lcClose').addEventListener('click', closeChat);
+            document.getElementById('lcForm').addEventListener('submit', sendChat);
+        }
+
+        async function loadChatData() {
+            // Member profiles (username + avatar) for rendering, by id.
+            const { data: mem } = await supabaseClient
+                .from('league_members').select('user_id')
+                .eq('league_id', leagueId).eq('status', 'active');
+            const ids = (mem || []).map(m => m.user_id);
+            if (ids.length) {
+                const { data: profs } = await supabaseClient
+                    .from('profiles').select('id, username, avatar_url').in('id', ids);
+                (profs || []).forEach(p => { lcMembers[p.id] = p; });
+            }
+            // My read marker.
+            const { data: rd } = await supabaseClient
+                .from('league_chat_reads').select('last_read_at')
+                .eq('league_id', leagueId).eq('user_id', currentUser.id).maybeSingle();
+            lcLastRead = rd && rd.last_read_at ? new Date(rd.last_read_at) : null;
+            // Last 50 messages, oldest first.
+            const { data: msgs } = await supabaseClient
+                .from('league_messages').select('id, user_id, body, created_at')
+                .eq('league_id', leagueId).order('created_at', { ascending: false }).limit(50);
+            lcMessages = (msgs || []).reverse();
+            renderChat();
+            updateChatBadge();
+            if (lcOpen) markChatRead();   // opened via #chat before data arrived
+        }
+
+        function lcTime(iso) {
+            const d = new Date(iso);
+            if (isNaN(d.getTime())) return '';
+            return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+
+        async function ensureProfile(uid) {
+            if (lcMembers[uid]) return lcMembers[uid];
+            const { data } = await supabaseClient
+                .from('profiles').select('id, username, avatar_url').eq('id', uid).maybeSingle();
+            if (data) lcMembers[uid] = data;
+            return lcMembers[uid] || { username: 'Member', avatar_url: '' };
+        }
+
+        function chatRowHtml(m) {
+            const p = lcMembers[m.user_id] || { username: 'Member', avatar_url: '' };
+            const mine = m.user_id === currentUser.id;
+            const canDelete = mine || isOwner;
+            const initial = (p.username || 'U').charAt(0).toUpperCase();
+            return '<div class="lc-msg' + (mine ? ' lc-mine' : '') + '" data-id="' + escapeHtml(m.id) + '">' +
+                '<div class="lc-avatar">' + avatarHtml(p.avatar_url, initial) + '</div>' +
+                '<div class="lc-bubble"><div class="lc-meta">' +
+                '<span class="lc-name">' + escapeHtml(p.username || 'Member') + '</span>' +
+                '<span class="lc-time">' + escapeHtml(lcTime(m.created_at)) + '</span>' +
+                (canDelete ? '<button class="lc-del" onclick="lcDelete(\'' + jsStr(m.id) + '\')" title="Delete">&times;</button>' : '') +
+                '</div><div class="lc-text">' + escapeHtml(m.body) + '</div></div></div>';
+        }
+
+        function renderChat() {
+            const box = document.getElementById('lcMessages');
+            if (!box) return;
+            if (!lcMessages.length) {
+                box.innerHTML = '<div class="lc-empty">No messages yet. Say hi to your league.</div>';
+                return;
+            }
+            lcRenderedIds = new Set(lcMessages.map(m => m.id));
+            box.innerHTML = lcMessages.map(chatRowHtml).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function appendMessage(m) {
+            if (lcRenderedIds.has(m.id)) return;
+            await ensureProfile(m.user_id);
+            lcMessages.push(m);
+            lcRenderedIds.add(m.id);
+            const box = document.getElementById('lcMessages');
+            if (box) {
+                const empty = box.querySelector('.lc-empty');
+                if (empty) empty.remove();
+                const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 50;
+                box.insertAdjacentHTML('beforeend', chatRowHtml(m));
+                if (atBottom || m.user_id === currentUser.id) box.scrollTop = box.scrollHeight;
+            }
+        }
+
+        function subscribeChat() {
+            try {
+                lcChannel = supabaseClient
+                    .channel('lchat-' + leagueId)
+                    .on('postgres_changes',
+                        { event: 'INSERT', schema: 'public', table: 'league_messages', filter: 'league_id=eq.' + leagueId },
+                        async function (payload) {
+                            await appendMessage(payload.new);
+                            if (lcOpen && document.hasFocus()) markChatRead();
+                            else if (payload.new.user_id !== currentUser.id) updateChatBadge();
+                        })
+                    .on('postgres_changes',
+                        { event: 'DELETE', schema: 'public', table: 'league_messages' },
+                        function (payload) {
+                            const gone = payload.old && payload.old.id;
+                            if (!gone || !lcRenderedIds.has(gone)) return;
+                            lcMessages = lcMessages.filter(x => x.id !== gone);
+                            lcRenderedIds.delete(gone);
+                            const el = document.querySelector('.lc-msg[data-id="' + (window.CSS && CSS.escape ? CSS.escape(gone) : gone) + '"]');
+                            if (el) el.remove();
+                            if (!lcMessages.length) renderChat();
+                            updateChatBadge();
+                        })
+                    .subscribe();
+            } catch (e) { console.warn('chat realtime failed:', e); }
+        }
+
+        function updateChatBadge() {
+            const badge = document.getElementById('lcBadge');
+            if (!badge) return;
+            let n = 0;
+            if (!lcOpen) {
+                for (const m of lcMessages) {
+                    if (m.user_id === currentUser.id) continue;
+                    if (!lcLastRead || new Date(m.created_at) > lcLastRead) n++;
+                }
+            }
+            if (n > 0) { badge.textContent = n > 9 ? '9+' : String(n); badge.style.display = 'flex'; }
+            else { badge.style.display = 'none'; }
+        }
+
+        async function markChatRead() {
+            lcLastRead = new Date();
+            updateChatBadge();
+            try { await supabaseClient.rpc('mark_league_chat_read', { p_league_id: leagueId }); } catch (e) { }
+        }
+
+        function openChat() {
+            const panel = document.getElementById('lcPanel');
+            if (!panel) return;
+            panel.hidden = false;
+            lcOpen = true;
+            window.__activeLeagueChat = leagueId;
+            const box = document.getElementById('lcMessages');
+            if (box) box.scrollTop = box.scrollHeight;
+            markChatRead();
+            const inp = document.getElementById('lcInput');
+            if (inp) inp.focus();
+        }
+
+        function closeChat() {
+            const panel = document.getElementById('lcPanel');
+            if (panel) panel.hidden = true;
+            lcOpen = false;
+            window.__activeLeagueChat = null;
+            updateChatBadge();
+        }
+
+        function toggleChat() { lcOpen ? closeChat() : openChat(); }
+
+        async function sendChat(e) {
+            e.preventDefault();
+            const inp = document.getElementById('lcInput');
+            const body = (inp.value || '').trim();
+            if (!body) return;
+            inp.value = '';
+            inp.disabled = true;
+            try {
+                const { data, error } = await supabaseClient.rpc('post_league_message', { p_league_id: leagueId, p_body: body });
+                if (error) { showNotification('Chat', error.message || 'Could not send', 'error'); inp.value = body; }
+                else if (data) { await appendMessage(data); markChatRead(); }
+            } catch (err) { showNotification('Chat', 'Could not send message', 'error'); inp.value = body; }
+            inp.disabled = false;
+            inp.focus();
+        }
+
+        async function lcDelete(id) {
+            if (!confirm('Delete this message?')) return;
+            try {
+                const { error } = await supabaseClient.rpc('delete_league_message', { p_message_id: id });
+                if (error) { showNotification('Chat', error.message || 'Could not delete', 'error'); return; }
+                lcMessages = lcMessages.filter(x => x.id !== id);
+                lcRenderedIds.delete(id);
+                const el = document.querySelector('.lc-msg[data-id="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
+                if (el) el.remove();
+                if (!lcMessages.length) renderChat();
+            } catch (e) { showNotification('Chat', 'Could not delete message', 'error'); }
+        }
+
     </script>
 </body>
 </html>
