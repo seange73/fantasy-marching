@@ -23,9 +23,27 @@ function jsStr(s) {
 function avatarHtml(url, fallback) {
     return url ? `<img src="${escapeHtml(url)}" alt="">` : escapeHtml(fallback || 'U');
 }
+// Relative ("time ago") formatting, shared site-wide for recency timestamps
+// (chat, notifications). Never falls back to an absolute date/time once past a
+// day; it rolls up through days -> months -> years. For scheduled/future dates
+// (events, drafts, deadlines) keep using absolute formatting, not this.
+function relativeTime(iso) {
+    const ms = new Date(iso).getTime();
+    if (isNaN(ms)) return '';
+    let s = Math.floor((Date.now() - ms) / 1000);
+    if (s < 0) s = 0;
+    if (s < 60) return 'just now';
+    const m = Math.floor(s / 60); if (m < 60) return m + (m === 1 ? ' minute ago' : ' minutes ago');
+    const h = Math.floor(m / 60); if (h < 24) return h + (h === 1 ? ' hour ago' : ' hours ago');
+    const d = Math.floor(h / 24); if (d < 30) return d + (d === 1 ? ' day ago' : ' days ago');
+    const mo = Math.floor(d / 30); if (mo < 12) return mo + (mo === 1 ? ' month ago' : ' months ago');
+    const y = Math.floor(d / 365); return y + (y === 1 ? ' year ago' : ' years ago');
+}
+
 window.escapeHtml = escapeHtml;
 window.jsStr = jsStr;
 window.avatarHtml = avatarHtml;
+window.relativeTime = relativeTime;
 
 // Auth state listener
 supabaseClient.auth.onAuthStateChange((event, session) => {

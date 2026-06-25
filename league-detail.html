@@ -4082,6 +4082,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let lcLastRead = null;     // Date or null
         let lcChannel = null;
         let lcOpen = false;
+        let lcPendingDelete = null; // message id awaiting inline delete confirmation
+        const LC_GROUP_GAP_MS = 5 * 60 * 1000; // group same-sender messages within 5 min
 
         function mountLeagueChat() {
             if (!currentLeague || currentLeague.is_global) return;   // private leagues only
@@ -4110,17 +4112,27 @@ document.addEventListener('DOMContentLoaded', () => {
 .lc-empty { margin: auto; text-align: center; color: var(--text-2); font-size: 0.8rem; padding: 1rem; }
 .lc-msg { display: flex; gap: 0.5rem; align-items: flex-start; }
 .lc-msg.lc-mine { flex-direction: row-reverse; }
+.lc-msg.lc-cont { margin-top: -0.34rem; }            /* tighten grouped (coagulated) messages */
 .lc-avatar { width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; overflow: hidden; background: var(--s3); color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; }
 .lc-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.lc-avatar.lc-spacer { background: transparent; }    /* keep grouped messages aligned under the first */
 .lc-bubble { max-width: 76%; }
 .lc-msg.lc-mine .lc-bubble { text-align: right; }
 .lc-meta { display: flex; align-items: center; gap: 0.4rem; font-size: 0.66rem; color: var(--text-3); margin-bottom: 0.12rem; }
 .lc-msg.lc-mine .lc-meta { flex-direction: row-reverse; }
 .lc-name { font-weight: 700; color: var(--text-2); }
-.lc-del { background: transparent; border: none; color: var(--text-3); cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 0; }
+.lc-del { align-self: center; background: transparent; border: none; color: var(--text-3); cursor: pointer; font-size: 1.05rem; line-height: 1; padding: 0 2px; opacity: 0; transition: opacity 0.12s; flex-shrink: 0; }
+.lc-msg:hover .lc-del { opacity: 1; }
 .lc-del:hover { color: #e74c3c; }
 .lc-text { display: inline-block; background: var(--s2); border: 1px solid var(--border); color: var(--text); padding: 0.4rem 0.6rem; border-radius: 10px; font-size: 0.8rem; line-height: 1.35; word-break: break-word; white-space: pre-wrap; text-align: left; }
 .lc-msg.lc-mine .lc-text { background: var(--teal-bg); border-color: rgba(78,205,196,0.4); }
+.lc-msg.lc-cont:not(.lc-mine) .lc-text { border-top-left-radius: 4px; }   /* merge corner with bubble above */
+.lc-msg.lc-cont.lc-mine .lc-text { border-top-right-radius: 4px; }
+.lc-confirm { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.3rem; font-size: 0.72rem; color: var(--text-2); }
+.lc-msg.lc-mine .lc-confirm { justify-content: flex-end; }
+.lc-confirm button { border: 1px solid var(--border); background: var(--s2); color: var(--text); border-radius: 6px; padding: 0.12rem 0.5rem; font-size: 0.72rem; cursor: pointer; font-family: var(--body); }
+.lc-confirm .lc-confirm-yes { background: #e74c3c; border-color: #e74c3c; color: #fff; }
+.lc-confirm .lc-confirm-yes:hover { filter: brightness(1.08); }
 .lc-composer { display: flex; gap: 0.45rem; padding: 0.6rem; border-top: 1px solid var(--border); }
 .lc-composer input { flex: 1; background: var(--s2); border: 1px solid var(--border); border-radius: 18px; color: var(--text); padding: 0.5rem 0.8rem; font-size: 0.8rem; font-family: var(--body); outline: none; }
 .lc-composer input:focus { border-color: var(--teal); }
@@ -4181,10 +4193,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (lcOpen) markChatRead();   // opened via #chat before data arrived
         }
 
+        // Within a day: show the clock time. Past a day: relative only
+        // (1 day ago, X days/months/years ago) -- never an absolute date.
         function lcTime(iso) {
             const d = new Date(iso);
-            if (isNaN(d.getTime())) return '';
-            return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const ms = d.getTime();
+            if (isNaN(ms)) return '';
+            if (Date.now() - ms < 86400000) {
+                return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            }
+            return (window.relativeTime ? window.relativeTime(iso) : '');
         }
 
         async function ensureProfile(uid) {
@@ -4195,18 +4213,41 @@ document.addEventListener('DOMContentLoaded', () => {
             return lcMembers[uid] || { username: 'Member', avatar_url: '' };
         }
 
-        function chatRowHtml(m) {
+        // cont = this message continues a group from the same sender within the gap,
+        // so it renders without a repeated avatar/name (coagulated for readability).
+        function chatRowHtml(m, cont) {
             const p = lcMembers[m.user_id] || { username: 'Member', avatar_url: '' };
             const mine = m.user_id === currentUser.id;
             const canDelete = mine || isOwner;
             const initial = (p.username || 'U').charAt(0).toUpperCase();
-            return '<div class="lc-msg' + (mine ? ' lc-mine' : '') + '" data-id="' + escapeHtml(m.id) + '">' +
-                '<div class="lc-avatar">' + avatarHtml(p.avatar_url, initial) + '</div>' +
-                '<div class="lc-bubble"><div class="lc-meta">' +
-                '<span class="lc-name">' + escapeHtml(p.username || 'Member') + '</span>' +
-                '<span class="lc-time">' + escapeHtml(lcTime(m.created_at)) + '</span>' +
-                (canDelete ? '<button class="lc-del" onclick="lcDelete(\'' + jsStr(m.id) + '\')" title="Delete">&times;</button>' : '') +
-                '</div><div class="lc-text">' + escapeHtml(m.body) + '</div></div></div>';
+            const pending = (m.id === lcPendingDelete);
+            const avatar = cont
+                ? '<div class="lc-avatar lc-spacer"></div>'
+                : '<div class="lc-avatar">' + avatarHtml(p.avatar_url, initial) + '</div>';
+            const meta = cont ? '' :
+                '<div class="lc-meta"><span class="lc-name">' + escapeHtml(p.username || 'Member') + '</span>' +
+                '<span class="lc-time">' + escapeHtml(lcTime(m.created_at)) + '</span></div>';
+            const confirm = pending
+                ? '<div class="lc-confirm">Delete this message?' +
+                  '<button class="lc-confirm-yes" data-confirm-yes="' + escapeHtml(m.id) + '">Delete</button>' +
+                  '<button class="lc-confirm-no" data-confirm-no="' + escapeHtml(m.id) + '">Cancel</button></div>'
+                : '';
+            const del = (canDelete && !pending)
+                ? '<button class="lc-del" data-del="' + escapeHtml(m.id) + '" title="Delete message" aria-label="Delete message">&times;</button>'
+                : '';
+            return '<div class="lc-msg' + (mine ? ' lc-mine' : '') + (cont ? ' lc-cont' : '') + '" data-id="' + escapeHtml(m.id) + '" title="' + escapeHtml(lcTime(m.created_at)) + '">' +
+                avatar +
+                '<div class="lc-bubble">' + meta + '<div class="lc-text">' + escapeHtml(m.body) + '</div>' + confirm + '</div>' +
+                del + '</div>';
+        }
+
+        function wireChatRows(box) {
+            box.querySelectorAll('.lc-del[data-del]').forEach(b =>
+                b.addEventListener('click', () => { lcPendingDelete = b.getAttribute('data-del'); renderChat(); }));
+            box.querySelectorAll('[data-confirm-yes]').forEach(b =>
+                b.addEventListener('click', () => lcDeleteConfirm(b.getAttribute('data-confirm-yes'))));
+            box.querySelectorAll('[data-confirm-no]').forEach(b =>
+                b.addEventListener('click', () => { lcPendingDelete = null; renderChat(); }));
         }
 
         function renderChat() {
@@ -4216,9 +4257,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 box.innerHTML = '<div class="lc-empty">No messages yet. Say hi to your league.</div>';
                 return;
             }
+            const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 50;
+            const prevTop = box.scrollTop;
             lcRenderedIds = new Set(lcMessages.map(m => m.id));
-            box.innerHTML = lcMessages.map(chatRowHtml).join('');
-            box.scrollTop = box.scrollHeight;
+            let html = '';
+            for (let i = 0; i < lcMessages.length; i++) {
+                const m = lcMessages[i], prev = lcMessages[i - 1];
+                const cont = !!prev && prev.user_id === m.user_id &&
+                    (new Date(m.created_at) - new Date(prev.created_at)) <= LC_GROUP_GAP_MS;
+                html += chatRowHtml(m, cont);
+            }
+            box.innerHTML = html;
+            wireChatRows(box);
+            box.scrollTop = atBottom ? box.scrollHeight : prevTop;
         }
 
         async function appendMessage(m) {
@@ -4226,14 +4277,9 @@ document.addEventListener('DOMContentLoaded', () => {
             await ensureProfile(m.user_id);
             lcMessages.push(m);
             lcRenderedIds.add(m.id);
+            renderChat();
             const box = document.getElementById('lcMessages');
-            if (box) {
-                const empty = box.querySelector('.lc-empty');
-                if (empty) empty.remove();
-                const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 50;
-                box.insertAdjacentHTML('beforeend', chatRowHtml(m));
-                if (atBottom || m.user_id === currentUser.id) box.scrollTop = box.scrollHeight;
-            }
+            if (box && m.user_id === currentUser.id) box.scrollTop = box.scrollHeight;
         }
 
         function subscribeChat() {
@@ -4254,9 +4300,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (!gone || !lcRenderedIds.has(gone)) return;
                             lcMessages = lcMessages.filter(x => x.id !== gone);
                             lcRenderedIds.delete(gone);
-                            const el = document.querySelector('.lc-msg[data-id="' + (window.CSS && CSS.escape ? CSS.escape(gone) : gone) + '"]');
-                            if (el) el.remove();
-                            if (!lcMessages.length) renderChat();
+                            if (lcPendingDelete === gone) lcPendingDelete = null;
+                            renderChat();   // re-render so grouping recomputes
                             updateChatBadge();
                         })
                     .subscribe();
@@ -4322,17 +4367,16 @@ document.addEventListener('DOMContentLoaded', () => {
             inp.focus();
         }
 
-        async function lcDelete(id) {
-            if (!confirm('Delete this message?')) return;
+        // Confirmed from the inline panel UI (no browser popup).
+        async function lcDeleteConfirm(id) {
+            lcPendingDelete = null;
             try {
                 const { error } = await supabaseClient.rpc('delete_league_message', { p_message_id: id });
-                if (error) { showNotification('Chat', error.message || 'Could not delete', 'error'); return; }
+                if (error) { showNotification('Chat', error.message || 'Could not delete', 'error'); renderChat(); return; }
                 lcMessages = lcMessages.filter(x => x.id !== id);
                 lcRenderedIds.delete(id);
-                const el = document.querySelector('.lc-msg[data-id="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
-                if (el) el.remove();
-                if (!lcMessages.length) renderChat();
-            } catch (e) { showNotification('Chat', 'Could not delete message', 'error'); }
+                renderChat();
+            } catch (e) { showNotification('Chat', 'Could not delete message', 'error'); renderChat(); }
         }
 
     </script>
