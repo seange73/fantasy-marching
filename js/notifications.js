@@ -14,6 +14,7 @@
         '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
     const ICONS = {
         scores_posted: svg('<line x1="6" y1="20" x2="6" y2="13"/><line x1="12" y1="20" x2="12" y2="7"/><line x1="18" y1="20" x2="18" y2="10"/>'),
+        draft_turn: svg('<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>'),
         league_join_request: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/>'),
         league_join_response: svg('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'),
         matchup_result: svg('<path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 4H4v2a3 3 0 0 0 3 3M17 4h3v2a3 3 0 0 1-3 3M9 21h6M12 14v7"/>'),
@@ -98,7 +99,14 @@
             listEl.innerHTML = '<div class="notif-empty">No notifications yet</div>';
             return;
         }
-        listEl.innerHTML = notifications.map(function (n) {
+        // Pin active draft turns to the top, newest first within each group.
+        const ordered = notifications.slice().sort(function (a, b) {
+            const ap = a.type === 'draft_turn' ? 0 : 1;
+            const bp = b.type === 'draft_turn' ? 0 : 1;
+            if (ap !== bp) return ap - bp;
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
+        listEl.innerHTML = ordered.map(function (n) {
             const icon = ICONS[n.type] || ICONS.default;
             const link = (n.data && n.data.link) ? n.data.link : '';
             return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" data-id="' + esc(n.id) + '"' +
@@ -148,9 +156,28 @@
                 .on('postgres_changes',
                     { event: 'INSERT', schema: 'public', table: 'notifications', filter: 'user_id=eq.' + currentUserId },
                     function (payload) {
-                        notifications.unshift(payload.new);
+                        const n = payload.new;
+                        // Keep at most one draft turn per league in the live list.
+                        if (n.type === 'draft_turn' && n.data && n.data.league_id) {
+                            notifications = notifications.filter(function (x) {
+                                return !(x.type === 'draft_turn' && x.data && x.data.league_id === n.data.league_id);
+                            });
+                        }
+                        notifications = notifications.filter(function (x) { return x.id !== n.id; });
+                        notifications.unshift(n);
                         if (notifications.length > 20) notifications.pop();
                         render();
+                    })
+                .on('postgres_changes',
+                    { event: 'DELETE', schema: 'public', table: 'notifications' },
+                    function (payload) {
+                        // Live auto-remove (e.g. a draft turn that has passed).
+                        // DELETE payloads carry only the primary key.
+                        const goneId = payload.old && payload.old.id;
+                        if (!goneId) return;
+                        const before = notifications.length;
+                        notifications = notifications.filter(function (x) { return x.id !== goneId; });
+                        if (notifications.length !== before) render();
                     })
                 .subscribe();
         } catch (e) { console.warn('notif realtime failed:', e); }
