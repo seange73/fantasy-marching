@@ -98,6 +98,37 @@
             .league-stat { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; }
         }
         @media (max-width: 600px) { .stats-grid { grid-template-columns: 1fr; } }
+
+        /* Avatar image + golden aura (top-3 predictors) */
+        .profile-avatar-large img, .user-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+        .profile-avatar-large { overflow: hidden; }
+        .aura-gold { border-color: #c9a227 !important; box-shadow: 0 0 0 2px #c9a227, 0 0 8px rgba(201,162,39,0.3); }
+        .profile-bio { color: var(--text-2); font-size: 0.85rem; margin-top: 0.5rem; max-width: 320px; margin-left: auto; margin-right: auto; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+        .edit-profile-btn {
+            margin-top: 0.85rem; background: var(--s3); color: var(--text); border: 1px solid var(--border);
+            border-radius: 4px; padding: 0.5rem 1.25rem; font-weight: 600; cursor: pointer;
+            font-family: var(--body); font-size: 0.82rem;
+        }
+        .edit-profile-btn:hover { border-color: var(--teal); }
+        /* Edit modal form */
+        .edit-field { margin-bottom: 1.1rem; text-align: left; }
+        .edit-label { display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-2); margin-bottom: 0.4rem; }
+        .edit-input, .edit-textarea {
+            width: 100%; padding: 0.6rem 0.8rem; background: var(--s2); border: 1px solid var(--border);
+            border-radius: 4px; color: var(--text); font-size: 0.85rem; font-family: var(--body);
+            outline: none; box-sizing: border-box;
+        }
+        .edit-input:focus, .edit-textarea:focus { border-color: var(--teal); }
+        .edit-textarea { resize: vertical; min-height: 70px; }
+        .edit-hint { font-size: 0.72rem; color: var(--text-2); margin-top: 0.35rem; }
+        .edit-error { color: #ff6b6b; font-size: 0.8rem; margin-top: 0.5rem; min-height: 1rem; }
+        .edit-avatar-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+        .edit-avatar-preview {
+            width: 64px; height: 64px; border-radius: 50%; background: var(--s3); border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.5rem;
+            color: var(--teal); flex: 0 0 auto; overflow: hidden;
+        }
+        .edit-avatar-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     </style>
 </head>
 <body>
@@ -136,10 +167,12 @@
                 <!-- Left side: User info -->
                 <div style="text-align: center;">
                     <div class="profile-avatar-large" id="profileAvatarLarge">
-                        <!-- Will be populated with user initial -->
+                        <!-- avatar image or initial -->
                     </div>
                     <h1 class="profile-username" id="profileUsername">Loading...</h1>
                     <p class="profile-joined" id="profileJoined">Loading...</p>
+                    <p class="profile-bio" id="profileBio" style="display:none;"></p>
+                    <button class="edit-profile-btn" id="editProfileBtn" style="display:none;" onclick="openEditProfile()">Edit Profile</button>
                 </div>
                 
                 <!-- Right side: Stats -->
@@ -211,6 +244,28 @@ let currentUser = null;
 let isAdmin = false;
 let userIdFromUrl = null;
 let signedInUser = null; // just to keep header stable
+let currentProfile = null; // the profile currently being viewed (for editing)
+
+// Escape user-controlled text before injecting into innerHTML (prevents stored XSS)
+function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// Render an avatar element as an <img> when a URL exists, otherwise the letter initial
+function renderAvatar(el, avatarUrl, initial) {
+    if (!el) return;
+    if (avatarUrl) {
+        el.innerHTML = `<img src="${escapeHtml(avatarUrl)}" alt="">`;
+    } else {
+        el.textContent = initial;
+    }
+}
+
+// Escape LIKE/ILIKE wildcards so a username is matched literally (case-insensitively)
+function likeEscape(s) {
+    return String(s).replace(/[\\%_]/g, m => '\\' + m);
+}
 
 // Initialize profile page
 async function initializeProfile() {
@@ -245,45 +300,165 @@ async function initializeProfile() {
 async function loadUserProfile() {
   const { data: profile } = await supabaseClient
     .from("profiles")
-    .select("username, avatar_url, is_admin, created_at")
+    .select("username, avatar_url, bio, username_changed_at, is_admin, created_at")
     .eq("id", currentUser.id)
     .single();
 
   if (profile) {
-    const username = profile.username || profile.email?.split("@")[0] || "Unknown";
-    const initial = username[0].toUpperCase();
-const { data: signedInProfile } = await supabaseClient
-  .from("profiles")
-  .select("username")
-  .eq("id", signedInUser.id)
-  .single();
+    const username = profile.username || "Unknown";
+    const initial = (username[0] || "?").toUpperCase();
+    const isOwnProfile = !userIdFromUrl || userIdFromUrl === signedInUser.id;
 
-    // use signedInUser to populate the header name *always*
-const signedInName = signedInProfile?.username || signedInUser.email?.split("@")[0] || "User";
-const signedInInitial = signedInName[0].toUpperCase();
-
+    // header always reflects the signed-in user
+    const { data: signedInProfile } = await supabaseClient
+      .from("profiles")
+      .select("username, avatar_url")
+      .eq("id", signedInUser.id)
+      .single();
+    const signedInName = signedInProfile?.username || signedInUser.email?.split("@")[0] || "User";
+    const signedInInitial = (signedInName[0] || "?").toUpperCase();
     document.getElementById("userName").textContent = signedInName;
-    document.getElementById("userAvatar").textContent = signedInInitial;
+    renderAvatar(document.getElementById("userAvatar"), signedInProfile?.avatar_url, signedInInitial);
 
-    // update the profile section with current profile data
+    // viewed profile
     document.getElementById("profileUsername").textContent = username;
-    document.getElementById("profileAvatarLarge").textContent = initial;
+    renderAvatar(document.getElementById("profileAvatarLarge"), profile.avatar_url, initial);
 
-    // Format join date
+    const bioEl = document.getElementById("profileBio");
+    if (profile.bio) { bioEl.textContent = profile.bio; bioEl.style.display = "block"; }
+    else { bioEl.style.display = "none"; }
+
     const joinDate = new Date(profile.created_at);
-    const formattedDate = joinDate.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric"
-    });
-    document.getElementById("profileJoined").textContent = `Joined ${formattedDate}`;
+    document.getElementById("profileJoined").textContent =
+      `Joined ${joinDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`;
 
-    // only show admin panel if on your own profile
-    if ((profile.is_admin || false) && (!userIdFromUrl || userIdFromUrl === signedInUser.id)) {
+    // remember the viewed profile so the edit modal can prefill
+    currentProfile = { ...profile, username, initial };
+
+    // edit button only on your own profile
+    if (isOwnProfile) {
+      document.getElementById("editProfileBtn").style.display = "inline-block";
+    }
+
+    // admin panel link only on your own profile
+    if ((profile.is_admin || false) && isOwnProfile) {
       document.getElementById("adminLink").style.display = "flex";
       document.getElementById("adminDivider").style.display = "block";
     }
   }
+}
+
+// ---- Profile editing (own profile only) ----
+function showEditError(msg) {
+  document.getElementById("editError").textContent = msg || "";
+}
+
+function updateBioCount() {
+  document.getElementById("bioCount").textContent = document.getElementById("editBio").value.length;
+}
+
+function openEditProfile() {
+  if (!currentProfile) return;
+  document.getElementById("editUsername").value = currentProfile.username || "";
+  document.getElementById("editBio").value = currentProfile.bio || "";
+  updateBioCount();
+  showEditError("");
+  renderAvatar(document.getElementById("editAvatarPreview"), currentProfile.avatar_url, currentProfile.initial);
+
+  const hint = document.getElementById("usernameHint");
+  const base = "3–20 characters: letters, numbers, _ or -";
+  if (currentProfile.username_changed_at) {
+    const days = (Date.now() - new Date(currentProfile.username_changed_at).getTime()) / 86400000;
+    hint.textContent = days < 30
+      ? `You can change your username again in ${Math.ceil(30 - days)} day(s).`
+      : base;
+  } else {
+    hint.textContent = base;
+  }
+  document.getElementById("editProfileOverlay").classList.add("show");
+}
+
+function closeEditProfile() {
+  document.getElementById("editProfileOverlay").classList.remove("show");
+}
+
+function closeEditOnOverlay(event) {
+  if (event.target === event.currentTarget) closeEditProfile();
+}
+
+function onAvatarSelected(event) {
+  const file = event.target.files && event.target.files[0];
+  event.target.value = ""; // allow re-selecting the same file later
+  if (file) uploadAvatar(file);
+}
+
+async function uploadAvatar(file) {
+  const okTypes = ["image/png", "image/jpeg", "image/webp"];
+  if (!okTypes.includes(file.type)) { showEditError("Avatar must be PNG, JPG, or WebP."); return; }
+  if (file.size > 2 * 1024 * 1024) { showEditError("Avatar must be 2 MB or smaller."); return; }
+
+  showEditError("");
+  // fixed path per user so re-uploads overwrite (no orphaned files)
+  const path = `${currentUser.id}/avatar`;
+  const { error: upErr } = await supabaseClient.storage
+    .from("avatars")
+    .upload(path, file, { upsert: true, contentType: file.type });
+  if (upErr) { console.error(upErr); showEditError("Avatar upload failed. Please try again."); return; }
+
+  const { data: pub } = supabaseClient.storage.from("avatars").getPublicUrl(path);
+  const publicUrl = `${pub.publicUrl}?t=${Date.now()}`; // cache-bust after overwrite
+
+  const { error } = await supabaseClient.from("profiles").update({ avatar_url: publicUrl }).eq("id", currentUser.id);
+  if (error) { console.error(error); showEditError("Could not save avatar."); return; }
+
+  currentProfile.avatar_url = publicUrl;
+  renderAvatar(document.getElementById("editAvatarPreview"), publicUrl, currentProfile.initial);
+  renderAvatar(document.getElementById("profileAvatarLarge"), publicUrl, currentProfile.initial);
+  renderAvatar(document.getElementById("userAvatar"), publicUrl, currentProfile.initial);
+}
+
+async function saveProfile() {
+  const newUsername = document.getElementById("editUsername").value.trim();
+  const newBio = document.getElementById("editBio").value;
+
+  if (!/^[A-Za-z0-9_\-]{3,20}$/.test(newUsername)) {
+    showEditError("Username must be 3–20 characters: letters, numbers, _ or -."); return;
+  }
+  if (newBio.length > 200) { showEditError("Bio must be 200 characters or fewer."); return; }
+
+  const updates = { bio: newBio || null };
+  const usernameChanged = newUsername !== currentProfile.username;
+
+  if (usernameChanged) {
+    // 30-day cooldown
+    if (currentProfile.username_changed_at) {
+      const days = (Date.now() - new Date(currentProfile.username_changed_at).getTime()) / 86400000;
+      if (days < 30) { showEditError(`You can change your username again in ${Math.ceil(30 - days)} day(s).`); return; }
+    }
+    // case-insensitive availability check
+    const { data: taken, error: takenErr } = await supabaseClient
+      .from("profiles").select("id")
+      .ilike("username", likeEscape(newUsername))
+      .neq("id", currentUser.id)
+      .limit(1);
+    if (takenErr) { showEditError("Could not verify username. Please try again."); return; }
+    if (taken && taken.length) { showEditError("That username is already taken."); return; }
+    updates.username = newUsername;
+    updates.username_changed_at = new Date().toISOString();
+  }
+
+  const saveBtn = document.getElementById("saveProfileBtn");
+  saveBtn.disabled = true;
+  const { error } = await supabaseClient.from("profiles").update(updates).eq("id", currentUser.id);
+  saveBtn.disabled = false;
+
+  if (error) {
+    if (error.code === "23505") showEditError("That username is already taken.");
+    else { console.error(error); showEditError("Could not save changes."); }
+    return;
+  }
+  closeEditProfile();
+  await loadUserProfile();
 }
 
 
@@ -306,7 +481,12 @@ const signedInInitial = signedInName[0].toUpperCase();
                     
                     const rank = (count || 0) + 1;
                     const accuracy = (stats.average_accuracy * 100).toFixed(1);
-                    
+
+                    // golden aura around the avatar for top-3 predictors
+                    if (rank <= 3) {
+                        document.getElementById('profileAvatarLarge').classList.add('aura-gold');
+                    }
+
                     // Update display
                     document.getElementById('predictionRank').textContent = `#${rank}`;
                     document.getElementById('predictionScore').textContent = stats.total_score || '0';
@@ -739,7 +919,7 @@ console.log("team data", team, "teamError", teamError);
                 const leaguesHTML = leagueStats.map(stats => `
                     <div class="league-entry">
                         <div class="league-name">
-                            ${stats.league.name}
+                            ${escapeHtml(stats.league.name)}
                             ${stats.league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
                         </div>
                         <div class="league-stat">
@@ -808,5 +988,37 @@ console.log("team data", team, "teamError", teamError);
         <div class="modal-buttons" id="modalButtons"></div>
     </div>
 </div>
+
+    <!-- Edit Profile modal -->
+    <div id="editProfileOverlay" class="modal-overlay" onclick="closeEditOnOverlay(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Profile</h3>
+            </div>
+            <div class="edit-avatar-row">
+                <div class="edit-avatar-preview" id="editAvatarPreview"></div>
+                <div>
+                    <button class="edit-profile-btn" type="button" onclick="document.getElementById('avatarFileInput').click()">Change photo</button>
+                    <div class="edit-hint">PNG, JPG or WebP · max 2&nbsp;MB</div>
+                </div>
+                <input type="file" id="avatarFileInput" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="onAvatarSelected(event)">
+            </div>
+            <div class="edit-field">
+                <label class="edit-label" for="editUsername">Username</label>
+                <input type="text" id="editUsername" class="edit-input" maxlength="20" autocomplete="off" spellcheck="false">
+                <div class="edit-hint" id="usernameHint"></div>
+            </div>
+            <div class="edit-field">
+                <label class="edit-label" for="editBio">Bio</label>
+                <textarea id="editBio" class="edit-textarea" maxlength="200" oninput="updateBioCount()"></textarea>
+                <div class="edit-hint"><span id="bioCount">0</span>/200</div>
+            </div>
+            <div class="edit-error" id="editError"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-secondary" onclick="closeEditProfile()">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="saveProfileBtn" onclick="saveProfile()">Save</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

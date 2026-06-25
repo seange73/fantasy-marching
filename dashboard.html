@@ -109,7 +109,9 @@
             font-weight: 600;
             color: var(--text-2);
             flex-shrink: 0;
+            overflow: hidden;
         }
+        .player-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
         .player-name {
             font-size: 0.82rem;
@@ -565,11 +567,11 @@ async function loadReminders() {
 reminders.push({
     icon: '👥',
     title: 'League Join Request',
-    text: `${username} wants to join ${leagueMap[request.league_id]}`,
+    text: `${escapeHtml(username)} wants to join ${escapeHtml(leagueMap[request.league_id] || '')}`,
     action: 'Review Request',
     link: '#',
     // Change from onclick to data attributes
-    dataAttrs: `data-request-id="${request.id}" data-league-id="${request.league_id}" data-user-id="${request.user_id}" data-username="${username}" data-league-name="${leagueMap[request.league_id]}"`,
+    dataAttrs: `data-request-id="${request.id}" data-league-id="${request.league_id}" data-user-id="${request.user_id}" data-username="${escapeHtml(username)}" data-league-name="${escapeHtml(leagueMap[request.league_id] || '')}"`,
     onclick: `handleJoinRequestFromElement(this)`
 });
             });
@@ -623,7 +625,7 @@ if (upcomingEvents && upcomingEvents.length > 0) {
             reminders.push({
                 icon: '🎯',
                 title: 'Predictions Due Soon',
-                text: `${event.name} predictions close in ${timeLeft}`,
+                text: `${escapeHtml(event.name)} predictions close in ${timeLeft}`,
                 action: 'Make Predictions',
                 link: `/predictions.html?eventId=${event.id}`
             });
@@ -644,7 +646,7 @@ if (upcomingEvents && upcomingEvents.length > 0) {
         reminders.push({
             icon: '📊',
             title: 'Results Available',
-            text: `Check how your predictions did for ${completedEvents[0].name}`,
+            text: `Check how your predictions did for ${escapeHtml(completedEvents[0].name)}`,
             action: 'View Results',
             link: `/prediction-results.html?predictionId=${userPredictions[eventId]}`
         });
@@ -688,9 +690,9 @@ container.innerHTML = stats.map((player, index) => `
     <div class="leaderboard-entry">
         <div class="rank ${index < 3 ? `rank-${index + 1}` : 'rank-default'}">${index + 1}</div>
         <div class="player-info">
-            <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
-            <a class="player-name" style="color: #4ecdc4; text-decoration: none;" href="/profile.html?userId=${player.user_id}">
-              ${player.username || 'User'}
+            <div class="player-avatar">${avatarHtml(player.avatar_url, player.username ? player.username[0].toUpperCase() : 'U')}</div>
+            <a class="player-name" style="color: #4ecdc4; text-decoration: none;" href="/profile.html?userId=${encodeURIComponent(player.user_id)}">
+              ${escapeHtml(player.username || 'User')}
             </a>
         </div>
         <span class="player-score">${
@@ -731,8 +733,8 @@ function setLeagueLeaderboardMode(mode) {
                 <div class="leaderboard-entry">
                     <div class="rank ${player.rank <= 3 ? `rank-${player.rank}` : 'rank-default'}">${player.rank}</div>
                     <div class="player-info">
-                        <div class="player-avatar">${player.initial}</div>
-                        <span class="player-name">${player.username}</span>
+                        <div class="player-avatar">${escapeHtml(player.initial)}</div>
+                        <span class="player-name">${escapeHtml(player.username)}</span>
                     </div>
                     <span class="player-score">${player.score}%</span>
                 </div>
@@ -757,9 +759,9 @@ async function loadLeagueLeaderboard() {
                 <div class="leaderboard-entry">
                     <div class="rank ${index < 3 ? `rank-${index + 1}` : 'rank-default'}">${index + 1}</div>
                     <div class="player-info">
-                        <div class="player-avatar">${player.username ? player.username[0].toUpperCase() : 'U'}</div>
-                        <a class="player-name" style="color: #4ecdc4; text-decoration: none;" href="/profile.html?userId=${player.user_id}">
-  ${player.username || 'User'}
+                        <div class="player-avatar">${avatarHtml(player.avatar_url, player.username ? player.username[0].toUpperCase() : 'U')}</div>
+                        <a class="player-name" style="color: #4ecdc4; text-decoration: none;" href="/profile.html?userId=${encodeURIComponent(player.user_id)}">
+  ${escapeHtml(player.username || 'User')}
 </a>
                     </div>
                     <span class="player-score">${
@@ -859,7 +861,7 @@ async function loadUserLeagues() {
             // Pre-draft league
             return `
                 <div class="leaderboard-card">
-                    <h3 class="leaderboard-title">${league.name}</h3>
+                    <h3 class="leaderboard-title">${escapeHtml(league.name)}</h3>
                     <div style="text-align: center; padding: 2rem; color: #666;">
                         <p>Draft not started</p>
                         ${item.role === 'owner' ? '<p style="margin-top: 0.5rem; color: #ffd700;">You are the owner</p>' : ''}
@@ -981,7 +983,7 @@ async function loadUserLeagues() {
 
         return `
             <div class="leaderboard-card">
-                <h3 class="leaderboard-title">${league.name}</h3>
+                <h3 class="leaderboard-title">${escapeHtml(league.name)}</h3>
                 <div class="leaderboard-entry" style="background: rgba(78, 205, 196, 0.1);">
                     <div class="rank ${rank <= 3 ? `rank-${rank}` : 'rank-default'}">${rank}</div>
                     <div class="player-info">
@@ -1035,7 +1037,7 @@ async function loadUserLeagues() {
 
         document.getElementById('requestDetails').innerHTML = `
             <p style="color: #e0e0e0; font-size: 1.1rem; margin-bottom: 1rem;">
-                <strong>${username}</strong> wants to join your league:
+                <strong>${escapeHtml(username)}</strong> wants to join your league:
             </p>
             <p style="
                 color: #4ecdc4;
@@ -1046,7 +1048,7 @@ async function loadUserLeagues() {
                 background: rgba(78, 205, 196, 0.1);
                 border-radius: 12px;
                 margin-bottom: 1rem;
-            ">${leagueName}</p>
+            ">${escapeHtml(leagueName)}</p>
             <p style="color: #a0a0a0; font-size: 0.9rem;">
                 Approving this request will add them to your league immediately.
             </p>

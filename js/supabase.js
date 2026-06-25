@@ -9,6 +9,24 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // Make it globally available
 window.supabaseClient = supabaseClient;
 
+// Escape user-controlled text before injecting into innerHTML (prevents stored XSS).
+// Available globally on every page that loads this module.
+function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+// Escape a value for a single-quoted JS string inside an HTML attribute, e.g. onclick="f('...')".
+function jsStr(s) {
+    return escapeHtml(String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
+}
+// Build avatar inner HTML: an <img> when a URL is present, else the escaped fallback initial.
+function avatarHtml(url, fallback) {
+    return url ? `<img src="${escapeHtml(url)}" alt="">` : escapeHtml(fallback || 'U');
+}
+window.escapeHtml = escapeHtml;
+window.jsStr = jsStr;
+window.avatarHtml = avatarHtml;
+
 // Auth state listener
 supabaseClient.auth.onAuthStateChange((event, session) => {
     console.log('Auth event:', event);

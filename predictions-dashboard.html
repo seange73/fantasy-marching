@@ -427,7 +427,7 @@ else if (hasPredicted && isPast) {
                     <div class="event-card" onclick="${!buttonDisabled ? `goToEvent('${event.id}')` : ''}">
                         <div class="event-header">
                             <div>
-                                <h3 class="event-title">${event.name}</h3>
+                                <h3 class="event-title">${escapeHtml(event.name)}</h3>
                                 <div class="event-date">
     <span>📅</span>
     ${formatEventDateTime(event)}

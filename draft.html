@@ -803,7 +803,7 @@ function updateDraftUI() {
         statusDiv.className = 'draft-status';
         statusDiv.innerHTML = `
             <div class="current-pick">${currentPick}</div>
-            <div>Waiting for ${currentDrafter?.username || 'Unknown'}</div>
+            <div>Waiting for ${escapeHtml(currentDrafter?.username || 'Unknown')}</div>
         `;
         if (draftState.pick_deadline) {
             showOtherPlayerTimer(draftState.pick_deadline);
@@ -902,7 +902,7 @@ function updateDraftUI() {
                 return `
                     <div class="draft-order-item ${isActive ? 'active' : ''} ${hasPickedThisRound ? 'completed' : ''}">
                         <div class="draft-position">${member.position}</div>
-                        <div>${member.username}</div>
+                        <div>${escapeHtml(member.username)}</div>
                     </div>
                 `;
             }).join('');
@@ -999,7 +999,7 @@ async function loadAllPicks() {
                         <span class="pick-corps">${pick.corps_name}</span>
                         <span class="pick-caption">${formatCaption(pick.caption)}</span>
                     </div>
-                    <div class="pick-user">by ${pick.profiles?.username || 'Unknown'}</div>
+                    <div class="pick-user">by ${escapeHtml(pick.profiles?.username || 'Unknown')}</div>
                 </div>
             `).join('');
         }
@@ -1335,7 +1335,7 @@ async function handleNewPickDisplay(pick) {
                 <span class="pick-corps">${pick.corps_name}</span>
                 <span class="pick-caption">${formatCaption(pick.caption)}</span>
             </div>
-            <div class="pick-user">by ${username}</div>
+            <div class="pick-user">by ${escapeHtml(username)}</div>
         </div>
     `;
     

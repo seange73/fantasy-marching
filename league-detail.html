@@ -1269,11 +1269,11 @@ async function loadLeagueMembers() {
             
             return `
                 <div class="member-item" style="display: flex; align-items: center;">
-                    <div class="member-avatar">${initial}</div>
-                    <div class="member-name">${username}</div>
+                    <div class="member-avatar">${escapeHtml(initial)}</div>
+                    <div class="member-name">${escapeHtml(username)}</div>
                     ${member.role === 'owner' ? '<div class="member-role">Owner</div>' : ''}
                     ${isOwner && !isCurrentUser && member.role !== 'owner' ? `
-                        <button onclick="kickMember('${member.user_id}', '${username}')" style="
+                        <button onclick="kickMember('${member.user_id}', '${jsStr(username)}')" style="
                             margin-left: auto;
                             background: rgba(255, 107, 107, 0.2);
                             color: #ff6b6b;
@@ -2538,7 +2538,7 @@ ${hasScores ? `
 <a 
   href="/profile.html?userId=${team.user_id}" 
   style="font-weight: 600; color: #4ecdc4; text-decoration: none;">
-    ${team.username}'s Team${team.id === currentTeam?.id ? ' (You)' : ''}
+    ${escapeHtml(team.username)}'s Team${team.id === currentTeam?.id ? ' (You)' : ''}
 </a>
 
                                 <span style="color: #a0a0a0;">
@@ -2803,7 +2803,7 @@ async function loadTransactionHistory() {
                             ">
                                 <div>
                                     <span style="font-weight: 600; color: #e0e0e0;">
-                                        ${t.username}
+                                        ${escapeHtml(t.username)}
                                     </span>
                                     <div style="
                                         font-size: 0.85rem;
@@ -3263,7 +3263,7 @@ showModal('Create Trade Offer', `
                 <label style="color: #4ecdc4; font-weight: 600;">Trade With:</label>
                 <select id="tradePartner" class="form-input" style="width: 100%; margin-top: 0.5rem;">
                     <option value="">Select a team...</option>
-                    ${teams.map(t => `<option value="${t.id}">${usernameMap[t.user_id] || 'Unknown'}</option>`).join('')}
+                    ${teams.map(t => `<option value="${t.id}">${escapeHtml(usernameMap[t.user_id] || 'Unknown')}</option>`).join('')}
                 </select>
             </div>
             
@@ -3448,7 +3448,7 @@ const weekEnd = weekRange.end;
                         align-items: center;
                     ">
                         <div>
-                            <div style="font-weight: 600; color: white;">${event.name}</div>
+                            <div style="font-weight: 600; color: white;">${escapeHtml(event.name)}</div>
                             <div style="font-size: 0.9rem; color: #a0a0a0;">
                                 ${event.date} • ${event.location || 'TBD'}
                             </div>
@@ -3676,7 +3676,7 @@ async function kickUser(userId, username) {
         
         if (error) throw error;
         
-        showNotification('Success', `${username} has been kicked and can rejoin`, 'success');
+        showNotification('Success', `${escapeHtml(username)} has been kicked and can rejoin`, 'success');
         await loadLeagueMembers();
     } catch (error) {
         showNotification('Error', 'Failed to kick member: ' + error.message, 'error');
@@ -3706,7 +3706,7 @@ async function banUser(userId, username) {
         
         if (removeError) throw removeError;
         
-        showNotification('Success', `${username} has been banned from the league`, 'success');
+        showNotification('Success', `${escapeHtml(username)} has been banned from the league`, 'success');
         await loadLeagueMembers();
     } catch (error) {
         showNotification('Error', 'Failed to ban member: ' + error.message, 'error');
@@ -3716,7 +3716,7 @@ async function banUser(userId, username) {
 async function kickMember(userId, username) {
     showModal(
         'Remove Member',
-        `How would you like to remove ${username} from the league?`,
+        `How would you like to remove ${escapeHtml(username)} from the league?`,
         [
             {
                 text: 'Cancel',
@@ -3755,7 +3755,7 @@ async function deleteLeague() {
                     // Second confirmation
                     showModal(
                         'Final Confirmation',
-                        `Type "${currentLeague.name}" to confirm deletion:`,
+                        `Type "${escapeHtml(currentLeague.name)}" to confirm deletion:`,
                         [
                             {
                                 text: 'Cancel',

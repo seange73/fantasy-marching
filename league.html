@@ -745,7 +745,7 @@ async function displayMyLeagues() {
         return `
             <div class="league-card" onclick="goToLeague('${league.id}')">
                 <div class="league-name">
-                    ${league.name}
+                    ${escapeHtml(league.name)}
                     ${league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
                 </div>
                 <div class="league-info">
@@ -874,7 +874,7 @@ availableLeagues = leaguesWithProfiles.filter(l => {
                     <div class="available-league-card">
                         <div class="available-league-info">
                             <div class="available-league-name">
-                                ${league.name}
+                                ${escapeHtml(league.name)}
                                 ${league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
                             </div>
                             <div class="available-league-details">
