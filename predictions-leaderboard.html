@@ -160,6 +160,10 @@
             <button class="leaderboard-toggle-btn active" id="scoreBtn" onclick="setLeaderboardMode('score')">Total Score</button>
             <button class="leaderboard-toggle-btn" id="accuracyBtn" onclick="setLeaderboardMode('accuracy')">Average Accuracy</button>
         </div>
+        <div class="leaderboard-controls" style="margin-top:0.5rem;">
+            <button class="leaderboard-toggle-btn active" id="globalScopeBtn" onclick="setLeaderboardScope('global')">Global</button>
+            <button class="leaderboard-toggle-btn" id="friendsScopeBtn" onclick="setLeaderboardScope('friends')">Friends</button>
+        </div>
 
         <div class="leaderboard-container">
             <div id="leaderboardContent">
@@ -191,6 +195,7 @@
         }
         let isAdmin = false;
         let leaderboardMode = 'score';
+        let leaderboardScope = 'global';
 		let currentPage = 1;
         let totalItems = 0;
         const itemsPerPage = 50;
@@ -249,8 +254,31 @@
             // Update button states
             document.getElementById('scoreBtn').classList.toggle('active', mode === 'score');
             document.getElementById('accuracyBtn').classList.toggle('active', mode === 'accuracy');
-            
+
             loadLeaderboard();
+        }
+
+        // Switch leaderboard scope (everyone vs just your friends)
+        function setLeaderboardScope(scope) {
+            leaderboardScope = scope;
+            currentPage = 1;
+            document.getElementById('globalScopeBtn').classList.toggle('active', scope === 'global');
+            document.getElementById('friendsScopeBtn').classList.toggle('active', scope === 'friends');
+            loadLeaderboard();
+        }
+
+        // The user + their accepted friends, for the Friends scope filter.
+        async function getFriendScopeIds() {
+            const me = currentUser.id;
+            // Explicitly scoped to you (parameterized .eq); RLS is a second layer.
+            const [asRequester, asAddressee] = await Promise.all([
+                supabaseClient.from('friendships').select('requester_id, addressee_id').eq('status', 'accepted').eq('requester_id', me),
+                supabaseClient.from('friendships').select('requester_id, addressee_id').eq('status', 'accepted').eq('addressee_id', me)
+            ]);
+            const ids = new Set([me]);
+            [...(asRequester.data || []), ...(asAddressee.data || [])]
+                .forEach(r => ids.add(r.requester_id === me ? r.addressee_id : r.requester_id));
+            return [...ids];
         }
 
         // Load leaderboard
@@ -258,22 +286,30 @@
             try {
                 // First get total count
                 let orderBy = leaderboardMode === 'accuracy' ? 'average_accuracy' : 'total_score';
-                const { count } = await supabaseClient
+
+                // Friends scope: restrict to the user + their accepted friends.
+                const scopeIds = leaderboardScope === 'friends' ? await getFriendScopeIds() : null;
+
+                let countQuery = supabaseClient
                     .from('prediction_leaderboard')
                     .select('*', { count: 'exact', head: true });
-                
+                if (scopeIds) countQuery = countQuery.in('user_id', scopeIds);
+                const { count } = await countQuery;
+
                 totalItems = count || 0;
                 const totalPages = Math.ceil(totalItems / itemsPerPage);
-                
+
                 // Calculate offset
                 const offset = (currentPage - 1) * itemsPerPage;
-                
+
                 // Get paginated data
-                const { data: stats } = await supabaseClient
+                let dataQuery = supabaseClient
                     .from('prediction_leaderboard')
                     .select('*')
                     .order(orderBy, { ascending: false })
                     .range(offset, offset + itemsPerPage - 1);
+                if (scopeIds) dataQuery = dataQuery.in('user_id', scopeIds);
+                const { data: stats } = await dataQuery;
                 
                 if (!stats || stats.length === 0) {
                     document.getElementById('leaderboardContent').innerHTML = `

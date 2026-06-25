@@ -173,6 +173,7 @@
                     <p class="profile-joined" id="profileJoined">Loading...</p>
                     <p class="profile-bio" id="profileBio" style="display:none;"></p>
                     <button class="edit-profile-btn" id="editProfileBtn" style="display:none;" onclick="openEditProfile()">Edit Profile</button>
+                    <button class="edit-profile-btn" id="addFriendBtn" style="display:none;" onclick="addFriendFromProfile(this)">Add Friend</button>
                 </div>
                 
                 <!-- Right side: Stats -->
@@ -220,21 +221,59 @@
             </div>
         </div>
 
-        <!-- Leagues Section -->
-        <section class="section">
+        <!-- Social Section (own profile only) -->
+        <section class="section" id="friendsSection" style="display:none;">
             <div class="section-header">
-                <h2 class="section-title">Active Leagues</h2>
+                <h2 class="section-title">Social</h2>
             </div>
-            
-            <div class="leagues-container">
-                <div id="leaguesContent">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        <p>Loading leagues...</p>
-                    </div>
+
+            <div class="social-box">
+                <div style="margin-bottom:1.5rem;">
+                    <input id="friendSearch" type="text" placeholder="Search players by username" autocomplete="off"
+                        oninput="onFriendSearch()"
+                        style="width:100%; padding:0.6rem 0.85rem; background:var(--s2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:var(--body); font-size:0.9rem; box-sizing:border-box;">
+                    <div id="friendSearchResults" style="margin-top:0.5rem;"></div>
+                </div>
+
+                <div id="friendRequestsBlock" style="display:none; margin-bottom:1.5rem;">
+                    <div class="friends-subhead">Friend requests</div>
+                    <div id="friendRequestsList"></div>
+                </div>
+
+                <div id="leagueInvitesBlock" style="display:none; margin-bottom:1.5rem;">
+                    <div class="friends-subhead">League invites</div>
+                    <div id="leagueInvitesList"></div>
+                </div>
+
+                <div id="sentRequestsBlock" style="display:none; margin-bottom:1.5rem;">
+                    <div class="friends-subhead">Sent requests</div>
+                    <div id="sentRequestsList"></div>
+                </div>
+
+                <div>
+                    <div class="friends-subhead">Your friends</div>
+                    <div id="friendsList"><div class="loading"><div class="loading-spinner"></div></div></div>
                 </div>
             </div>
         </section>
+        <style>
+            .social-box { background:var(--s1); border:1px solid var(--border); border-radius:6px; padding:1.5rem; }
+            .friends-subhead { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); margin-bottom:0.5rem; font-family:var(--mono); }
+            .friend-row { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.55rem 0.75rem; border:1px solid var(--border); border-radius:8px; margin-bottom:0.5rem; background:var(--s1); }
+            .friend-id { display:flex; align-items:center; gap:0.65rem; text-decoration:none; color:var(--text); min-width:0; }
+            .friend-avatar { width:34px; height:34px; border-radius:50%; overflow:hidden; background:var(--s3); border:1.5px solid var(--teal-dim); display:flex; align-items:center; justify-content:center; color:var(--teal); font-weight:700; font-size:0.8rem; flex-shrink:0; }
+            .friend-avatar img { width:100%; height:100%; object-fit:cover; }
+            .friend-name { font-size:0.9rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+            .friend-actions { display:flex; gap:0.4rem; flex-shrink:0; }
+            .fbtn { padding:0.35rem 0.7rem; font-size:0.78rem; font-weight:600; border-radius:6px; border:1px solid var(--border); background:var(--s2); color:var(--text-2); cursor:pointer; font-family:var(--body); }
+            .fbtn:hover { color:var(--text); border-color:var(--teal-dim); }
+            .fbtn-primary { background:var(--teal); border-color:var(--teal); color:#06231f; }
+            .fbtn-primary:hover { color:#06231f; opacity:0.9; }
+            .invite-menu { position:absolute; z-index:1300; background:var(--s1); border:1px solid var(--border); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.45); min-width:170px; overflow:hidden; }
+            .invite-menu-head { padding:0.5rem 0.75rem; font-size:0.7rem; color:var(--text-3); text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid var(--border); }
+            .invite-menu-item { padding:0.5rem 0.75rem; font-size:0.85rem; color:var(--text); cursor:pointer; white-space:nowrap; }
+            .invite-menu-item:hover { background:var(--teal-bg); }
+        </style>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -291,8 +330,7 @@ async function initializeProfile() {
   await Promise.all([
     loadUserProfile(),
     loadPredictionStats(),
-    loadGlobalLeagueStats(),
-    loadUserLeagues()
+    loadGlobalLeagueStats()
   ]);
 }
 
@@ -335,9 +373,14 @@ async function loadUserProfile() {
     // remember the viewed profile so the edit modal can prefill
     currentProfile = { ...profile, username, initial };
 
-    // edit button only on your own profile
+    // edit button + friends panel only on your own profile
     if (isOwnProfile) {
       document.getElementById("editProfileBtn").style.display = "inline-block";
+      document.getElementById("friendsSection").style.display = "block";
+      loadFriendsData();
+    } else {
+      // viewing someone else -> offer to add them
+      document.getElementById("addFriendBtn").style.display = "inline-block";
     }
 
     // admin panel link only on your own profile
@@ -346,6 +389,228 @@ async function loadUserProfile() {
       document.getElementById("adminDivider").style.display = "block";
     }
   }
+}
+
+// ---------------- Friends (Phase 4) ----------------
+let friendsCache = { friends: [], incoming: [], outgoing: [], invites: [], profileMap: {}, leagueMap: {}, me: null };
+let myLeagues = [];
+let friendSearchTimer = null;
+
+function toast(msg, kind) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:2000; padding:0.7rem 1.1rem; border-radius:8px; font-size:0.85rem; font-family:var(--body); color:#fff; box-shadow:0 6px 20px rgba(0,0,0,0.4);';
+  t.style.background = kind === 'error' ? '#c0392b' : '#1f8f7a';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+async function fetchProfilesByIds(ids) {
+  const map = {};
+  if (!ids.length) return map;
+  const { data } = await supabaseClient.from('profiles').select('id, username, avatar_url').in('id', ids);
+  (data || []).forEach(p => { map[p.id] = p; });
+  return map;
+}
+
+async function loadFriendsData() {
+  const me = signedInUser.id;
+  // Explicitly scoped to you (parameterized .eq, no string interpolation); RLS is a
+  // second layer. A friendship has you as exactly one side, so the two sets don't overlap.
+  const [asRequester, asAddressee] = await Promise.all([
+    supabaseClient.from('friendships').select('*').eq('requester_id', me),
+    supabaseClient.from('friendships').select('*').eq('addressee_id', me)
+  ]);
+  const byId = {};
+  [...(asRequester.data || []), ...(asAddressee.data || [])].forEach(r => { byId[r.id] = r; });
+  const rows = Object.values(byId);
+  const friends = rows.filter(r => r.status === 'accepted');
+  const incoming = rows.filter(r => r.status === 'pending' && r.addressee_id === me);
+  const outgoing = rows.filter(r => r.status === 'pending' && r.requester_id === me);
+
+  const { data: inv } = await supabaseClient.from('league_invites').select('*')
+    .eq('invitee_id', me).eq('status', 'pending');
+  const invites = inv || [];
+
+  const ids = new Set();
+  friends.forEach(r => ids.add(r.requester_id === me ? r.addressee_id : r.requester_id));
+  incoming.forEach(r => ids.add(r.requester_id));
+  outgoing.forEach(r => ids.add(r.addressee_id));
+  invites.forEach(r => ids.add(r.inviter_id));
+  const profileMap = await fetchProfilesByIds([...ids]);
+
+  const leagueMap = {};
+  const leagueIds = [...new Set(invites.map(r => r.league_id))];
+  if (leagueIds.length) {
+    const { data: lg } = await supabaseClient.from('leagues').select('id, name').in('id', leagueIds);
+    (lg || []).forEach(l => { leagueMap[l.id] = l; });
+  }
+
+  // my private leagues, for the "Invite" menu
+  const { data: lm } = await supabaseClient.from('league_members')
+    .select('leagues(id, name, is_global)').eq('user_id', me).eq('status', 'active');
+  myLeagues = (lm || []).map(x => x.leagues).filter(l => l && !l.is_global);
+
+  friendsCache = { friends, incoming, outgoing, invites, profileMap, leagueMap, me };
+  renderFriends();
+}
+
+function friendRowHtml(userId, actionsHtml) {
+  const p = friendsCache.profileMap[userId] || {};
+  const name = p.username || 'User';
+  const initial = (name[0] || 'U').toUpperCase();
+  return `<div class="friend-row">
+    <a href="/profile.html?userId=${encodeURIComponent(userId)}" class="friend-id">
+      <div class="friend-avatar">${avatarHtml(p.avatar_url, initial)}</div>
+      <span class="friend-name">${escapeHtml(name)}</span>
+    </a>
+    <div class="friend-actions">${actionsHtml}</div>
+  </div>`;
+}
+
+function renderFriends() {
+  const { friends, incoming, outgoing, invites, me } = friendsCache;
+
+  const reqBlock = document.getElementById('friendRequestsBlock');
+  if (incoming.length) {
+    reqBlock.style.display = 'block';
+    document.getElementById('friendRequestsList').innerHTML = incoming.map(r =>
+      friendRowHtml(r.requester_id,
+        `<button class="fbtn fbtn-primary" onclick="respondFriend('${jsStr(r.id)}', true)">Accept</button>
+         <button class="fbtn" onclick="respondFriend('${jsStr(r.id)}', false)">Decline</button>`)).join('');
+  } else { reqBlock.style.display = 'none'; }
+
+  const invBlock = document.getElementById('leagueInvitesBlock');
+  if (invites.length) {
+    invBlock.style.display = 'block';
+    document.getElementById('leagueInvitesList').innerHTML = invites.map(r => {
+      const lg = friendsCache.leagueMap[r.league_id] || {};
+      const inviter = friendsCache.profileMap[r.inviter_id] || {};
+      const initial = (inviter.username || 'U')[0].toUpperCase();
+      return `<div class="friend-row">
+        <div class="friend-id">
+          <div class="friend-avatar">${avatarHtml(inviter.avatar_url, initial)}</div>
+          <span class="friend-name">${escapeHtml(lg.name || 'League')}<span style="color:var(--text-3); font-weight:400;"> &middot; from ${escapeHtml(inviter.username || 'User')}</span></span>
+        </div>
+        <div class="friend-actions">
+          <button class="fbtn fbtn-primary" onclick="respondInvite('${jsStr(r.id)}', true)">Join</button>
+          <button class="fbtn" onclick="respondInvite('${jsStr(r.id)}', false)">Decline</button>
+        </div></div>`;
+    }).join('');
+  } else { invBlock.style.display = 'none'; }
+
+  const sentBlock = document.getElementById('sentRequestsBlock');
+  if (outgoing.length) {
+    sentBlock.style.display = 'block';
+    document.getElementById('sentRequestsList').innerHTML = outgoing.map(r =>
+      friendRowHtml(r.addressee_id, `<button class="fbtn" onclick="removeFriend('${jsStr(r.addressee_id)}', false)">Cancel</button>`)).join('');
+  } else { sentBlock.style.display = 'none'; }
+
+  const listEl = document.getElementById('friendsList');
+  if (friends.length) {
+    listEl.innerHTML = friends.map(r => {
+      const other = r.requester_id === me ? r.addressee_id : r.requester_id;
+      return friendRowHtml(other,
+        `<button class="fbtn" onclick="openInviteMenu(event, '${jsStr(other)}')">Invite</button>
+         <button class="fbtn" onclick="removeFriend('${jsStr(other)}', true)">Remove</button>`);
+    }).join('');
+  } else {
+    listEl.innerHTML = `<p style="color:var(--text-3); font-size:0.85rem;">No friends yet. Search above to add some.</p>`;
+  }
+}
+
+async function respondFriend(id, accept) {
+  const { error } = await supabaseClient.rpc('respond_friend_request', { p_friendship_id: id, p_accept: accept });
+  if (error) return toast(error.message, 'error');
+  loadFriendsData();
+}
+
+async function removeFriend(userId, confirmFirst) {
+  if (confirmFirst && !confirm('Remove this friend?')) return;
+  const { error } = await supabaseClient.rpc('remove_friend', { p_other: userId });
+  if (error) return toast(error.message, 'error');
+  loadFriendsData();
+}
+
+async function respondInvite(id, accept) {
+  const { error } = await supabaseClient.rpc('respond_league_invite', { p_invite_id: id, p_accept: accept });
+  if (error) return toast(error.message, 'error');
+  toast(accept ? 'Joined league' : 'Invite declined');
+  loadFriendsData();
+}
+
+function onFriendSearch() {
+  clearTimeout(friendSearchTimer);
+  const term = document.getElementById('friendSearch').value.trim();
+  if (term.length < 2) { document.getElementById('friendSearchResults').innerHTML = ''; return; }
+  friendSearchTimer = setTimeout(() => runFriendSearch(term), 250);
+}
+
+async function runFriendSearch(term) {
+  const me = signedInUser.id;
+  const { data } = await supabaseClient.from('profiles')
+    .select('id, username, avatar_url').ilike('username', `%${term}%`).neq('id', me).limit(8);
+  const results = (data || []).filter(p => p.username && p.username.trim());
+  const related = new Set();
+  friendsCache.friends.forEach(r => related.add(r.requester_id === me ? r.addressee_id : r.requester_id));
+  friendsCache.incoming.forEach(r => related.add(r.requester_id));
+  friendsCache.outgoing.forEach(r => related.add(r.addressee_id));
+
+  const el = document.getElementById('friendSearchResults');
+  if (!results.length) { el.innerHTML = `<p style="color:var(--text-3); font-size:0.82rem;">No players found.</p>`; return; }
+  el.innerHTML = results.map(p => {
+    const initial = (p.username || 'U')[0].toUpperCase();
+    const action = related.has(p.id)
+      ? `<span style="color:var(--text-3); font-size:0.8rem;">Added / pending</span>`
+      : `<button class="fbtn fbtn-primary" onclick="sendFriend('${jsStr(p.id)}', this)">Add</button>`;
+    return `<div class="friend-row">
+      <a href="/profile.html?userId=${encodeURIComponent(p.id)}" class="friend-id">
+        <div class="friend-avatar">${avatarHtml(p.avatar_url, initial)}</div>
+        <span class="friend-name">${escapeHtml(p.username || 'User')}</span>
+      </a>
+      <div class="friend-actions">${action}</div></div>`;
+  }).join('');
+}
+
+async function sendFriend(userId, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+  const { error } = await supabaseClient.rpc('send_friend_request', { p_addressee: userId });
+  if (error) { toast(error.message, 'error'); if (btn) { btn.disabled = false; btn.textContent = 'Add'; } return; }
+  if (btn) btn.outerHTML = `<span style="color:var(--text-3); font-size:0.8rem;">Requested</span>`;
+  loadFriendsData();
+}
+
+async function addFriendFromProfile(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+  const { error } = await supabaseClient.rpc('send_friend_request', { p_addressee: currentUser.id });
+  if (error) { toast(error.message, 'error'); if (btn) { btn.disabled = false; btn.textContent = 'Add Friend'; } return; }
+  if (btn) btn.textContent = 'Request sent';
+  toast('Friend request sent');
+}
+
+function closeInviteMenu() { const m = document.getElementById('inviteMenu'); if (m) m.remove(); }
+
+function openInviteMenu(ev, friendId) {
+  ev.stopPropagation();
+  closeInviteMenu();
+  if (!myLeagues.length) { toast('You have no private leagues to invite to.', 'error'); return; }
+  const menu = document.createElement('div');
+  menu.className = 'invite-menu';
+  menu.id = 'inviteMenu';
+  menu.innerHTML = `<div class="invite-menu-head">Invite to&hellip;</div>` +
+    myLeagues.map(l => `<div class="invite-menu-item" onclick="inviteToLeague('${jsStr(friendId)}','${jsStr(l.id)}')">${escapeHtml(l.name || 'League')}</div>`).join('');
+  document.body.appendChild(menu);
+  const r = ev.target.getBoundingClientRect();
+  menu.style.top = (window.scrollY + r.bottom + 4) + 'px';
+  menu.style.left = Math.max(8, window.scrollX + r.right - menu.offsetWidth) + 'px';
+  setTimeout(() => document.addEventListener('click', closeInviteMenu, { once: true }), 0);
+}
+
+async function inviteToLeague(friendId, leagueId) {
+  closeInviteMenu();
+  const { error } = await supabaseClient.rpc('invite_friend_to_league', { p_league_id: leagueId, p_invitee: friendId });
+  if (error) return toast(error.message, 'error');
+  toast('Invite sent');
 }
 
 // ---- Profile editing (own profile only) ----
@@ -794,164 +1059,6 @@ console.log("team data", team, "teamError", teamError);
     );
   }
 }
-
-        // Load user's leagues
-        async function loadUserLeagues() {
-            try {
-                // Get league memberships
-                const { data: memberships } = await supabaseClient
-                    .from('league_members')
-                    .select(`
-                        league_id,
-                        role,
-                        leagues (
-                            id,
-                            name,
-                            is_global
-                        )
-                    `)
-                    .eq('user_id', currentUser.id)
-                    .eq('status', 'active');
-                
-                if (!memberships || memberships.length === 0) {
-                    document.getElementById('leaguesContent').innerHTML = `
-                        <div class="no-data">
-                            <p>No leagues</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // Get detailed stats for each league
-                const leaguePromises = memberships.map(async (membership) => {
-                    const league = membership.leagues;
-                    
-                    // Get user's team in this league
-                    const { data: team } = await supabaseClient
-                        .from('league_teams')
-                        .select('*')
-                        .eq('league_id', league.id)
-                        .eq('user_id', currentUser.id)
-                        .single();
-                    
-                    if (!team) {
-                        return {
-                            league,
-                            record: '0-0',
-                            avgPoints: 0,
-                            rank: '-'
-                        };
-                    }
-                    
-                    // Get all matchups for this team
-                    const { data: matchups } = await supabaseClient
-                        .from('league_matchups')
-                        .select('*')
-                        .eq('league_id', league.id)
-                        .or(`team1_id.eq.${team.id},team2_id.eq.${team.id}`)
-                        .not('winner_id', 'is', null);
-                    
-                    let wins = 0;
-                    let losses = 0;
-                    let totalScore = 0;
-                    let gamesPlayed = 0;
-                    
-                    matchups?.forEach(matchup => {
-                        const isTeam1 = matchup.team1_id === team.id;
-                        const teamScore = isTeam1 ? matchup.team1_score : matchup.team2_score;
-                        
-                        if (matchup.winner_id === team.id) {
-                            wins++;
-                        } else {
-                            losses++;
-                        }
-                        
-                        totalScore += teamScore || 0;
-                        gamesPlayed++;
-                    });
-                    
-                    const avgPoints = gamesPlayed > 0 ? (totalScore / gamesPlayed).toFixed(1) : '0';
-                    
-                    // Calculate rank
-                    const { data: allTeams } = await supabaseClient
-                        .from('league_teams')
-                        .select('*')
-                        .eq('league_id', league.id);
-                    
-                    // Simple ranking by win percentage
-                    const winPct = gamesPlayed > 0 ? wins / gamesPlayed : 0;
-                    let rank = 1;
-                    
-                    for (const otherTeam of allTeams || []) {
-                        if (otherTeam.id === team.id) continue;
-                        
-                        // Get other team's record
-                        const { data: otherMatchups } = await supabaseClient
-                            .from('league_matchups')
-                            .select('*')
-                            .eq('league_id', league.id)
-                            .or(`team1_id.eq.${otherTeam.id},team2_id.eq.${otherTeam.id}`)
-                            .not('winner_id', 'is', null);
-                        
-                        let otherWins = 0;
-                        let otherGames = 0;
-                        
-                        otherMatchups?.forEach(matchup => {
-                            if (matchup.winner_id === otherTeam.id) otherWins++;
-                            otherGames++;
-                        });
-                        
-                        const otherWinPct = otherGames > 0 ? otherWins / otherGames : 0;
-                        if (otherWinPct > winPct) rank++;
-                    }
-                    
-                    return {
-                        league,
-                        record: `${wins}-${losses}`,
-                        avgPoints,
-                        rank: `${rank}/${allTeams?.length || 0}`
-                    };
-                });
-                
-                const leagueStats = await Promise.all(leaguePromises);
-                
-                // Display leagues
-                const leaguesHTML = leagueStats.map(stats => `
-                    <div class="league-entry">
-                        <div class="league-name">
-                            ${escapeHtml(stats.league.name)}
-                            ${stats.league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
-                        </div>
-                        <div class="league-stat">
-                            <div class="league-stat-label">Record</div>
-                            <div class="league-stat-value">${stats.record}</div>
-                        </div>
-                        <div class="league-stat">
-                            <div class="league-stat-label">Avg Points</div>
-                            <div class="league-stat-value">${stats.avgPoints}</div>
-                        </div>
-                        <div class="league-stat">
-                            <div class="league-stat-label">Rank</div>
-                            <div class="league-stat-value">${stats.rank}</div>
-                        </div>
-                    </div>
-                `).join('');
-                
-                document.getElementById('leaguesContent').innerHTML = leaguesHTML || `
-                    <div class="no-data">
-                        <p>No league data available.</p>
-                    </div>
-                `;
-                
-            } catch (error) {
-                console.error('Error loading leagues:', error);
-                document.getElementById('leaguesContent').innerHTML = `
-                    <div class="no-data">
-                        <p style="color: #ff6b6b;">Error loading league data</p>
-                    </div>
-                `;
-            }
-        }
 
         // Toggle user menu
         function toggleUserMenu() {
