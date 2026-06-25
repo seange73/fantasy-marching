@@ -500,7 +500,7 @@ async function initializeUserData() {
     if (profile) {
         document.getElementById('userName').textContent = profile.username || currentUser.email.split('@')[0];
         const initial = (profile.username || currentUser.email)[0].toUpperCase();
-        document.getElementById('userAvatar').textContent = initial;
+        document.getElementById('userAvatar').innerHTML = avatarHtml(profile.avatar_url, initial);
 
         if (profile.is_admin) {
             document.getElementById('adminLink').style.display = 'flex';

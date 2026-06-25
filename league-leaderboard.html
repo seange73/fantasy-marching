@@ -286,7 +286,7 @@
         .single();
       if (profile) {
         document.getElementById("userName").textContent = profile.username || currentUser.email.split("@")[0];
-        document.getElementById("userAvatar").textContent = (profile.username || currentUser.email)[0].toUpperCase();
+        document.getElementById("userAvatar").innerHTML = avatarHtml(profile.avatar_url, (profile.username || currentUser.email)[0].toUpperCase());
         if (profile.is_admin) {
           document.getElementById("adminLink").style.display = "flex";
           document.getElementById("adminDivider").style.display = "block";

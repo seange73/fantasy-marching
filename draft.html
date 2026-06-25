@@ -740,7 +740,7 @@ setInterval(async () => {
                 
                 // Set avatar (initial letter for now)
                 const initial = (profile.username || currentUser.email)[0].toUpperCase();
-                document.getElementById('userAvatar').textContent = initial;
+                document.getElementById('userAvatar').innerHTML = avatarHtml(profile.avatar_url, initial);
                 
                 // Check admin status
                 if (profile.is_admin) {

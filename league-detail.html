@@ -913,7 +913,7 @@ if (window.DEBUG_OVERRIDE_DATE) {
                 
                 // Set avatar (initial letter for now)
                 const initial = (profile.username || currentUser.email)[0].toUpperCase();
-                document.getElementById('userAvatar').textContent = initial;
+                document.getElementById('userAvatar').innerHTML = avatarHtml(profile.avatar_url, initial);
                 
                 // Check admin status
                 isAdmin = profile.is_admin || false;
