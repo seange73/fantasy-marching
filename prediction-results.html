@@ -406,7 +406,7 @@ function renderPredictionPage(prediction, result, event) {
         return `
             <div class="leaderboard-entry ${cls}">
                 <div class="rank-number">${index+1}</div>
-                <strong>${esc(corps)}</strong>
+                <strong class="corps-link" data-corps-info="${esc(corps)}">${esc(corps)}</strong>
                 <div class="corps-total">${Number(score).toFixed(3)}</div>
                 ${badge}
             </div>
@@ -430,7 +430,7 @@ if (event.final_scores) {
     return `
       <div class="leaderboard-entry ${cls}">
         <div class="rank-number">${result.placement}</div>
-        <strong>${esc(result.corps_name)}</strong>
+        <strong class="corps-link" data-corps-info="${esc(result.corps_name)}">${esc(result.corps_name)}</strong>
         <div class="corps-total">${displayScore}</div>
       </div>
     `;

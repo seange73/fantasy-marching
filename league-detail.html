@@ -1789,7 +1789,7 @@ function displayLineup(lineup, currentWeek=1) {
                 </div>
                 ${corps.map(c => `
                     <div class="corps-card" data-score="${c.score}">
-                        <div class="corps-name">${c.name}</div>
+                        <div class="corps-name corps-link" data-corps-info="${escapeHtml(c.name)}" title="View ${escapeHtml(c.name)} stats">${escapeHtml(c.name)}</div>
                         <div class="corps-stats">
                             <span>${c.hasScore ? `Score: ${c.score.toFixed(3)}` : 'No score yet'}</span>
                             ${c.hasScore && c.improvement !== 0 ? `
@@ -2126,9 +2126,10 @@ function switchTab(tabName) {
                 ['brass', 'Brass'], ['percussion', 'Percussion'], ['guard', 'Color Guard'],
                 ['ge', 'General Effect'], ['visual', 'Visual'], ['music', 'Music']
             ];
+            const corpsSpan = c => `<span class="corps-link" data-corps-info="${escapeHtml(c)}">${escapeHtml(c)}</span>`;
             const rows = order.map(([key, label]) => {
-                const u = (userByCap[key] || []).map(escapeHtml).join(', ') || '—';
-                const o = (oppByCap[key] || []).map(escapeHtml).join(', ') || '—';
+                const u = (userByCap[key] || []).map(corpsSpan).join(', ') || '—';
+                const o = (oppByCap[key] || []).map(corpsSpan).join(', ') || '—';
                 return `
                     <div class="lineup-row">
                         <div class="lineup-cell lineup-you">${u}</div>

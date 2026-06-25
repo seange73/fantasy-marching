@@ -1169,15 +1169,19 @@ container.innerHTML = ALL_CORPS.map(corps => {
     const rank = captionRankings[currentCaption]?.[corps] || 'N/A';
     
     return `
-        <div class="corps-card ${isDraftedForThisCaption ? 'drafted' : ''}" 
-             data-corps="${corps}"
-             ${!isDraftedForThisCaption && isMyTurn ? `onclick="selectCorps('${corps}')"` : ''}>
-            <div class="corps-name">${corps}</div>
-            <div class="corps-stats">2024 Rank: ${rank}</div>
-            ${!isDraftedForThisCaption && isMyTurn ? 
-                `<button class="draft-button" onclick="event.stopPropagation(); draftCorps('${corps}')">
+        <div class="corps-card ${isDraftedForThisCaption ? 'drafted' : ''}"
+             data-corps="${escapeHtml(corps)}"
+             ${!isDraftedForThisCaption && isMyTurn ? `onclick="selectCorps('${jsStr(corps)}')"` : ''}>
+            <div class="corps-name">${escapeHtml(corps)}
+                <button type="button" title="View ${escapeHtml(corps)} stats"
+                        style="background:none;border:none;color:var(--text-2);cursor:pointer;font-size:0.9rem;padding:0 0.25rem;line-height:1;"
+                        onclick="event.stopPropagation(); showCorpsDetail('${jsStr(corps)}')">&#9432;</button>
+            </div>
+            <div class="corps-stats">2024 Rank: ${escapeHtml(rank)}</div>
+            ${!isDraftedForThisCaption && isMyTurn ?
+                `<button class="draft-button" onclick="event.stopPropagation(); draftCorps('${jsStr(corps)}')">
                     Draft for ${formatCaption(currentCaption)}
-                </button>` : 
+                </button>` :
                 isDraftedForThisCaption ? 
                     `<button class="draft-button" disabled>Already Drafted</button>` :
                     `<button class="draft-button" disabled>Not Your Turn</button>`

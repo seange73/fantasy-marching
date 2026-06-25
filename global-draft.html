@@ -627,11 +627,15 @@ async function loadAvailableCorps() {
     const rank = captionRankings[currentCaption]?.[corps] || 'N/A';
     
     return `
-      <div class="corps-card ${selected ? 'drafted' : ''}" 
-           data-corps="${corps}"
-           onclick="toggleCorps('${corps}')">
-        <div class="corps-name">${corps}</div>
-        <div class="corps-stats">2024 Rank: ${rank}</div>
+      <div class="corps-card ${selected ? 'drafted' : ''}"
+           data-corps="${escapeHtml(corps)}"
+           onclick="toggleCorps('${jsStr(corps)}')">
+        <div class="corps-name">${escapeHtml(corps)}
+          <button type="button" title="View ${escapeHtml(corps)} stats"
+                  style="background:none;border:none;color:var(--text-2);cursor:pointer;font-size:0.9rem;padding:0 0.25rem;line-height:1;"
+                  onclick="event.stopPropagation(); showCorpsDetail('${jsStr(corps)}')">&#9432;</button>
+        </div>
+        <div class="corps-stats">2024 Rank: ${escapeHtml(rank)}</div>
         <button class="draft-button">
           ${selected ? 'Remove' : 'Select'}
         </button>

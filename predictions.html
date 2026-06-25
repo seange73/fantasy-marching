@@ -429,15 +429,15 @@ if (eventInLocal < luxon.DateTime.local() && !event.is_completed) {
                 div.style.animationDelay = `${index * 0.05}s`;
                 
                 div.innerHTML = `
-                    <div class="corps-name">${corps}</div>
+                    <div class="corps-name corps-link" data-corps-info="${escapeHtml(corps)}" title="View ${escapeHtml(corps)} stats">${escapeHtml(corps)}</div>
                     <div class="score-input-container">
-                        <input type="number" 
+                        <input type="number"
                                id="score_${corps.replace(/\s+/g, '_')}"
-                               min="0" 
-                               max="100" 
-                               step="0.001" 
-                               placeholder="0.000" 
-                               oninput="handleScoreInput('${corps}', this.value)"
+                               min="0"
+                               max="100"
+                               step="0.001"
+                               placeholder="0.000"
+                               oninput="handleScoreInput('${jsStr(corps)}', this.value)"
                                onblur="formatScore(this)">
                     </div>
                 `;
@@ -552,7 +552,7 @@ if (eventInLocal < luxon.DateTime.local() && !event.is_completed) {
                 div.className = `leaderboard-entry ${cls}`;
                 div.innerHTML = `
                     <div class="rank-number">${index + 1}</div>
-                    <strong>${entry.corps}</strong>
+                    <strong class="corps-link" data-corps-info="${escapeHtml(entry.corps)}">${escapeHtml(entry.corps)}</strong>
                     <div class="corps-total">${entry.score.toFixed(3)}</div>
                 `;
                 

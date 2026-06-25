@@ -140,3 +140,12 @@ window.fantasyMarching = {
     s.defer = true;
     document.head.appendChild(s);
 })();
+
+// Load the shared corps-detail popup (window.showCorpsDetail / fantasyMarching.showCorpsDetail).
+// Self-contained: injects its own styles + modal on first use.
+(function () {
+    const s = document.createElement('script');
+    s.src = '/js/corps-detail.js';
+    s.defer = true;
+    document.head.appendChild(s);
+})();
