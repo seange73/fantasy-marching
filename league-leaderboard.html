@@ -101,8 +101,8 @@
     }
 
     .player-avatar {
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         background: var(--s3);
         border: 1px solid var(--border);
@@ -281,7 +281,7 @@
     async function loadUserProfile() {
       const { data: profile } = await supabaseClient
         .from("profiles")
-        .select("username, is_admin")
+        .select("username, avatar_url, is_admin")
         .eq("id", currentUser.id)
         .single();
       if (profile) {
