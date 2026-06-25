@@ -296,6 +296,27 @@
         .alert-close { background: none; border: none; color: var(--text-2); font-size: 1rem; cursor: pointer; transition: color 0.1s; }
         .alert-close:hover { color: var(--text); }
 
+        /* First-run chooser (shown when the user has no leagues) */
+        .chooser { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 640px; margin: 1rem auto 0; }
+        .chooser-card { background: var(--s1); border: 1px solid var(--border); border-radius: 8px; padding: 2.25rem 1.5rem; cursor: pointer; text-align: center; transition: border-color 0.1s, background 0.1s; font-family: var(--body); }
+        .chooser-card:hover { border-color: var(--teal-dim); background: var(--s2); }
+        .chooser-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 0.35rem; }
+        .chooser-sub { font-size: 0.8rem; color: var(--text-2); }
+
+        /* Invite-code display */
+        .invite-code { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--mono); font-weight: 600; color: var(--teal); background: var(--teal-bg); border: 1px solid var(--teal-dim); border-radius: 4px; padding: 0.1rem 0.5rem; font-size: 0.8rem; letter-spacing: 0.05em; }
+        .copy-btn { background: none; border: none; color: var(--text-2); cursor: pointer; font-size: 0.8rem; padding: 0; }
+        .copy-btn:hover { color: var(--teal); }
+
+        .cm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1300; padding: 1rem; }
+        .cm-overlay.open { display: flex; }
+        .cm-modal { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 1.75rem; max-width: 420px; width: 100%; text-align: center; }
+        .cm-modal h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 0.5rem; }
+        .cm-modal p { font-size: 0.85rem; color: var(--text-2); margin-bottom: 1rem; }
+        .cm-code { font-family: var(--mono); font-size: 1.8rem; font-weight: 700; letter-spacing: 0.15em; color: var(--teal); background: var(--s2); border: 1px dashed var(--teal-dim); border-radius: 8px; padding: 0.75rem; }
+
+        @media (max-width: 600px) { .chooser { grid-template-columns: 1fr; } }
+
         @media (max-width: 768px) {
             .leagues-grid { grid-template-columns: 1fr; }
             .form-row { grid-template-columns: 1fr; }
@@ -354,8 +375,22 @@
         <h1 class="page-title">Fantasy Leagues</h1>
         <p class="page-subtitle">Compete with friends or join the global league</p>
 
+        <!-- First-run chooser: only thing shown when the user has no leagues -->
+        <section class="section" id="firstRun" style="display:none;">
+            <div class="chooser">
+                <button type="button" class="chooser-card" id="chooseJoinBtn">
+                    <div class="chooser-title">Join a League</div>
+                    <div class="chooser-sub">Enter a code or browse public leagues</div>
+                </button>
+                <button type="button" class="chooser-card" id="chooseCreateBtn">
+                    <div class="chooser-title">Create a League</div>
+                    <div class="chooser-sub">Start your own and invite friends</div>
+                </button>
+            </div>
+        </section>
+
         <!-- My Leagues Section -->
-        <section class="section">
+        <section class="section" id="myLeaguesSection" style="display:none;">
             <div class="section-header">
                 <h2 class="section-title">My Leagues</h2>
             </div>
@@ -368,20 +403,32 @@
         </section>
 
         <!-- Join/Create League Section -->
-        <section class="section">
+        <section class="section" id="joinCreateSection" style="display:none;">
             <div class="section-header">
                 <h2 class="section-title">Join or Create a League</h2>
             </div>
 
             <div class="join-section">
                 <div class="tabs">
-                    <button class="tab active" onclick="switchTab('join')">Join a League</button>
-                    <button class="tab" onclick="switchTab('create')">Create a League</button>
+                    <button class="tab active" data-tab="join" onclick="switchTab('join')">Join a League</button>
+                    <button class="tab" data-tab="create" onclick="switchTab('create')">Create a League</button>
                 </div>
 
                 <!-- Join League Tab -->
                 <div id="join-content" class="tab-content active">
-                    <div class="search-section" style="margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label for="joinCode">Have a private league code?</label>
+                        <div style="display:flex; gap:0.5rem;">
+                            <input type="text" id="joinCode" class="form-input" placeholder="Enter code (e.g. 2283JW)" maxlength="12" style="text-transform:uppercase;">
+                            <button type="button" class="btn" id="joinCodeBtn" style="flex-shrink:0;">Join</button>
+                        </div>
+                        <p class="form-help">Private leagues aren't listed. Ask the owner for the code.</p>
+                    </div>
+
+                    <div class="section-header" style="margin-top:1.75rem;">
+                        <h3 class="section-title" style="font-size:0.85rem;">Public leagues</h3>
+                    </div>
+                    <div class="search-section" style="margin-bottom: 1rem;">
                         <input type="text"
                                id="leagueSearch"
                                class="form-input"
@@ -389,7 +436,7 @@
                                onkeyup="searchLeagues()">
                     </div>
                     <div class="available-leagues" id="availableLeagues">
-                        <div class="loading">Loading available leagues...</div>
+                        <div class="loading">Loading public leagues...</div>
                     </div>
                 </div>
 
@@ -403,9 +450,12 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="leaguePassword">Password (Optional)</label>
-                                <input type="text" id="leaguePassword" class="form-input" placeholder="Leave blank for public league">
-                                <p class="form-help">Setting a password makes the league private. Users can join with the password or send a request to join.</p>
+                                <label for="leagueVisibility">Visibility</label>
+                                <select id="leagueVisibility" class="form-input" onchange="onVisibilityChange()">
+                                    <option value="public">Public — listed for anyone to find</option>
+                                    <option value="private">Private — join by code only</option>
+                                </select>
+                                <p class="form-help" id="visibilityHelp">Public leagues appear in the list. Private leagues are hidden; share the generated code to invite people.</p>
                             </div>
 
                             <div class="form-group">
@@ -413,6 +463,13 @@
                                 <input type="number" id="maxMembers" class="form-input" value="8" min="2" max="10" step="2" required>
                                 <p class="form-help">Must be an even number between 2 and 10</p>
                             </div>
+                        </div>
+
+                        <div class="form-group" id="approvalGroup">
+                            <label style="display:flex; align-items:center; gap:0.5rem; font-weight:600; color:var(--text); font-size:0.82rem;">
+                                <input type="checkbox" id="requiresApproval" style="width:auto;"> Require my approval for new members
+                            </label>
+                            <p class="form-help">When on, joining a public league sends a request you approve. Private code-joins are always instant.</p>
                         </div>
 
                         <div class="form-group">
@@ -426,6 +483,19 @@
                 </div>
             </div>
         </section>
+    </div>
+
+    <!-- Invite code modal (after creating a private league) -->
+    <div id="codeModalOverlay" class="cm-overlay">
+        <div class="cm-modal">
+            <h3>League created</h3>
+            <p>Share this code so others can join your private league:</p>
+            <div class="cm-code" id="cmCode">------</div>
+            <div style="display:flex; gap:0.5rem; margin-top:1.25rem; justify-content:center;">
+                <button type="button" class="btn" id="cmCopy">Copy code</button>
+                <button type="button" class="btn btn-secondary" id="cmGo">Go to league</button>
+            </div>
+        </div>
     </div>
 
     <!-- Alert container -->
@@ -461,6 +531,24 @@ async function initializePage() {
 
     // only now load available leagues
     await loadAvailableLeagues();
+
+    applyFirstRunVisibility();
+}
+
+// First time (no leagues) => show only the two-option chooser. Otherwise show
+// My Leagues + the Join/Create section.
+function applyFirstRunVisibility() {
+    const hasLeagues = myLeagues.length > 0;
+    document.getElementById('firstRun').style.display = hasLeagues ? 'none' : 'block';
+    document.getElementById('myLeaguesSection').style.display = hasLeagues ? 'block' : 'none';
+    document.getElementById('joinCreateSection').style.display = hasLeagues ? 'block' : 'none';
+}
+
+function revealJoinCreate(tab) {
+    document.getElementById('firstRun').style.display = 'none';
+    document.getElementById('joinCreateSection').style.display = 'block';
+    switchTab(tab);
+    document.getElementById('joinCreateSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 
@@ -565,6 +653,17 @@ async function displayMyLeagues() {
         memberCounts.forEach(m => {
             memberCountMap[m.league_id] = (memberCountMap[m.league_id] || 0) + 1;
         });
+    }
+
+    // Invite codes for private leagues the user owns (so they can re-share them)
+    const ownedPrivateIds = myLeagues
+        .filter(l => l.role === 'owner' && l.leagues && l.leagues.is_public === false)
+        .map(l => l.leagues.id);
+    const codeMap = {};
+    if (ownedPrivateIds.length) {
+        const { data: codes } = await supabaseClient
+            .from('league_invite_codes').select('league_id, code').in('league_id', ownedPrivateIds);
+        (codes || []).forEach(c => { codeMap[c.league_id] = c.code; });
     }
 
     // Get real stats for each league
@@ -724,16 +823,26 @@ async function displayMyLeagues() {
             }
         }
 
+        const codeLine = codeMap[league.id] ? `
+                <div class="league-info" style="margin-top:-0.25rem;">
+                    <span class="invite-code">${escapeHtml(codeMap[league.id])}
+                        <button class="copy-btn" title="Copy invite code"
+                                onclick="event.stopPropagation(); copyCode('${jsStr(codeMap[league.id])}')">&#10697;</button>
+                    </span>
+                </div>` : '';
+
         return `
-            <div class="league-card" onclick="goToLeague('${league.id}')">
+            <div class="league-card" onclick="goToLeague('${jsStr(league.id)}')">
                 <div class="league-name">
                     ${escapeHtml(league.name)}
                     ${league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
+                    ${(!league.is_global && league.is_public === false) ? '<span class="global-badge" style="background:var(--s3);color:var(--text-2);border-color:var(--border);">PRIVATE</span>' : ''}
                 </div>
                 <div class="league-info">
                     <div class="league-members">${memberCount} / ${league.max_members} members</div>
                     ${rankDisplay}
                 </div>
+                ${codeLine}
                 <div class="league-stats">
                     ${statsHtml}
                 </div>
@@ -753,12 +862,15 @@ async function displayMyLeagues() {
 
         // Load available leagues
 async function loadAvailableLeagues() {
-    // Get all active leagues (including private ones with passwords)
+    // Public leagues only — private leagues are hidden and joined by code.
+    // The global league is a separate system (global_league_teams) and is never
+    // listed or joined here.
     const { data: leagues, error } = await supabaseClient
         .from('leagues')
         .select('*')
         .eq('is_active', true)
-        .order('is_global', { ascending: false })
+        .eq('is_public', true)
+        .eq('is_global', false)
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -851,6 +963,7 @@ availableLeagues = leaguesWithProfiles.filter(l => {
                 const memberCount = memberCountMap[league.id] || 0;
                 const isFull = memberCount >= league.max_members;
                 const creatorName = league.is_global ? 'System' : (league.profiles?.username || 'Unknown');
+                const needsApproval = league.requires_approval && !league.is_global;
 
                 return `
                     <div class="available-league-card">
@@ -860,124 +973,61 @@ availableLeagues = leaguesWithProfiles.filter(l => {
                                 ${league.is_global ? '<span class="global-badge">GLOBAL</span>' : ''}
                             </div>
                             <div class="available-league-details">
-                                Created by ${creatorName} • ${memberCount} / ${league.max_members} members
-                                ${league.password ? ' • Password Protected' : ' • Public'}
+                                Created by ${escapeHtml(creatorName)} • ${memberCount} / ${league.max_members} members
+                                ${needsApproval ? ' • Approval required' : ''}
                             </div>
                         </div>
                         <div class="join-controls">
-                            ${league.password && !league.is_global ? `
-                                <input type="password"
-                                       class="password-input"
-                                       id="password_${league.id}"
-                                       placeholder="Enter password">
-                            ` : ''}
                             ${isFull ?
                                 '<button class="btn" disabled>League Full</button>' :
-                                `<button class="btn" onclick="joinLeague('${league.id}', ${!!league.password})">
-                                    ${league.password && !league.is_global ? 'Join with Password' : 'Join League'}
+                                `<button class="btn" onclick="joinPublic('${jsStr(league.id)}')">
+                                    ${needsApproval ? 'Request to Join' : 'Join League'}
                                 </button>`
                             }
-                            ${league.password && !league.is_global && !isFull ? `
-                                <button class="btn btn-secondary" onclick="requestToJoin('${league.id}')">
-                                    Request to Join
-                                </button>
-                            ` : ''}
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Join a league
-        async function joinLeague(leagueId, requiresPassword) {
-		console.log('Checking ban for user:', currentUser.id, 'in league:', leagueId);
-    const { data: banCheck, error: banError } = await supabaseClient
-        .from('league_banned_users')
-        .select('id')
-        .eq('league_id', leagueId)
-        .eq('user_id', currentUser.id)
-        .maybeSingle();
-	console.log('Ban check result:', { data: banCheck, error: banError });
-if (banCheck) {
-    console.log('you were banned');
-    showAlert('You have been banned from this league', 'error');
-    return;
-}
-            let password = null;
-
-            if (requiresPassword) {
-                const passwordInput = document.getElementById(`password_${leagueId}`);
-                password = passwordInput.value.trim();
-
-                if (!password) {
-                    showAlert('Please enter the league password', 'error');
-                    return;
+        // Join a private league by its code (instant). Server validates ban/full/draft/cap.
+        async function joinByCode() {
+            const input = document.getElementById('joinCode');
+            const code = (input.value || '').trim().toUpperCase();
+            if (!code) { showAlert('Enter a league code', 'error'); return; }
+            const btn = document.getElementById('joinCodeBtn');
+            btn.disabled = true;
+            try {
+                const { data, error } = await supabaseClient.rpc('join_league_by_code', { p_code: code });
+                if (error) { showAlert(error.message || 'Could not join', 'error'); return; }
+                if (data && (data.status === 'joined' || data.status === 'already_member')) {
+                    showAlert(data.status === 'joined' ? 'Joined the league!' : 'You are already in this league', 'success');
+                    goToLeague(data.league_id);
                 }
-
-                // Verify password
-                const { data: league } = await supabaseClient
-                    .from('leagues')
-                    .select('password')
-                    .eq('id', leagueId)
-                    .single();
-
-                if (league.password !== password) {
-                    showAlert('Incorrect password', 'error');
-                    return;
-                }
-            }
-
-            // Join the league
-			// Validate not in more than 20 leagues
-if (myLeagues.length >= 20) {
-    showAlert('You cannot be in more than 20 leagues', 'error');
-    return;
-}
-            const { error } = await supabaseClient
-                .from('league_members')
-                .insert({
-                    league_id: leagueId,
-                    user_id: currentUser.id,
-                    role: 'member',
-                    status: 'active'
-                });
-
-            if (error) {
-                if (error.code === '23505') { // Unique violation
-                    showAlert('You are already in this league', 'error');
-                } else {
-                    showAlert('Error joining league: ' + error.message, 'error');
-                }
-                return;
-            }
-
-            showAlert('Successfully joined the league!', 'success');
-
-            // Reload leagues
-            await loadMyLeagues();
-            await loadAvailableLeagues();
+            } catch (e) { showAlert('Could not join with that code', 'error'); }
+            finally { btn.disabled = false; }
         }
 
-        // Request to join a league
-        async function requestToJoin(leagueId) {
-            const { error } = await supabaseClient
-                .from('league_join_requests')
-                .insert({
-                    league_id: leagueId,
-                    user_id: currentUser.id,
-                    status: 'pending'
-                });
-
-            if (error) {
-                if (error.code === '23505') { // Unique violation
-                    showAlert('You have already requested to join this league', 'error');
-                } else {
-                    showAlert('Error sending request: ' + error.message, 'error');
+        // Join (or request to join) a listed public league via the server RPC.
+        async function joinPublic(leagueId) {
+            try {
+                const { data, error } = await supabaseClient.rpc('join_public_league', { p_league_id: leagueId });
+                if (error) { showAlert(error.message || 'Could not join', 'error'); return; }
+                const status = data && data.status;
+                if (status === 'joined') {
+                    showAlert('Joined the league!', 'success');
+                    await loadMyLeagues();
+                    await loadAvailableLeagues();
+                    applyFirstRunVisibility();
+                } else if (status === 'already_member') {
+                    goToLeague(leagueId);
+                } else if (status === 'requested') {
+                    showAlert('Join request sent! The league owner will review it.', 'success');
+                    await loadAvailableLeagues();
+                } else if (status === 'request_pending') {
+                    showAlert('You already have a pending request for this league', 'error');
                 }
-                return;
-            }
-
-            showAlert('Join request sent! The league owner will review your request.', 'success');
+            } catch (e) { showAlert('Could not join that league', 'error'); }
         }
 
         // Create a new league
@@ -985,7 +1035,8 @@ if (myLeagues.length >= 20) {
             e.preventDefault();
 
             const name = document.getElementById('leagueName').value.trim();
-            const password = document.getElementById('leaguePassword').value.trim() || null;
+            const isPublic = document.getElementById('leagueVisibility').value === 'public';
+            const requiresApproval = isPublic && document.getElementById('requiresApproval').checked;
             const maxMembers = parseInt(document.getElementById('maxMembers').value);
             const draftTimeInput = document.getElementById('draftTime').value || null;
 let draftTime = null;
@@ -1011,13 +1062,14 @@ if (myLeagues.length >= 20) {
                 return;
             }
 
-            // Create the league using the function
+            // Create the league via the RPC (also generates the invite code)
             const { data, error } = await supabaseClient.rpc('create_league_with_owner', {
                 p_name: name,
-                p_password: password,
                 p_owner_id: currentUser.id,
                 p_max_members: maxMembers,
-                p_draft_time: draftTime
+                p_draft_time: draftTime,
+                p_is_public: isPublic,
+                p_requires_approval: requiresApproval
             });
 
             if (error) {
@@ -1025,17 +1077,35 @@ if (myLeagues.length >= 20) {
                 return;
             }
 
-            showAlert('League created successfully!', 'success');
             document.getElementById('createLeagueForm').reset();
+            onVisibilityChange();
 
-            // Add small delay before reloading to ensure transaction commits
-            setTimeout(async () => {
-                await loadMyLeagues();
-                await loadAvailableLeagues();
-            }, 500);
+            await loadMyLeagues();
+            await loadAvailableLeagues();
+            applyFirstRunVisibility();
 
-            // Switch to join tab
-            switchTab('join');
+            // For a private league, surface the code so the owner can share it.
+            if (data && data.invite_code && data.is_public === false) {
+                showInviteCode(data.invite_code, data.id);
+            } else {
+                showAlert('League created!', 'success');
+                if (data && data.id) goToLeague(data.id);
+            }
+        }
+
+        // Show/share the generated invite code for a private league
+        let cmLeagueId = null;
+        function showInviteCode(code, leagueId) {
+            cmLeagueId = leagueId;
+            document.getElementById('cmCode').textContent = code;
+            document.getElementById('codeModalOverlay').classList.add('open');
+        }
+
+        // Toggle the approval option (only meaningful for public leagues)
+        function onVisibilityChange() {
+            const isPublic = document.getElementById('leagueVisibility').value === 'public';
+            document.getElementById('approvalGroup').style.display = isPublic ? 'block' : 'none';
+            if (!isPublic) document.getElementById('requiresApproval').checked = false;
         }
 
         // Go to league page
@@ -1043,15 +1113,16 @@ if (myLeagues.length >= 20) {
             window.location.href = `/league-detail.html?id=${leagueId}`;
         }
 
-        // Switch tabs
-        function switchTab(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
+        async function copyCode(code) {
+            try { await navigator.clipboard.writeText(code); showAlert('Invite code copied', 'success'); }
+            catch (e) { showAlert('Code: ' + code, 'success'); }
+        }
 
-            // Update tab content
+        // Switch tabs (works whether called from a click or programmatically)
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+            });
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
@@ -1093,8 +1164,30 @@ if (myLeagues.length >= 20) {
         document.addEventListener('DOMContentLoaded', async () => {
             await initializePage();
 
-            // Add form submit handler
             document.getElementById('createLeagueForm').addEventListener('submit', createLeague);
+            onVisibilityChange();
+
+            // First-run chooser
+            document.getElementById('chooseJoinBtn').addEventListener('click', () => revealJoinCreate('join'));
+            document.getElementById('chooseCreateBtn').addEventListener('click', () => revealJoinCreate('create'));
+
+            // Join by code
+            document.getElementById('joinCodeBtn').addEventListener('click', joinByCode);
+            document.getElementById('joinCode').addEventListener('keyup', (e) => { if (e.key === 'Enter') joinByCode(); });
+
+            // Invite-code modal
+            document.getElementById('cmCopy').addEventListener('click', async () => {
+                const code = document.getElementById('cmCode').textContent;
+                try { await navigator.clipboard.writeText(code); showAlert('Code copied', 'success'); }
+                catch (e) { showAlert('Copy failed — code is ' + code, 'error'); }
+            });
+            document.getElementById('cmGo').addEventListener('click', () => {
+                document.getElementById('codeModalOverlay').classList.remove('open');
+                if (cmLeagueId) goToLeague(cmLeagueId);
+            });
+            document.getElementById('codeModalOverlay').addEventListener('click', (e) => {
+                if (e.target.id === 'codeModalOverlay') e.currentTarget.classList.remove('open');
+            });
         });
     </script>
 </body>

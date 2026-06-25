@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>League Join Flow — Demo</title>
+<link rel="stylesheet" href="css/theme.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: var(--bg, #0b0c1a); color: var(--text, #fff); font-family: var(--body, sans-serif); }
+  .demo-bar { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.75rem; }
+  .demo-bar .logo { font-weight: 800; color: var(--teal); letter-spacing: 0.5px; }
+  .demo-bar .reset { margin-left: auto; background: var(--s3); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 0.8rem; cursor: pointer; font-size: 0.78rem; }
+  .container { max-width: 1000px; margin: 1.5rem auto; padding: 0 1.5rem; }
+  .page-title { font-size: 1.4rem; font-weight: 700; text-align: center; margin-bottom: 0.4rem; }
+  .page-subtitle { text-align: center; color: var(--text-2); font-size: 0.82rem; margin-bottom: 2rem; }
+  .section { margin-bottom: 2rem; }
+  .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+
+  .chooser { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 640px; margin: 1rem auto 0; }
+  .chooser-card { background: var(--s1); border: 1px solid var(--border); border-radius: 8px; padding: 2.25rem 1.5rem; cursor: pointer; text-align: center; font-family: var(--body); }
+  .chooser-card:hover { border-color: var(--teal-dim); background: var(--s2); }
+  .chooser-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.35rem; }
+  .chooser-sub { font-size: 0.8rem; color: var(--text-2); }
+
+  .leagues-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+  .league-card { background: var(--s2); border: 1px solid var(--border); border-radius: 6px; padding: 1.1rem; }
+  .league-name { font-weight: 700; margin-bottom: 0.5rem; }
+  .league-members { color: var(--text-2); font-size: 0.8rem; }
+  .global-badge { background: var(--teal-bg); color: var(--teal); padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.66rem; font-weight: 700; margin-left: 0.4rem; border: 1px solid var(--teal-dim); }
+  .invite-code { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--mono); font-weight: 600; color: var(--teal); background: var(--teal-bg); border: 1px solid var(--teal-dim); border-radius: 4px; padding: 0.1rem 0.5rem; font-size: 0.8rem; letter-spacing: 0.05em; margin-top: 0.6rem; }
+  .copy-btn { background: none; border: none; color: var(--text-2); cursor: pointer; padding: 0; }
+  .copy-btn:hover { color: var(--teal); }
+
+  .join-section { background: var(--s1); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; }
+  .tabs { display: flex; background: var(--s3); border-radius: 4px; padding: 0.2rem; margin-bottom: 1.5rem; gap: 0.2rem; }
+  .tab { flex: 1; padding: 0.5rem 1rem; text-align: center; cursor: pointer; font-weight: 600; border: none; background: transparent; color: var(--text-2); border-radius: 3px; font-size: 0.8rem; font-family: var(--body); }
+  .tab.active { background: var(--s1); color: var(--text); }
+  .tab-content { display: none; } .tab-content.active { display: block; }
+  .form-group { margin-bottom: 1.25rem; }
+  .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.82rem; }
+  .form-input { width: 100%; padding: 0.6rem 0.75rem; background: var(--s3); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 0.82rem; font-family: var(--body); box-sizing: border-box; }
+  .form-input:focus { outline: none; border-color: var(--teal-dim); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-help { font-size: 0.75rem; color: var(--text-2); margin-top: 0.4rem; }
+  .available-league-card { background: var(--s2); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
+  .available-league-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.3rem; }
+  .available-league-details { color: var(--text-2); font-size: 0.78rem; }
+
+  .alert { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); background: var(--s2); border: 1px solid var(--teal-dim); border-radius: 6px; padding: 0.7rem 1.1rem; font-size: 0.82rem; z-index: 1400; opacity: 0; transition: opacity 0.15s; }
+  .alert.show { opacity: 1; }
+
+  .cm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1300; padding: 1rem; }
+  .cm-overlay.open { display: flex; }
+  .cm-modal { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 1.75rem; max-width: 420px; width: 100%; text-align: center; }
+  .cm-modal h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .cm-modal p { font-size: 0.85rem; color: var(--text-2); margin-bottom: 1rem; }
+  .cm-code { font-family: var(--mono); font-size: 1.8rem; font-weight: 700; letter-spacing: 0.15em; color: var(--teal); background: var(--s2); border: 1px dashed var(--teal-dim); border-radius: 8px; padding: 0.75rem; }
+  @media (max-width: 600px) { .chooser, .form-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <div class="demo-bar"><span class="logo">FANTASY MARCHING</span><span style="color:var(--text-2);font-size:0.85rem;">League join flow — demo</span>
+    <button class="reset" id="resetBtn">Reset to first-run</button></div>
+
+  <div class="container">
+    <h1 class="page-title">Fantasy Leagues</h1>
+    <p class="page-subtitle">Mock of the real flow (no backend). Try the private code <strong>ABC123</strong>.</p>
+
+    <section class="section" id="firstRun">
+      <div class="chooser">
+        <button type="button" class="chooser-card" id="chooseJoin">
+          <div class="chooser-title">Join a League</div><div class="chooser-sub">Enter a code or browse public leagues</div>
+        </button>
+        <button type="button" class="chooser-card" id="chooseCreate">
+          <div class="chooser-title">Create a League</div><div class="chooser-sub">Start your own and invite friends</div>
+        </button>
+      </div>
+    </section>
+
+    <section class="section" id="myLeaguesSection" style="display:none;">
+      <h2 class="section-title">My Leagues</h2>
+      <div class="leagues-grid" id="myLeaguesGrid"></div>
+    </section>
+
+    <section class="section" id="joinCreateSection" style="display:none;">
+      <h2 class="section-title">Join or Create a League</h2>
+      <div class="join-section">
+        <div class="tabs">
+          <button class="tab active" data-tab="join">Join a League</button>
+          <button class="tab" data-tab="create">Create a League</button>
+        </div>
+
+        <div id="join-content" class="tab-content active">
+          <div class="form-group">
+            <label>Have a private league code?</label>
+            <div style="display:flex; gap:0.5rem;">
+              <input type="text" id="joinCode" class="form-input" placeholder="Enter code (e.g. ABC123)" maxlength="12" style="text-transform:uppercase;">
+              <button type="button" class="btn" id="joinCodeBtn" style="flex-shrink:0;">Join</button>
+            </div>
+            <p class="form-help">Private leagues aren't listed. Ask the owner for the code.</p>
+          </div>
+          <h3 class="section-title" style="font-size:0.85rem; margin-top:1.5rem;">Public leagues</h3>
+          <div id="publicList"></div>
+        </div>
+
+        <div id="create-content" class="tab-content">
+          <div class="form-group">
+            <label>League Name</label>
+            <input type="text" id="leagueName" class="form-input" placeholder="Enter league name">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Visibility</label>
+              <select id="leagueVisibility" class="form-input">
+                <option value="public">Public — listed for anyone to find</option>
+                <option value="private">Private — join by code only</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Max Members</label>
+              <input type="number" id="maxMembers" class="form-input" value="8" min="2" max="10" step="2">
+            </div>
+          </div>
+          <div class="form-group" id="approvalGroup">
+            <label style="display:flex; align-items:center; gap:0.5rem;">
+              <input type="checkbox" id="requiresApproval" style="width:auto;"> Require my approval for new members
+            </label>
+            <p class="form-help">Public-league joins become requests you approve. Private code-joins are always instant.</p>
+          </div>
+          <button type="button" class="btn" id="createBtn" style="width:100%;">Create League</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="alert" id="alert"></div>
+  <div class="cm-overlay" id="cmOverlay">
+    <div class="cm-modal">
+      <h3>League created</h3>
+      <p>Share this code so others can join your private league:</p>
+      <div class="cm-code" id="cmCode">------</div>
+      <div style="display:flex; gap:0.5rem; margin-top:1.25rem; justify-content:center;">
+        <button type="button" class="btn" id="cmClose">Done</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  function esc(s){return String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  const ALPHA='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  function genCode(){let c='';for(let i=0;i<6;i++)c+=ALPHA[Math.floor(Math.random()*ALPHA.length)];return c;}
+
+  // ---- mock state ----
+  // Public (regular) leagues only. The global league is a separate system and is
+  // never listed here.
+  let publicLeagues = [
+    { id:'p2', name:'Drum Corps Diehards', creator:'zakchman', members:5, max:8, approval:false },
+    { id:'p3', name:'Finals Predictors', creator:'Krish', members:3, max:10, approval:true }
+  ];
+  const privateByCode = { 'ABC123': { id:'pv1', name:"Sean's Private League", members:4, max:8 } };
+  let myLeagues = [];   // {name, owner, isPublic, code}
+
+  function toast(msg){ const a=document.getElementById('alert'); a.textContent=msg; a.classList.add('show'); setTimeout(()=>a.classList.remove('show'),2500); }
+
+  function applyFirstRun(){
+    const has = myLeagues.length>0;
+    document.getElementById('firstRun').style.display = has ? 'none' : 'block';
+    document.getElementById('myLeaguesSection').style.display = has ? 'block' : 'none';
+    document.getElementById('joinCreateSection').style.display = has ? 'block' : 'none';
+  }
+
+  function renderMyLeagues(){
+    document.getElementById('myLeaguesGrid').innerHTML = myLeagues.map(l => `
+      <div class="league-card">
+        <div class="league-name">${esc(l.name)}
+          ${l.global ? '<span class="global-badge">GLOBAL</span>' : ''}
+          ${(l.owner && !l.isPublic) ? '<span class="global-badge" style="background:var(--s3);color:var(--text-2);border-color:var(--border);">PRIVATE</span>' : ''}
+        </div>
+        <div class="league-members">${l.members||1} members</div>
+        ${(l.owner && !l.isPublic && l.code) ? `<div class="invite-code">${esc(l.code)} <button class="copy-btn" title="Copy" data-copy="${esc(l.code)}">&#10697;</button></div>` : ''}
+      </div>`).join('');
+    document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',()=>{ navigator.clipboard?.writeText(b.getAttribute('data-copy')); toast('Code copied'); }));
+  }
+
+  function renderPublic(){
+    document.getElementById('publicList').innerHTML = publicLeagues.map(l => {
+      const joined = myLeagues.some(m=>m.id===l.id);
+      const full = l.members>=l.max;
+      return `<div class="available-league-card">
+        <div><div class="available-league-name">${esc(l.name)} ${l.global?'<span class="global-badge">GLOBAL</span>':''}</div>
+          <div class="available-league-details">${l.global?'System':'Created by '+esc(l.creator)} • ${l.members}${l.global?'':' / '+l.max} members${l.approval?' • Approval required':''}</div></div>
+        <div>${joined?'<button class="btn" disabled>Joined</button>':full?'<button class="btn" disabled>Full</button>':`<button class="btn" data-join="${l.id}">${l.approval?'Request to Join':'Join League'}</button>`}</div>
+      </div>`;
+    }).join('');
+    document.querySelectorAll('[data-join]').forEach(b=>b.addEventListener('click',()=>joinPublic(b.getAttribute('data-join'))));
+  }
+
+  function switchTab(t){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active', x.getAttribute('data-tab')===t));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    document.getElementById(t+'-content').classList.add('active');
+  }
+  function reveal(tab){ document.getElementById('firstRun').style.display='none'; document.getElementById('joinCreateSection').style.display='block'; switchTab(tab); }
+
+  function joinPublic(id){
+    const l = publicLeagues.find(x=>x.id===id); if(!l) return;
+    if(l.approval){ toast('Join request sent! The owner will review it.'); return; }
+    l.members++; myLeagues.push({ id:l.id, name:l.name, global:l.global, members:l.members, owner:false, isPublic:true });
+    toast('Joined '+l.name+'!'); afterChange();
+  }
+  function joinByCode(){
+    const code = (document.getElementById('joinCode').value||'').trim().toUpperCase();
+    if(!code){ toast('Enter a code'); return; }
+    const lg = privateByCode[code];
+    if(!lg){ toast('That code did not match any league'); return; }
+    if(myLeagues.some(m=>m.id===lg.id)){ toast('You are already in this league'); return; }
+    lg.members++; myLeagues.push({ id:lg.id, name:lg.name, members:lg.members, owner:false, isPublic:false });
+    toast('Joined '+lg.name+'!'); document.getElementById('joinCode').value=''; afterChange();
+  }
+  function createLeague(){
+    const name=(document.getElementById('leagueName').value||'').trim(); if(!name){ toast('Enter a league name'); return; }
+    const isPublic = document.getElementById('leagueVisibility').value==='public';
+    const approval = isPublic && document.getElementById('requiresApproval').checked;
+    const code = genCode();
+    const lg = { id:'own_'+code, name, members:1, owner:true, isPublic, code };
+    myLeagues.push(lg);
+    if(isPublic){ publicLeagues.push({ id:lg.id, name, creator:'You', members:1, max:parseInt(document.getElementById('maxMembers').value)||8, approval }); }
+    document.getElementById('leagueName').value='';
+    afterChange();
+    if(!isPublic){ document.getElementById('cmCode').textContent=code; document.getElementById('cmOverlay').classList.add('open'); }
+    else toast('League created!');
+  }
+  function afterChange(){ renderMyLeagues(); renderPublic(); applyFirstRun(); }
+
+  // wiring
+  document.getElementById('chooseJoin').addEventListener('click',()=>reveal('join'));
+  document.getElementById('chooseCreate').addEventListener('click',()=>reveal('create'));
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.getAttribute('data-tab'))));
+  document.getElementById('joinCodeBtn').addEventListener('click',joinByCode);
+  document.getElementById('joinCode').addEventListener('keyup',e=>{ if(e.key==='Enter') joinByCode(); });
+  document.getElementById('createBtn').addEventListener('click',createLeague);
+  document.getElementById('leagueVisibility').addEventListener('change',e=>{ document.getElementById('approvalGroup').style.display = e.target.value==='public'?'block':'none'; });
+  document.getElementById('cmClose').addEventListener('click',()=>document.getElementById('cmOverlay').classList.remove('open'));
+  document.getElementById('resetBtn').addEventListener('click',()=>{ myLeagues=[]; afterChange(); });
+
+  renderPublic(); renderMyLeagues(); applyFirstRun();
+</script>
+</body>
+</html>
