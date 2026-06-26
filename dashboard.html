@@ -151,6 +151,10 @@
         .view-more {
             padding: 0.65rem 1.25rem;
             border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
         }
 
         .view-more-btn {
@@ -162,6 +166,13 @@
         }
 
         .view-more-btn:hover { color: var(--text); }
+
+        /* Compact CTA that sits inline at the right of a card's "view more" row */
+        .view-more-cta {
+            padding: 0.4rem 0.9rem;
+            font-size: 0.78rem;
+            white-space: nowrap;
+        }
 
         /* ── REMINDER CARDS ── */
         .reminders-grid {
@@ -340,9 +351,7 @@
             </div>
             <div class="view-more">
                 <a href="/league-leaderboard.html" class="view-more-btn">View Full Leaderboard →</a>
-            </div>
-            <div style="text-align: center; padding: 0 1.25rem 1rem;">
-                <button class="btn" id="globalTeamBtn" style="width: 100%; max-width: 240px; display: none;" onclick="viewGlobalTeamLineup()">View Your Lineup</button>
+                <button class="btn view-more-cta" id="globalTeamBtn" style="display: none;" onclick="viewGlobalTeamLineup()">View Your Lineup</button>
             </div>
         </div>
 
@@ -395,9 +404,10 @@
                         <a class="btn btn-secondary" href="/login.html?tab=register&next=%2Fdashboard.html" style="text-decoration:none; padding:0.6rem 1.5rem;">Sign Up</a>
                     </div>
                 </div>`;
-            // The "View Your Lineup" button is personal; hide it for guests.
-            const lineupBtn = document.querySelector('button[onclick="viewGlobalTeamLineup()"]');
-            if (lineupBtn && lineupBtn.parentElement) lineupBtn.parentElement.style.display = 'none';
+            // The global-team button is personal; hide just the button for guests
+            // (its parent .view-more row also holds the public "View Full Leaderboard" link).
+            const lineupBtn = document.getElementById('globalTeamBtn');
+            if (lineupBtn) lineupBtn.style.display = 'none';
             // Replace "Your Leagues" with a browse/sign-up prompt.
             const leaguesSec = document.querySelector('.leagues-section');
             if (leaguesSec) leaguesSec.innerHTML = `
@@ -705,6 +715,8 @@ container.innerHTML = stats.map((player, index) => `
         }</span>
     </div>
 `).join('');
+        } else {
+            container.innerHTML = `<div style="text-align:center; color:#666;">No leaderboard data yet.</div>`;
         }
     } catch (error) {
         console.error('Error loading predictions leaderboard:', error);
