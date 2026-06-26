@@ -1,3 +1,16 @@
+// Password-recovery links carry a recovery token in the URL hash. If one lands on
+// any page other than the reset screen (e.g. the redirect fell back to the Site URL),
+// reroute to the reset screen BEFORE the client below can consume the token and just
+// log the user in.
+(function () {
+    try {
+        var h = window.location.hash || '';
+        if (h.indexOf('type=recovery') !== -1 && !/\/reset-password\.html$/.test(window.location.pathname)) {
+            window.location.replace('/reset-password.html' + h);
+        }
+    } catch (e) {}
+})();
+
 // Replace these with your actual Supabase credentials
 const SUPABASE_URL = 'https://vonqrnoiroixdlgndofw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvbnFybm9pcm9peGRsZ25kb2Z3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MDIyOTcsImV4cCI6MjA2Mzk3ODI5N30.vGk9soB66Rs6Kt8fC8oHPYfZYu9Og8zndIiuIV2ZIYM';

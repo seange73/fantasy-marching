@@ -9,7 +9,13 @@
          Any auth tokens in the URL hash (email confirmation / password flows) are
          forwarded so the dashboard's Supabase client can process them. -->
     <script>
-        window.location.replace('/dashboard.html' + (location.search || '') + (location.hash || ''));
+        // Password-recovery links may land here (when the redirect falls back to the
+        // Site URL); send those to the reset screen instead of the dashboard.
+        (function () {
+            var h = location.hash || '';
+            if (h.indexOf('type=recovery') !== -1) { location.replace('/reset-password.html' + h); return; }
+            location.replace('/dashboard.html' + (location.search || '') + h);
+        })();
     </script>
 </head>
 <body></body>

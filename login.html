@@ -277,9 +277,14 @@
                 });
                 if (error) throw error;
                 if (data.user && data.user.identities && data.user.identities.length === 0) {
-                    showError('This email is already registered. Please login instead.');
+                    showError('This email is already registered. Please log in instead.');
+                } else if (data.session) {
+                    // Email confirmation is off: the account is active right away.
+                    showSuccess('Account created! Signing you in...');
+                    setTimeout(() => { window.location.href = nextDestination(); }, 800);
                 } else {
-                    showSuccess('Account created! Please check your email to verify your account.');
+                    // Fallback if email confirmation is still enabled server-side.
+                    showSuccess('Account created! Check your email to confirm, then log in.');
                     setTimeout(() => { switchTab('login'); document.getElementById('loginEmail').value = email; }, 3000);
                 }
             } catch (error) {
