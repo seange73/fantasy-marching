@@ -194,7 +194,7 @@
         // Profiles for friends + anyone with an existing conversation.
         const ids = new Set(friendIds);
         Object.keys(convoMeta).forEach(id => ids.add(id));
-        ids.delete(me);
+        ids.add(me);   // include my own profile so my message bubbles show my avatar (the list excludes me separately)
         if (ids.size) {
             const { data: profs } = await supabaseClient.from('profiles').select('id,username,avatar_url').in('id', [...ids]);
             (profs || []).forEach(p => { profileMap[p.id] = p; });
