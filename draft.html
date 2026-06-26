@@ -36,50 +36,87 @@
         }
 
         .draft-status {
-            background: var(--teal-bg);
+            background: var(--s1);
             border: 1px solid var(--teal-dim);
-            border-radius: 6px;
-            padding: 1rem;
+            border-radius: 8px;
+            padding: 0.9rem 1rem;
             margin-bottom: 1.25rem;
-            text-align: center;
         }
 
-        .draft-status.your-turn {
-            background: rgba(78,205,196,0.15);
-            border-color: var(--teal);
-            animation: yourTurnPulse 2s infinite;
+        .draft-status.your-turn { border-color: var(--teal); }
+        .draft-status.completed { border-color: var(--border); }
+
+        .ds-eyebrow {
+            font-family: var(--mono);
+            font-size: 0.62rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--text-3);
         }
 
-        @keyframes yourTurnPulse {
-            0%, 100% { opacity: 1; }
-            50%       { opacity: 0.7; }
+        .ds-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin: 0.5rem 0 0.7rem;
         }
 
-        .current-pick {
-            font-size: 0.88rem;
-            font-weight: 600;
-            color: var(--teal);
-            margin-bottom: 0.4rem;
+        .ds-label {
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: var(--text);
+            min-width: 0;
         }
+        .draft-status.your-turn .ds-label { color: var(--teal); }
 
         .pick-timer {
-            font-size: 2rem;
-            font-weight: 800;
-            text-align: center;
-            margin: 1rem 0;
-            color: #ff6b6b;
             font-family: var(--mono);
+            font-size: 1.5rem;
+            line-height: 1;
+            color: var(--teal);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
+        .ds-bar {
+            height: 4px;
+            border-radius: 3px;
+            background: var(--s3);
+            overflow: hidden;
+        }
+        .ds-bar > i {
+            display: block;
+            height: 100%;
+            width: 100%;
+            background: var(--teal);
+            border-radius: 3px;
+            transition: width 0.3s linear, background 0.2s;
+        }
+        .draft-status.completed .ds-bar { display: none; }
+
         .draft-order { margin-top: 1.5rem; }
+
+        .draft-order-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
 
         .draft-order-title {
             font-size: 0.7rem;
             font-weight: 700;
             color: var(--text-2);
-            margin-bottom: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        .draft-order-meta {
+            font-family: var(--mono);
+            font-size: 0.62rem;
+            color: var(--text-3);
+            letter-spacing: 0.04em;
         }
 
         .draft-order-list {
@@ -87,6 +124,8 @@
             flex-direction: column;
             gap: 0.4rem;
         }
+
+        .draft-order-name { flex: 1; }
 
         .draft-order-item {
             display: flex;
@@ -143,6 +182,13 @@
             color: var(--text);
         }
 
+        .board-sub {
+            font-family: var(--mono);
+            font-size: 0.68rem;
+            color: var(--text-3);
+            letter-spacing: 0.03em;
+        }
+
         .caption-tabs {
             display: flex;
             background: var(--s2);
@@ -184,11 +230,15 @@
         .corps-card {
             background: var(--s2);
             border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 0.85rem;
+            border-radius: 6px;
+            padding: 0.7rem 0.75rem;
             cursor: pointer;
             transition: background 0.1s, border-color 0.1s;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            min-height: 94px;
+            position: relative;
         }
 
         .corps-card:hover:not(.drafted) {
@@ -196,45 +246,94 @@
             border-color: var(--teal-dim);
         }
 
-        .corps-card.drafted {
-            opacity: 0.35;
-            cursor: not-allowed;
-            position: relative;
+        .corps-card.selected {
+            background: var(--s3);
+            border-color: var(--teal);
         }
 
-        .corps-card.drafted::after {
-            content: 'DRAFTED';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-20deg);
-            font-weight: 800;
-            font-size: 0.68rem;
-            color: var(--text-3);
-            letter-spacing: 2px;
+        .corps-card.drafted {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .corps-card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.4rem;
         }
 
         .corps-name {
             font-weight: 700;
-            font-size: 0.85rem;
-            margin-bottom: 0.3rem;
+            font-size: 0.82rem;
+            line-height: 1.2;
             color: var(--text);
+            text-align: left;
         }
+        .corps-card.drafted .corps-name { color: var(--text-2); }
 
-        .corps-stats { font-size: 0.75rem; color: var(--text-2); }
+        .corps-info-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            padding: 0;
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            border-radius: 50%;
+            color: var(--text-3);
+            cursor: pointer;
+            transition: color 0.12s, background 0.12s;
+        }
+        .corps-info-btn:hover { color: var(--teal); background: var(--teal-bg); }
+
+        .corps-rank {
+            font-size: 0.66rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-3);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .corps-rank b {
+            font-family: var(--mono);
+            font-weight: 500;
+            font-size: 0.8rem;
+            color: var(--teal);
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .corps-rank.unranked b { color: var(--text-3); }
+
+        .corps-draft-action { margin-top: auto; min-height: 1.45rem; }
+
+        .corps-status {
+            display: inline-block;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.2rem 0.45rem;
+            border-radius: 3px;
+            color: var(--text-3);
+            background: var(--s3);
+            border: 1px solid var(--border);
+        }
 
         .draft-button {
             background: var(--teal);
             color: var(--bg);
             border: none;
-            padding: 0.4rem 0.75rem;
+            padding: 0.35rem 0.7rem;
             border-radius: 4px;
             font-weight: 600;
             cursor: pointer;
             transition: opacity 0.1s;
-            margin-top: 0.6rem;
             width: 100%;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-family: var(--body);
         }
 
@@ -265,29 +364,46 @@
             background: var(--s2);
             border: 1px solid var(--border);
             border-radius: 4px;
-            padding: 0.6rem 0.75rem;
+            padding: 0.55rem 0.7rem;
             margin-bottom: 0.4rem;
-            font-size: 0.82rem;
         }
 
         .pick-round {
             font-weight: 600;
             color: var(--teal);
-            font-size: 0.7rem;
+            font-size: 0.64rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.06em;
         }
 
-        .pick-details {
+        .pick-corps {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.84rem;
+            line-height: 1.2;
+            margin: 0.2rem 0 0.35rem;
+        }
+
+        .pick-meta {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-top: 0.2rem;
+            justify-content: space-between;
+            gap: 0.5rem;
         }
 
-        .pick-corps { font-weight: 600; color: var(--text); }
-        .pick-caption { color: var(--text-2); font-size: 0.78rem; }
-        .pick-user { color: var(--text-3); font-size: 0.75rem; margin-top: 0.15rem; }
+        .pick-caption {
+            font-size: 0.58rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--teal);
+            background: var(--teal-bg);
+            border: 1px solid var(--teal-dim);
+            border-radius: 3px;
+            padding: 0.1rem 0.4rem;
+            white-space: nowrap;
+        }
+        .pick-user { color: var(--text-3); font-size: 0.72rem; white-space: nowrap; }
 
         .loading { padding: 3rem 2rem; }
 
@@ -371,41 +487,58 @@
 
         .caption-group {
             background: var(--s2);
-            border-radius: 4px;
-            padding: 1rem;
+            border-radius: 6px;
             border: 1px solid var(--border);
+            overflow: hidden;
         }
 
-        .caption-group-title {
+        .cap-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.55rem 0.8rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cap-name {
             font-weight: 700;
             color: var(--teal);
-            margin-bottom: 0.6rem;
             text-transform: uppercase;
             font-size: 0.7rem;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.06em;
+        }
+
+        .cap-count {
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--text-2);
         }
 
         .team-slot {
-            background: var(--s3);
-            border: 1px dashed var(--border);
-            border-radius: 4px;
-            padding: 0.55rem;
-            margin-bottom: 0.4rem;
-            font-size: 0.8rem;
-            min-height: 34px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 0.7rem;
+            padding: 0.5rem 0.8rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.82rem;
+            min-height: 38px;
             color: var(--text);
         }
+        .team-slot:last-child { border-bottom: none; }
 
-        .team-slot.filled {
-            border: 1px solid var(--teal-dim);
-            background: var(--teal-bg);
-            font-weight: 600;
+        .slot-num {
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--text-3);
+            width: 14px;
+            flex-shrink: 0;
         }
 
-        .empty-slot { color: var(--text-3); font-style: italic; font-size: 0.75rem; }
+        .team-slot.filled { background: var(--teal-bg); }
+        .team-slot.filled .slot-num { color: var(--teal); }
+        .team-slot.filled .slot-name { font-weight: 600; }
+
+        .empty-slot { color: var(--text-3); font-style: italic; font-size: 0.78rem; }
 
         /* Alert */
         .alert {
@@ -512,16 +645,19 @@
             <h2 class="draft-title" id="leagueName">Loading...</h2>
             
             <div class="draft-status" id="draftStatus">
-                <div class="current-pick">Round 1, Pick 1</div>
-                <div>Waiting for draft to start...</div>
+                <div class="ds-eyebrow" id="dsEyebrow">Draft</div>
+                <div class="ds-row">
+                    <span class="ds-label" id="dsLabel">Waiting for draft to start...</span>
+                    <span class="pick-timer" id="pickTimer" style="display: none;">1:30</span>
+                </div>
+                <div class="ds-bar" id="dsBarWrap" style="display: none;"><i id="pickTimerBar"></i></div>
             </div>
-            
-            <div class="pick-timer" id="pickTimer" style="display: none;">
-                1:30
-            </div>
-            
+
             <div class="draft-order">
-                <h3 class="draft-order-title">Draft Order</h3>
+                <div class="draft-order-head">
+                    <h3 class="draft-order-title">Draft Order</h3>
+                    <span class="draft-order-meta" id="draftOrderMeta"></span>
+                </div>
                 <div class="draft-order-list" id="draftOrderList">
                     <!-- Draft order will be populated here -->
                 </div>
@@ -532,6 +668,7 @@
         <div class="draft-board">
             <div class="board-header">
                 <h1 class="board-title">Available Corps</h1>
+                <span class="board-sub" id="boardSub"></span>
             </div>
             
             <div class="caption-tabs">
@@ -555,7 +692,7 @@
         <div class="recent-picks">
             <h2 class="recent-picks-title">Recent Picks</h2>
             <div id="recentPicksList">
-                <p style="color: #666; text-align: center;">No picks yet</p>
+                <p style="color: var(--text-3); text-align: center; font-size: 0.8rem;">No picks yet</p>
             </div>
         </div>
     </div>
@@ -567,55 +704,37 @@
             <div class="team-grid">
                 <!-- Main Captions -->
                 <div class="caption-group">
-                    <h3 class="caption-group-title">Brass (0/2)</h3>
-                    <div class="team-slot" id="brass-0">
-                        <span class="empty-slot">Empty Slot</span>
-                    </div>
-                    <div class="team-slot" id="brass-1">
-                        <span class="empty-slot">Empty Slot</span>
-                    </div>
+                    <div class="cap-head"><span class="cap-name">Brass</span><span class="cap-count" id="brass-count">0 / 2</span></div>
+                    <div class="team-slot" id="brass-0"><span class="slot-num">1</span><span class="slot-name"><span class="empty-slot">empty</span></span></div>
+                    <div class="team-slot" id="brass-1"><span class="slot-num">2</span><span class="slot-name"><span class="empty-slot">empty</span></span></div>
                 </div>
-                
+
                 <div class="caption-group">
-                    <h3 class="caption-group-title">Percussion (0/2)</h3>
-                    <div class="team-slot" id="percussion-0">
-                        <span class="empty-slot">Empty Slot</span>
-                    </div>
-                    <div class="team-slot" id="percussion-1">
-                        <span class="empty-slot">Empty Slot</span>
-                    </div>
+                    <div class="cap-head"><span class="cap-name">Percussion</span><span class="cap-count" id="percussion-count">0 / 2</span></div>
+                    <div class="team-slot" id="percussion-0"><span class="slot-num">1</span><span class="slot-name"><span class="empty-slot">empty</span></span></div>
+                    <div class="team-slot" id="percussion-1"><span class="slot-num">2</span><span class="slot-name"><span class="empty-slot">empty</span></span></div>
                 </div>
-                
+
                 <div class="caption-group">
-                    <h3 class="caption-group-title">Color Guard (0/2)</h3>
-                    <div class="team-slot" id="guard-0">
-                        <span class="empty-slot">Empty Slot</span>
-                    </div>
-                    <div class="team-slot" id="guard-1">
-                        <span class="empty-slot">Empty Slot</span>
-                    </div>
+                    <div class="cap-head"><span class="cap-name">Color Guard</span><span class="cap-count" id="guard-count">0 / 2</span></div>
+                    <div class="team-slot" id="guard-0"><span class="slot-num">1</span><span class="slot-name"><span class="empty-slot">empty</span></span></div>
+                    <div class="team-slot" id="guard-1"><span class="slot-num">2</span><span class="slot-name"><span class="empty-slot">empty</span></span></div>
                 </div>
-                
+
                 <!-- Secondary Captions -->
                 <div class="caption-group">
-                    <h3 class="caption-group-title">General Effect (0/1)</h3>
-                    <div class="team-slot" id="ge-0">
-                        <span class="empty-slot">Empty Slot</span>
-                    </div>
+                    <div class="cap-head"><span class="cap-name">General Effect</span><span class="cap-count" id="ge-count">0 / 1</span></div>
+                    <div class="team-slot" id="ge-0"><span class="slot-num">1</span><span class="slot-name"><span class="empty-slot">empty</span></span></div>
                 </div>
-                
+
                 <div class="caption-group">
-                    <h3 class="caption-group-title">Visual (0/1)</h3>
-                    <div class="team-slot" id="visual-0">
-                        <span class="empty-slot">Empty Slot</span>
-                    </div>
+                    <div class="cap-head"><span class="cap-name">Visual</span><span class="cap-count" id="visual-count">0 / 1</span></div>
+                    <div class="team-slot" id="visual-0"><span class="slot-num">1</span><span class="slot-name"><span class="empty-slot">empty</span></span></div>
                 </div>
-                
+
                 <div class="caption-group">
-                    <h3 class="caption-group-title">Music (0/1)</h3>
-                    <div class="team-slot" id="music-0">
-                        <span class="empty-slot">Empty Slot</span>
-                    </div>
+                    <div class="cap-head"><span class="cap-name">Music</span><span class="cap-count" id="music-count">0 / 1</span></div>
+                    <div class="team-slot" id="music-0"><span class="slot-num">1</span><span class="slot-name"><span class="empty-slot">empty</span></span></div>
                 </div>
             </div>
         </div>
@@ -651,6 +770,7 @@
         let draftedCorps = new Map(); // Map of caption -> Set of corps names
         let pickTimer = null;
         let draftMembers = [];
+        let allPicks = []; // every pick made so far (round/pick_number/user_id/caption/corps_name)
         let myTeam = new Map(); // Map of caption -> array of corps
         let isMyTurn = false;
         let timerInterval = null;
@@ -749,36 +869,33 @@ function updateDraftUI() {
     if (!draftState) return;
     
     console.log('Updating draft UI, current turn:', draftState.current_user_id);
-    
+
     isMyTurn = draftState.current_user_id === currentUser.id;
-    
-    // Update status display
+
+    // Update status display (fixed card structure; only text/state changes so the
+    // running timer element is never detached)
     const statusDiv = document.getElementById('draftStatus');
-    const currentPick = `Round ${draftState.current_round}, Pick ${draftState.current_pick}`;
-    
+    const eyebrow = document.getElementById('dsEyebrow');
+    const label = document.getElementById('dsLabel');
+    const roundPick = `Round ${draftState.current_round} · Pick ${draftState.current_pick}`;
+
     if (draftState.status === 'completed') {
-        statusDiv.className = 'draft-status';
-        statusDiv.innerHTML = `
-            <div class="current-pick">Draft Complete!</div>
-            <div>All picks have been made</div>
-        `;
+        statusDiv.className = 'draft-status completed';
+        eyebrow.textContent = 'Draft complete';
+        label.textContent = 'All picks are in';
         hideTimer();
     } else if (isMyTurn) {
         statusDiv.className = 'draft-status your-turn';
-        statusDiv.innerHTML = `
-            <div class="current-pick">${currentPick}</div>
-            <div>It's your turn to pick!</div>
-        `;
+        eyebrow.textContent = roundPick;
+        label.textContent = 'Your pick';
         if (draftState.pick_deadline) {
             startTimer(draftState.pick_deadline);
         }
     } else {
         const currentDrafter = draftMembers.find(m => m.userId === draftState.current_user_id);
         statusDiv.className = 'draft-status';
-        statusDiv.innerHTML = `
-            <div class="current-pick">${currentPick}</div>
-            <div>Waiting for ${escapeHtml(currentDrafter?.username || 'Unknown')}</div>
-        `;
+        eyebrow.textContent = roundPick;
+        label.textContent = `Waiting for ${currentDrafter?.username || 'Unknown'}`;
         if (draftState.pick_deadline) {
             showOtherPlayerTimer(draftState.pick_deadline);
         }
@@ -872,20 +989,31 @@ function updateDraftUI() {
             container.innerHTML = draftMembers.map(member => {
                 const isActive = member.userId === draftState.current_user_id;
                 const hasPickedThisRound = checkIfUserPickedInRound(member.userId);
-                
+
                 return `
-                    <div class="draft-order-item ${isActive ? 'active' : ''} ${hasPickedThisRound ? 'completed' : ''}">
+                    <div class="draft-order-item ${isActive ? 'active' : ''} ${hasPickedThisRound && !isActive ? 'completed' : ''}">
                         <div class="draft-position">${member.position}</div>
-                        <div>${escapeHtml(member.username)}</div>
+                        <div class="draft-order-name">${escapeHtml(member.username)}</div>
                     </div>
                 `;
             }).join('');
+
+            // Round + snake-draft direction indicator
+            const meta = document.getElementById('draftOrderMeta');
+            if (meta && draftState) {
+                if (draftState.status === 'completed') {
+                    meta.textContent = 'Final';
+                } else {
+                    const dir = draftState.snake_direction === 'reverse' ? '↑ Reverse' : '↓ Forward';
+                    meta.textContent = `Round ${draftState.current_round} · ${dir}`;
+                }
+            }
         }
 
-        // Check if user has picked in current round
+        // Check if a user has already made their pick in the current round
         function checkIfUserPickedInRound(userId) {
-            // This would be determined by checking picks, simplified for now
-            return false;
+            if (!draftState) return false;
+            return allPicks.some(p => p.user_id === userId && p.round === draftState.current_round);
         }
 
         // Load all previous picks
@@ -922,7 +1050,10 @@ async function loadAllPicks() {
     }
 
     console.log('All picks loaded:', picks);
-    
+
+    // Keep the full picks list so the draft order can mark who has already gone this round
+    allPicks = picks || [];
+
     // Clear existing data
     ['brass', 'percussion', 'guard', 'ge', 'visual', 'music'].forEach(caption => {
         draftedCorps.get(caption).clear();
@@ -959,21 +1090,21 @@ async function loadAllPicks() {
             const container = document.getElementById('recentPicksList');
             
             if (picks.length === 0) {
-                container.innerHTML = '<p style="color: #666; text-align: center;">No picks yet</p>';
+                container.innerHTML = '<p style="color: var(--text-3); text-align: center; font-size: 0.8rem;">No picks yet</p>';
                 return;
             }
             
             // Show last 10 picks
             const recentPicks = picks.slice(0, 10);
-            
+
             container.innerHTML = recentPicks.map(pick => `
                 <div class="pick-item">
-                    <div class="pick-round">Round ${pick.round}, Pick ${pick.pick_number}</div>
-                    <div class="pick-details">
-                        <span class="pick-corps">${pick.corps_name}</span>
+                    <div class="pick-round">Round ${pick.round} · Pick ${pick.pick_number}</div>
+                    <div class="pick-corps">${escapeHtml(pick.corps_name)}</div>
+                    <div class="pick-meta">
                         <span class="pick-caption">${formatCaption(pick.caption)}</span>
+                        <span class="pick-user">by ${escapeHtml(pick.profiles?.username || 'Unknown')}</span>
                     </div>
-                    <div class="pick-user">by ${escapeHtml(pick.profiles?.username || 'Unknown')}</div>
                 </div>
             `).join('');
         }
@@ -991,132 +1122,149 @@ async function loadAllPicks() {
             
             Object.entries(captionLimits).forEach(([caption, limit]) => {
                 const corps = myTeam.get(caption);
-                
-                // Update caption title with count
-                const titleElement = document.querySelector(`#${caption}-0`).parentElement.querySelector('.caption-group-title');
-                if (titleElement) {
-                    titleElement.textContent = `${formatCaption(caption)} (${corps.length}/${limit})`;
-                }
-                
-                // Update slots
+
+                // Update caption count
+                const countEl = document.getElementById(`${caption}-count`);
+                if (countEl) countEl.textContent = `${corps.length} / ${limit}`;
+
+                // Update slot rows (slot number stays static; only the name span changes)
                 for (let i = 0; i < limit; i++) {
                     const slot = document.getElementById(`${caption}-${i}`);
-                    if (slot) {
-                        if (corps[i]) {
-                            slot.innerHTML = corps[i];
-                            slot.classList.add('filled');
-                        } else {
-                            slot.innerHTML = '<span class="empty-slot">Empty Slot</span>';
-                            slot.classList.remove('filled');
-                        }
+                    if (!slot) continue;
+                    const nameEl = slot.querySelector('.slot-name');
+                    if (corps[i]) {
+                        nameEl.textContent = corps[i];
+                        slot.classList.add('filled');
+                    } else {
+                        nameEl.innerHTML = '<span class="empty-slot">empty</span>';
+                        slot.classList.remove('filled');
                     }
                 }
             });
         }
+// Total seconds the pick clock runs for, used to size the progress bar
+function pickTimerTotal(deadline) {
+    return (currentLeague && currentLeague.pick_timer_seconds)
+        || Math.max(1, Math.floor((new Date(deadline) - new Date()) / 1000));
+}
+
 // Start timer for current player
 function startTimer(deadline) {
     const timerDiv = document.getElementById('pickTimer');
-    timerDiv.style.display = 'block';
-    
+    const barWrap = document.getElementById('dsBarWrap');
+    const bar = document.getElementById('pickTimerBar');
+    timerDiv.style.display = '';
+    if (barWrap) barWrap.style.display = '';
+
     if (timerInterval) clearInterval(timerInterval);
-    
+
+    const total = pickTimerTotal(deadline);
     let hasTriggeredAutopick = false; // Prevent multiple triggers
-    
-    timerInterval = setInterval(async () => {
-        const now = new Date();
-        const deadlineTime = new Date(deadline);
-        const remaining = Math.max(0, Math.floor((deadlineTime - now) / 1000));
-        
+
+    const tick = async () => {
+        const remaining = Math.max(0, Math.floor((new Date(deadline) - new Date()) / 1000));
+        const pct = Math.max(0, Math.min(100, (remaining / total) * 100));
+
         if (remaining <= 0 && !hasTriggeredAutopick) {
             hasTriggeredAutopick = true;
             clearInterval(timerInterval);
-            timerDiv.textContent = 'Auto-picking...';
-            timerDiv.style.color = '#ffd700';
-            
-           // ANY user viewing the page can trigger autopick for the current player
-           console.log('Timer expired, triggering autopick...');
-           try {
-               const { error } = await supabaseClient.rpc('trigger_autopick_for_current_user', {
-                   p_league_id: leagueId
-               });
-               
-               if (error) {
-                   console.error('Autopick error:', error);
-                   // If autopick fails, show error
-                   timerDiv.textContent = 'Autopick failed!';
-                   timerDiv.style.color = '#ff6b6b';
-               }
-			   if (!error) {
-    console.log('Autopick triggered successfully');
-    // Force reload the draft state and picks after a short delay
-    setTimeout(async () => {
-        await loadDraftState();
-        await loadAllPicks();
-        await loadAvailableCorps();
-    }, 1000);
-}
-           } catch (err) {
-               console.error('Failed to trigger autopick:', err);
-           }
-           return;
-       }
-        
-        const minutes = Math.floor(remaining / 60);
-        const seconds = remaining % 60;
-        timerDiv.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        
-        // Change color based on time remaining
-        if (remaining <= 10) {
+            timerDiv.textContent = '0:00';
             timerDiv.style.color = '#ff6b6b';
-        } else if (remaining <= 30) {
-            timerDiv.style.color = '#ffd700';
-        } else {
-            timerDiv.style.color = '#4ecdc4';
-        }
-    }, 1000);
-}
-function showOtherPlayerTimer(deadline) {
-    const timerDiv = document.getElementById('pickTimer');
-    timerDiv.style.display = 'block';
-    timerDiv.style.color = '#666';
-    
-    if (timerInterval) clearInterval(timerInterval);
-    let hasTriggeredAutopick = false;
-    timerInterval = setInterval(() => {
-        const now = new Date();
-        const deadlineTime = new Date(deadline);
-        const remaining = Math.max(0, Math.floor((deadlineTime - now) / 1000));
-        
-        if (remaining <= 0 && !hasTriggeredAutopick) {
-			hasTriggeredAutopick = true;
-            clearInterval(timerInterval);
-            timerDiv.textContent = 'Waiting for auto-pick...';
-            timerDiv.style.color = '#ffd700';
-			 // Poll for changes every 2 seconds
-    const pollInterval = setInterval(async () => {
-        const { data: draft } = await supabaseClient
-            .from('league_drafts')
-            .select('current_user_id, current_pick')
-            .eq('league_id', leagueId)
-            .single();										
-        
-        if (draft && draft.current_user_id !== draftState.current_user_id) {
-            clearInterval(pollInterval);
-            await loadDraftState();
-            await loadAllPicks();
-            await loadAvailableCorps();
-        }
-    }, 2000);
+            if (bar) { bar.style.width = '0%'; bar.style.background = '#ff6b6b'; }
+            const label = document.getElementById('dsLabel');
+            if (label) label.textContent = 'Auto-picking...';
+
+            // ANY user viewing the page can trigger autopick for the current player
+            console.log('Timer expired, triggering autopick...');
+            try {
+                const { error } = await supabaseClient.rpc('trigger_autopick_for_current_user', {
+                    p_league_id: leagueId
+                });
+                if (error) {
+                    console.error('Autopick error:', error);
+                    if (label) label.textContent = 'Autopick failed';
+                } else {
+                    console.log('Autopick triggered successfully');
+                    setTimeout(async () => {
+                        await loadDraftState();
+                        await loadAllPicks();
+                        await loadAvailableCorps();
+                    }, 1000);
+                }
+            } catch (err) {
+                console.error('Failed to trigger autopick:', err);
+            }
             return;
         }
-        
+
         const minutes = Math.floor(remaining / 60);
         const seconds = remaining % 60;
         timerDiv.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    }, 1000);
+
+        let color;
+        if (remaining <= 10) color = '#ff6b6b';
+        else if (remaining <= 30) color = '#e6b450';
+        else color = 'var(--teal)';
+        timerDiv.style.color = color;
+        if (bar) { bar.style.width = pct + '%'; bar.style.background = color; }
+    };
+
+    tick();
+    timerInterval = setInterval(tick, 1000);
+}
+
+function showOtherPlayerTimer(deadline) {
+    const timerDiv = document.getElementById('pickTimer');
+    const barWrap = document.getElementById('dsBarWrap');
+    const bar = document.getElementById('pickTimerBar');
+    timerDiv.style.display = '';
+    timerDiv.style.color = 'var(--text-2)';
+    if (barWrap) barWrap.style.display = '';
+    if (bar) bar.style.background = 'var(--text-3)';
+
+    if (timerInterval) clearInterval(timerInterval);
+    const total = pickTimerTotal(deadline);
+    let hasTriggeredAutopick = false;
+
+    const tick = () => {
+        const remaining = Math.max(0, Math.floor((new Date(deadline) - new Date()) / 1000));
+        if (bar) bar.style.width = Math.max(0, Math.min(100, (remaining / total) * 100)) + '%';
+
+        if (remaining <= 0 && !hasTriggeredAutopick) {
+            hasTriggeredAutopick = true;
+            clearInterval(timerInterval);
+            timerDiv.textContent = '0:00';
+            const label = document.getElementById('dsLabel');
+            if (label) label.textContent = 'Waiting for auto-pick...';
+            // Poll for changes every 2 seconds
+            const pollInterval = setInterval(async () => {
+                const { data: draft } = await supabaseClient
+                    .from('league_drafts')
+                    .select('current_user_id, current_pick')
+                    .eq('league_id', leagueId)
+                    .single();
+                if (draft && draft.current_user_id !== draftState.current_user_id) {
+                    clearInterval(pollInterval);
+                    await loadDraftState();
+                    await loadAllPicks();
+                    await loadAvailableCorps();
+                }
+            }, 2000);
+            return;
+        }
+
+        const minutes = Math.floor(remaining / 60);
+        const seconds = remaining % 60;
+        timerDiv.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
+
+    tick();
+    timerInterval = setInterval(tick, 1000);
 }
 function hideTimer() {
     document.getElementById('pickTimer').style.display = 'none';
+    const barWrap = document.getElementById('dsBarWrap');
+    if (barWrap) barWrap.style.display = 'none';
     if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
@@ -1149,35 +1297,50 @@ async function loadCaptionRankings() {
         async function loadAvailableCorps() {
             const container = document.getElementById('corpsGrid');
             const draftedInCaption = draftedCorps.get(currentCaption);
-            
+            const boardSub = document.getElementById('boardSub');
+
             // Check if draft is active
             if (!draftState || draftState.status !== 'in_progress') {
-                container.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1/-1;">Draft has not started or is complete</p>';
+                container.innerHTML = '<p style="text-align: center; color: var(--text-3); grid-column: 1/-1;">Draft has not started or is complete</p>';
+                if (boardSub) boardSub.textContent = '';
                 return;
             }
-            
+
+            // Header count: how many corps remain for this caption
+            if (boardSub) {
+                const available = ALL_CORPS.length - draftedInCaption.size;
+                boardSub.textContent = `${formatCaption(currentCaption)} · ${available} available`;
+            }
+
 container.innerHTML = ALL_CORPS.map(corps => {
     const isDraftedForThisCaption = draftedInCaption.has(corps);
-    const rank = captionRankings[currentCaption]?.[corps] || 'N/A';
-    
+    const rankVal = captionRankings[currentCaption]?.[corps];
+    const rankHtml = rankVal
+        ? `2024 Rank <b>#${escapeHtml(String(rankVal))}</b>`
+        : `<b>Unranked</b>`;
+
+    let action;
+    if (isDraftedForThisCaption) {
+        action = `<span class="corps-status">Drafted</span>`;
+    } else if (isMyTurn) {
+        action = `<button class="draft-button" onclick="event.stopPropagation(); draftCorps('${jsStr(corps)}')">Draft</button>`;
+    } else {
+        action = '';
+    }
+
     return `
         <div class="corps-card ${isDraftedForThisCaption ? 'drafted' : ''}"
              data-corps="${escapeHtml(corps)}"
              ${!isDraftedForThisCaption && isMyTurn ? `onclick="selectCorps('${jsStr(corps)}')"` : ''}>
-            <div class="corps-name">${escapeHtml(corps)}
-                <button type="button" title="View ${escapeHtml(corps)} stats"
-                        style="background:none;border:none;color:var(--text-2);cursor:pointer;font-size:0.9rem;padding:0 0.25rem;line-height:1;"
-                        onclick="event.stopPropagation(); showCorpsDetail('${jsStr(corps)}')">&#9432;</button>
+            <div class="corps-card-top">
+                <span class="corps-name">${escapeHtml(corps)}</span>
+                <button type="button" class="corps-info-btn" title="View ${escapeHtml(corps)} stats"
+                        onclick="event.stopPropagation(); showCorpsDetail('${jsStr(corps)}')">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </button>
             </div>
-            <div class="corps-stats">2024 Rank: ${escapeHtml(rank)}</div>
-            ${!isDraftedForThisCaption && isMyTurn ?
-                `<button class="draft-button" onclick="event.stopPropagation(); draftCorps('${jsStr(corps)}')">
-                    Draft for ${formatCaption(currentCaption)}
-                </button>` :
-                isDraftedForThisCaption ? 
-                    `<button class="draft-button" disabled>Already Drafted</button>` :
-                    `<button class="draft-button" disabled>Not Your Turn</button>`
-            }
+            <div class="corps-rank ${rankVal ? '' : 'unranked'}">${rankHtml}</div>
+            <div class="corps-draft-action">${action}</div>
         </div>
     `;
 }).join('');
@@ -1201,16 +1364,16 @@ container.innerHTML = ALL_CORPS.map(corps => {
         // Select corps (visual feedback)
         function selectCorps(corpsName) {
             if (!isMyTurn) return;
-            
+
             // Remove previous selection
-            document.querySelectorAll('.corps-card').forEach(card => {
-                card.style.border = '';
+            document.querySelectorAll('.corps-card.selected').forEach(card => {
+                card.classList.remove('selected');
             });
-            
+
             // Highlight selected
             const card = document.querySelector(`[data-corps="${corpsName}"]`);
             if (card && !card.classList.contains('drafted')) {
-                card.style.border = '2px solid #4ecdc4';
+                card.classList.add('selected');
             }
         }
 
@@ -1338,7 +1501,7 @@ function showDraftCompleteOverlay() {
         <div class="draft-complete-message">
             <h2>Draft Complete!</h2>
             <p>Great picks! Your team is ready.</p>
-            <p style="color: #a0a0a0; font-size: 1rem;">Redirecting to league page...</p>
+            <p style="color: var(--text-2); font-size: 0.85rem;">Redirecting to league page...</p>
         </div>
     `;
     document.body.appendChild(overlay);
