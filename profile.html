@@ -479,7 +479,18 @@ async function loadFriendsData() {
     .select('leagues(id, name, is_global)').eq('user_id', me).eq('status', 'active');
   myLeagues = (lm || []).map(x => x.leagues).filter(l => l && !l.is_global);
 
-  friendsCache = { friends, incoming, outgoing, invites, profileMap, leagueMap, me };
+  // Last DM time per friend, so the friends list can order by most recent
+  // conversation (like the messenger). Two parameterized .eq() queries merged,
+  // never a .or() string.
+  const [dmSent, dmRecv] = await Promise.all([
+    supabaseClient.from('direct_messages').select('recipient_id, created_at').eq('sender_id', me).order('created_at', { ascending: false }).limit(200),
+    supabaseClient.from('direct_messages').select('sender_id, created_at').eq('recipient_id', me).order('created_at', { ascending: false }).limit(200)
+  ]);
+  const lastMsgAt = {};
+  (dmSent.data || []).forEach(r => { const t = new Date(r.created_at).getTime(); if (!lastMsgAt[r.recipient_id] || t > lastMsgAt[r.recipient_id]) lastMsgAt[r.recipient_id] = t; });
+  (dmRecv.data || []).forEach(r => { const t = new Date(r.created_at).getTime(); if (!lastMsgAt[r.sender_id] || t > lastMsgAt[r.sender_id]) lastMsgAt[r.sender_id] = t; });
+
+  friendsCache = { friends, incoming, outgoing, invites, profileMap, leagueMap, me, lastMsgAt };
   renderFriends();
 }
 
@@ -552,6 +563,7 @@ function renderFriendsList(term) {
   }
 
   const t = (term || '').trim().toLowerCase();
+  const lastMsgAt = friendsCache.lastMsgAt || {};
   const rows = friends
     .map(r => {
       const other = r.requester_id === me ? r.addressee_id : r.requester_id;
@@ -560,14 +572,28 @@ function renderFriendsList(term) {
     })
     .filter(x => !t || x.name.toLowerCase().includes(t));
 
+  // Most recently messaged friend on top, then the rest alphabetically.
+  rows.sort((a, b) => {
+    const at = lastMsgAt[a.other] || 0, bt = lastMsgAt[b.other] || 0;
+    if (at !== bt) return bt - at;
+    return a.name.localeCompare(b.name);
+  });
+
   if (!rows.length) {
     listEl.innerHTML = `<p style="color:var(--text-3); font-size:0.85rem;">No friends match that filter.</p>`;
     return;
   }
 
   listEl.innerHTML = rows.map(x => friendRowHtml(x.other,
-    `<button class="fbtn" onclick="openInviteMenu(event, '${jsStr(x.other)}')">Invite</button>
+    `<button class="fbtn" onclick="messageFriend('${jsStr(x.other)}')">Message</button>
+     <button class="fbtn" onclick="openInviteMenu(event, '${jsStr(x.other)}')">Invite</button>
      <button class="fbtn" onclick="removeFriend('${jsStr(x.other)}', true)">Remove</button>`)).join('');
+}
+
+// Open the global messenger (js/direct-messages.js) to this friend's thread.
+function messageFriend(userId) {
+  if (window.openDirectMessageThread) window.openDirectMessageThread(userId);
+  else toast('Messenger is still loading — try again in a moment', 'error');
 }
 
 async function respondFriend(id, accept) {
