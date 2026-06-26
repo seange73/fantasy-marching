@@ -196,9 +196,12 @@
         }
 
         .reminder-icon {
-            font-size: 1.25rem;
-            margin-bottom: 0.75rem;
+            color: var(--teal);
+            line-height: 0;
+            margin-bottom: 0.6rem;
         }
+        .reminder-icon:empty { display: none; }
+        .reminder-icon svg { width: 22px; height: 22px; }
 
         .reminder-title {
             font-size: 0.82rem;
@@ -276,6 +279,7 @@
             }
 
             .leagues-grid { grid-template-columns: 1fr; }
+            .reminders-grid { grid-template-columns: 1fr; }
         }
     </style>
 	<script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
@@ -542,54 +546,9 @@ function handleJoinRequestFromElement(element) {
 async function loadReminders() {
     const reminders = [];
 
-    // Check for league join requests (for league owners)
-    const { data: ownedLeagues } = await supabaseClient
-        .from('leagues')
-        .select('id, name')
-        .eq('owner_id', currentUser.id);
-
-    if (ownedLeagues && ownedLeagues.length > 0) {
-        const leagueIds = ownedLeagues.map(l => l.id);
-        const { data: joinRequests } = await supabaseClient
-            .from('league_join_requests')
-            .select('*')
-            .in('league_id', leagueIds)
-            .eq('status', 'pending');
-
-        if (joinRequests && joinRequests.length > 0) {
-            // Get usernames separately
-            const userIds = joinRequests.map(r => r.user_id);
-            const { data: profiles } = await supabaseClient
-                .from('profiles')
-                .select('id, username')
-                .in('id', userIds);
-
-            const usernameMap = {};
-            profiles?.forEach(p => {
-                usernameMap[p.id] = p.username;
-            });
-
-			console.log('Username map:', usernameMap);
-			console.log('Join requests user IDs:', userIds);
-            const leagueMap = {};
-            ownedLeagues.forEach(l => leagueMap[l.id] = l.name);
-
-            joinRequests.forEach(request => {
-                const username = usernameMap[request.user_id] || 'Unknown';
-				console.log('Request user_id:', request.user_id, 'Username:', username);
-reminders.push({
-    icon: '',
-    title: 'League Join Request',
-    text: `${escapeHtml(username)} wants to join ${escapeHtml(leagueMap[request.league_id] || '')}`,
-    action: 'Review Request',
-    link: '#',
-    // Change from onclick to data attributes
-    dataAttrs: `data-request-id="${request.id}" data-league-id="${request.league_id}" data-user-id="${request.user_id}" data-username="${escapeHtml(username)}" data-league-name="${escapeHtml(leagueMap[request.league_id] || '')}"`,
-    onclick: `handleJoinRequestFromElement(this)`
-});
-            });
-        }
-    }
+    // League join requests are delivered through the notification bell
+    // (type: league_join_request), so Action Items no longer duplicates them.
+    // This section focuses on standing to-dos like predictions due soon.
 
     // Check for upcoming events without predictions
     const { data: upcomingEvents } = await supabaseClient
@@ -636,7 +595,7 @@ if (upcomingEvents && upcomingEvents.length > 0) {
             }
 
             reminders.push({
-                icon: '',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
                 title: 'Predictions Due Soon',
                 text: `${escapeHtml(event.name)} predictions close in ${timeLeft}`,
                 action: 'Make Predictions',
@@ -667,8 +626,8 @@ if (upcomingEvents && upcomingEvents.length > 0) {
 const grid = document.getElementById('remindersGrid');
 if (reminders.length === 0) {
     grid.innerHTML = `
-        <div style="text-align:center; color:#666; font-size:1rem; padding:2rem;">
-            No action items at this time.
+        <div style="grid-column:1 / -1; text-align:center; color:var(--text-3); font-size:0.85rem; padding:2rem 1rem; background:var(--s1); border:1px solid var(--border); border-radius:6px;">
+            You're all caught up. New action items will show up here.
         </div>
     `;
 } else {
