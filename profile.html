@@ -252,6 +252,11 @@
 
                 <div>
                     <div class="friends-subhead">Your friends</div>
+                    <div id="friendsFilterWrap" style="display:none; margin-bottom:0.5rem;">
+                        <input id="friendsFilter" type="text" placeholder="Filter your friends" autocomplete="off"
+                            oninput="renderFriendsList(this.value)"
+                            style="width:100%; padding:0.5rem 0.75rem; background:var(--s2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:var(--body); font-size:0.85rem; box-sizing:border-box;">
+                    </div>
                     <div id="friendsList"><div class="loading"><div class="loading-spinner"></div></div></div>
                 </div>
             </div>
@@ -277,6 +282,11 @@
             .friend-avatar img { width:100%; height:100%; object-fit:cover; }
             .friend-name { font-size:0.9rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
             .friend-actions { display:flex; gap:0.4rem; flex-shrink:0; }
+            /* Keep long lists from stretching the page; they scroll instead. */
+            #friendsList { max-height:360px; overflow-y:auto; }
+            #friendRequestsList, #leagueInvitesList, #sentRequestsList { max-height:240px; overflow-y:auto; }
+            #friendsList, #friendRequestsList, #leagueInvitesList, #sentRequestsList { padding-right:0.25rem; }
+            .leagues-container { max-height:460px; overflow-y:auto; }
             .fbtn { padding:0.35rem 0.7rem; font-size:0.78rem; font-weight:600; border-radius:6px; border:1px solid var(--border); background:var(--s2); color:var(--text-2); cursor:pointer; font-family:var(--body); }
             .fbtn:hover { color:var(--text); border-color:var(--teal-dim); }
             .fbtn-primary { background:var(--teal); border-color:var(--teal); color:#06231f; }
@@ -519,17 +529,40 @@ function renderFriends() {
       friendRowHtml(r.addressee_id, `<button class="fbtn" onclick="removeFriend('${jsStr(r.addressee_id)}', false)">Cancel</button>`)).join('');
   } else { sentBlock.style.display = 'none'; }
 
+  renderFriendsList(document.getElementById('friendsFilter') ? document.getElementById('friendsFilter').value : '');
+}
+
+// Renders (and filters) the "Your friends" list. Shows a filter box once the
+// list gets long, and is itself scroll-capped so it never stretches the page.
+function renderFriendsList(term) {
+  const me = friendsCache.me;
+  const friends = friendsCache.friends || [];
   const listEl = document.getElementById('friendsList');
-  if (friends.length) {
-    listEl.innerHTML = friends.map(r => {
-      const other = r.requester_id === me ? r.addressee_id : r.requester_id;
-      return friendRowHtml(other,
-        `<button class="fbtn" onclick="openInviteMenu(event, '${jsStr(other)}')">Invite</button>
-         <button class="fbtn" onclick="removeFriend('${jsStr(other)}', true)">Remove</button>`);
-    }).join('');
-  } else {
+  const filterWrap = document.getElementById('friendsFilterWrap');
+  if (filterWrap) filterWrap.style.display = friends.length > 8 ? 'block' : 'none';
+
+  if (!friends.length) {
     listEl.innerHTML = `<p style="color:var(--text-3); font-size:0.85rem;">No friends yet. Search above to add some.</p>`;
+    return;
   }
+
+  const t = (term || '').trim().toLowerCase();
+  const rows = friends
+    .map(r => {
+      const other = r.requester_id === me ? r.addressee_id : r.requester_id;
+      const name = (friendsCache.profileMap[other] || {}).username || 'User';
+      return { other, name };
+    })
+    .filter(x => !t || x.name.toLowerCase().includes(t));
+
+  if (!rows.length) {
+    listEl.innerHTML = `<p style="color:var(--text-3); font-size:0.85rem;">No friends match that filter.</p>`;
+    return;
+  }
+
+  listEl.innerHTML = rows.map(x => friendRowHtml(x.other,
+    `<button class="fbtn" onclick="openInviteMenu(event, '${jsStr(x.other)}')">Invite</button>
+     <button class="fbtn" onclick="removeFriend('${jsStr(x.other)}', true)">Remove</button>`)).join('');
 }
 
 async function respondFriend(id, accept) {
