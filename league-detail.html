@@ -289,6 +289,8 @@
         .owner-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.1rem; padding-top: 1.1rem; border-top: 1px solid var(--border); }
         .owner-danger-btn { background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); color: #ff6b6b; }
         .owner-danger-btn:hover { background: rgba(231, 76, 60, 0.18); }
+        .owner-warn-btn { background: rgba(230, 162, 60, 0.1); border: 1px solid rgba(230, 162, 60, 0.35); color: #e6a23c; }
+        .owner-warn-btn:hover { background: rgba(230, 162, 60, 0.18); }
 
         /* Aesthetic selectable trade options (replaces native radio buttons) */
         .trade-option { position: relative; display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 0.85rem; background: var(--s2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color 0.12s, background 0.12s; }
@@ -892,6 +894,7 @@
         <div id="ownerVisibilityPost"></div>
         <div class="owner-actions">
             <button id="generateMatchupsButton" class="btn" onclick="generateMatchups()">Generate Season Matchups</button>
+            <button class="btn owner-warn-btn" onclick="rollbackLeague()">Reset to Pre-Draft</button>
             <button class="btn owner-danger-btn" onclick="deleteLeague()">Delete League</button>
         </div>
     </div>
@@ -3742,6 +3745,31 @@ async function kickMember(userId, username) {
 }
 
 // Delete league
+async function rollbackLeague() {
+    showModal(
+        'Reset to Pre-Draft',
+        'This archives the current season (final standings, champion, and rosters are saved to league history) and resets the league to pre-draft so you can run a fresh draft. The draft, lineups, matchups, and scores are cleared. Members, chat, and your invite code stay. Continue?',
+        [
+            { text: 'Cancel', primary: false, callback: null },
+            {
+                text: 'Reset League',
+                primary: true,
+                callback: async () => {
+                    try {
+                        const { error } = await supabaseClient.rpc('rollback_league_to_predraft', { p_league_id: leagueId });
+                        if (error) throw error;
+                        showNotification('Success', 'League reset to pre-draft. The previous season is saved to history.', 'success');
+                        setTimeout(() => { window.location.reload(); }, 1500);
+                    } catch (error) {
+                        console.error('Error resetting league:', error);
+                        showNotification('Error', 'Failed to reset league: ' + error.message, 'error');
+                    }
+                }
+            }
+        ]
+    );
+}
+
 async function deleteLeague() {
     showModal(
         'Delete League',
