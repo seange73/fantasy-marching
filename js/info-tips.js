@@ -115,7 +115,10 @@
 
   // Fill the glyph into any .info-tip trigger that doesn't already have content,
   // including ones added after a dynamic render (call paintInfoTips() then).
+  // Styles are injected here (not lazily on first open) so the glyph renders
+  // correctly from the start instead of showing default button chrome until clicked.
   function paintGlyphs(root) {
+    injectStyles();
     (root || document).querySelectorAll('.info-tip:not([data-it-painted])').forEach(b => {
       b.setAttribute('data-it-painted', '1');
       if (!b.innerHTML.trim()) b.innerHTML = GLYPH;
