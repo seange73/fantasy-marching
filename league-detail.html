@@ -101,6 +101,15 @@
             font-size: 0.72rem;
             color: var(--teal);
             flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .member-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
         }
 
         .member-name {
@@ -1228,31 +1237,32 @@ async function loadLeagueMembers() {
         // Then get the profiles
         const { data: profiles, error: profilesError } = await supabaseClient
             .from('profiles')
-            .select('id, username')
+            .select('id, username, avatar_url')
             .in('id', userIds);
-        
+
         if (profilesError) {
             console.error('Error loading profiles:', profilesError);
         }
-        
+
         // Create a map of profiles
         const profileMap = {};
         if (profiles) {
             profiles.forEach(p => {
-                profileMap[p.id] = p.username;
+                profileMap[p.id] = p;
             });
         }
         
         // Display members
         const container = document.getElementById('membersList');
         container.innerHTML = members.map(member => {
-            const username = profileMap[member.user_id] || 'Unknown';
+            const profile = profileMap[member.user_id] || {};
+            const username = profile.username || 'Unknown';
             const initial = username[0].toUpperCase();
             const isCurrentUser = member.user_id === currentUser.id;
-            
+
             return `
                 <div class="member-item" style="display: flex; align-items: center;">
-                    <div class="member-avatar">${escapeHtml(initial)}</div>
+                    <div class="member-avatar">${avatarHtml(profile.avatar_url, initial)}</div>
                     <div class="member-name">${escapeHtml(username)}</div>
                     ${member.role === 'owner' ? '<div class="member-role">Owner</div>' : ''}
                     ${isOwner && !isCurrentUser && member.role !== 'owner' ? `
