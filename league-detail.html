@@ -112,6 +112,33 @@
             display: block;
         }
 
+        .invite-code-label { color: var(--text-2); font-size: 0.8rem; margin-right: 0.45rem; }
+        .invite-code { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--mono); font-weight: 600; color: var(--teal); background: var(--teal-bg); border: 1px solid var(--teal-dim); border-radius: 4px; padding: 0.1rem 0.5rem; font-size: 0.8rem; letter-spacing: 0.05em; }
+        .copy-btn { background: none; border: none; color: var(--text-2); cursor: pointer; font-size: 0.85rem; padding: 0; line-height: 1; }
+        .copy-btn:hover { color: var(--teal); }
+
+        /* Tailored owner-settings controls (match the site theme, no stock widgets) */
+        .vis-card { background: var(--teal-bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.1rem; margin-top: 1rem; text-align: left; }
+        .vis-card-title { font-family: var(--body); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.75rem; }
+        .vis-row { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; }
+        .vis-hint { color: var(--text-3); font-size: 0.72rem; font-family: var(--body); }
+
+        .fm-select { appearance: none; -webkit-appearance: none; font-family: var(--body); font-size: 0.85rem; color: var(--text);
+            background-color: var(--s3);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234ECDC4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 0.65rem center; background-size: 0.72rem;
+            border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 2rem 0.5rem 0.7rem; cursor: pointer; }
+        .fm-select:hover { border-color: var(--teal-dim); }
+        .fm-select:focus { outline: none; border-color: var(--teal); }
+
+        .fm-toggle { display: inline-flex; align-items: center; gap: 0.55rem; cursor: pointer; user-select: none; color: var(--text-2); font-family: var(--body); font-size: 0.85rem; }
+        .fm-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .fm-toggle .fm-track { position: relative; width: 38px; height: 22px; border-radius: 999px; background: var(--s3); border: 1px solid var(--border); transition: background 0.18s ease, border-color 0.18s ease; flex-shrink: 0; }
+        .fm-toggle .fm-knob { position: absolute; top: 50%; left: 3px; transform: translateY(-50%); width: 14px; height: 14px; border-radius: 50%; background: var(--text-3); transition: left 0.18s ease, background 0.18s ease; }
+        .fm-toggle input:checked + .fm-track { background: var(--teal-bg); border-color: var(--teal-dim); }
+        .fm-toggle input:checked + .fm-track .fm-knob { left: 19px; background: var(--teal); }
+        .fm-toggle input:focus-visible + .fm-track { border-color: var(--teal); }
+
         .member-name {
             flex: 1;
             font-weight: 500;
@@ -541,7 +568,8 @@
             <div id="draftInfo">
                 <p>Draft Time: <span id="draftTimeDisplay">Not scheduled yet</span></p>
             </div>
-            
+            <div id="preDraftInviteCode" style="display:none; margin-top:1rem;"></div>
+
 <!-- Draft actions for owner -->
 <div id="ownerActions" style="display: none;">
     <div class="action-buttons">
@@ -575,7 +603,10 @@
                     <!-- Members will be populated here -->
                 </div>
             </div>
-            
+
+            <!-- Owner-only: visibility + invite code controls -->
+            <div id="ownerVisibilityPre" style="display:none;"></div>
+
 <div class="action-buttons">
     <a href="/league.html" class="btn btn-secondary">Back to Leagues</a>
     <button class="btn btn-secondary" id="leaveLeagueBtn" style="display: none;">Leave League</button>
@@ -605,6 +636,7 @@
                             style="display: none; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--border); color: var(--text-2); width: 1.9rem; height: 1.9rem; border-radius: 6px; cursor: pointer; font-size: 0.95rem; line-height: 1;">⚙</button>
                     </div>
                     <p id="leagueDetails">Loading...</p>
+                    <div id="postDraftInviteCode" style="display:none; margin-top:0.5rem;"></div>
                 </div>
                 <div class="league-stats">
                     <div class="stat">
@@ -652,6 +684,8 @@
             </button>
         </div>
     </div>
+    <!-- Owner-only: visibility + invite code controls -->
+    <div id="ownerVisibilityPost"></div>
 </div>
 
             <div class="tabs">
@@ -1077,11 +1111,129 @@ if (league.draft_time) {
         }
 
 // Show pre-draft state
+// Invite code (private leagues only). Members can read it via RLS; shown so any
+// member can share the join code from inside the league.
+let leagueInviteCode = null;
+async function loadInviteCodeIfPrivate() {
+    if (leagueInviteCode !== null) return leagueInviteCode; // cached (incl. '' for non-private)
+    if (!currentLeague || currentLeague.is_global || currentLeague.is_public !== false) {
+        leagueInviteCode = '';
+        return '';
+    }
+    const { data } = await supabaseClient
+        .from('league_invite_codes')
+        .select('code')
+        .eq('league_id', leagueId)
+        .maybeSingle();
+    leagueInviteCode = (data && data.code) || '';
+    return leagueInviteCode;
+}
+
+async function showInviteCodeIn(elId) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    const code = await loadInviteCodeIfPrivate();
+    if (!code) { el.style.display = 'none'; return; }
+    el.innerHTML = `<span class="invite-code-label">Invite code</span>` +
+        `<span class="invite-code">${escapeHtml(code)}` +
+        `<button class="copy-btn" title="Copy invite code" onclick="copyLeagueCode('${jsStr(code)}')">&#10697;</button>` +
+        `</span>`;
+    el.style.display = '';
+}
+
+async function copyLeagueCode(code) {
+    try { await navigator.clipboard.writeText(code); showNotification('Copied', 'Invite code copied to clipboard', 'success'); }
+    catch (e) { showNotification('Invite code', code, 'info'); }
+}
+
+// Owner-only: change public/private visibility and rotate the invite code.
+async function renderOwnerVisibilityControls(containerId) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!isOwner || !currentLeague || currentLeague.is_global) { el.style.display = 'none'; return; }
+    const isPrivate = currentLeague.is_public === false;
+    if (isPrivate) await loadInviteCodeIfPrivate();
+    const code = leagueInviteCode || '';
+    el.style.display = '';
+    el.innerHTML = `
+        <div class="vis-card">
+            <div class="vis-card-title">League Visibility</div>
+            <div class="vis-row">
+                <select id="visSelect_${containerId}" class="fm-select" onchange="onVisibilitySelectChange('${containerId}')">
+                    <option value="public" ${!isPrivate ? 'selected' : ''}>Public &mdash; listed, anyone can join</option>
+                    <option value="private" ${isPrivate ? 'selected' : ''}>Private &mdash; invite code only</option>
+                </select>
+                <label id="visApprovalWrap_${containerId}" class="fm-toggle" style="display:${isPrivate ? 'none' : 'inline-flex'};">
+                    <input type="checkbox" id="visApproval_${containerId}" ${currentLeague.requires_approval ? 'checked' : ''}>
+                    <span class="fm-track"><span class="fm-knob"></span></span>
+                    <span>Require approval to join</span>
+                </label>
+                <button class="btn" style="padding:0.45rem 1rem;" onclick="saveVisibility('${containerId}')">Save</button>
+            </div>
+            ${isPrivate ? `
+            <div class="vis-row" style="margin-top:0.85rem;">
+                <span class="invite-code-label">Invite code</span>
+                <span class="invite-code">${escapeHtml(code || '—')}
+                    <button class="copy-btn" title="Copy invite code" onclick="copyLeagueCode('${jsStr(code)}')">&#10697;</button>
+                </span>
+                <button class="btn btn-secondary" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="regenerateCode('${containerId}')">Regenerate</button>
+                <span class="vis-hint">Rotating invalidates the old code.</span>
+            </div>` : ''}
+        </div>`;
+}
+
+function onVisibilitySelectChange(containerId) {
+    const sel = document.getElementById('visSelect_' + containerId);
+    const wrap = document.getElementById('visApprovalWrap_' + containerId);
+    if (sel && wrap) wrap.style.display = sel.value === 'public' ? 'inline-flex' : 'none';
+}
+
+async function saveVisibility(containerId) {
+    const sel = document.getElementById('visSelect_' + containerId);
+    const appr = document.getElementById('visApproval_' + containerId);
+    if (!sel) return;
+    const isPublic = sel.value === 'public';
+    const requiresApproval = !!(isPublic && appr && appr.checked);
+    const { data, error } = await supabaseClient.rpc('set_league_visibility', {
+        p_league_id: leagueId, p_is_public: isPublic, p_requires_approval: requiresApproval
+    });
+    if (error) { showNotification('Error', error.message || 'Could not update visibility', 'error'); return; }
+    currentLeague.is_public = isPublic;
+    currentLeague.requires_approval = requiresApproval;
+    leagueInviteCode = (data && data.code) ? data.code : '';
+    showNotification('Saved', isPublic ? 'League is now public.' : 'League is now private.', 'success');
+    await refreshVisibilitySurfaces();
+}
+
+function regenerateCode(containerId) {
+    showModal('Regenerate invite code?',
+        'The current code will stop working immediately. Anyone you already shared it with will need the new code.',
+        [{ text: 'Cancel', primary: false }, { text: 'Regenerate', primary: true, callback: () => doRegenerate() }]);
+}
+
+async function doRegenerate() {
+    const { data, error } = await supabaseClient.rpc('regenerate_league_invite_code', { p_league_id: leagueId });
+    if (error) { showNotification('Error', error.message || 'Could not regenerate code', 'error'); return; }
+    leagueInviteCode = (data && data.code) || leagueInviteCode;
+    showNotification('New code', 'Invite code regenerated.', 'success');
+    await refreshVisibilitySurfaces();
+}
+
+// Re-render every place that reflects visibility / the code after a change.
+async function refreshVisibilitySurfaces() {
+    await renderOwnerVisibilityControls('ownerVisibilityPre');
+    await renderOwnerVisibilityControls('ownerVisibilityPost');
+    showInviteCodeIn('preDraftInviteCode');
+    showInviteCodeIn('postDraftInviteCode');
+}
+
 async function showPreDraftState() {
     console.log('Showing pre-draft state');
     document.getElementById('preDraftContent').style.display = 'block';
     document.getElementById('leagueName').textContent = currentLeague.name;
-    
+    showInviteCodeIn('preDraftInviteCode');
+    renderOwnerVisibilityControls('ownerVisibilityPre');
+
     const draftInfoEl = document.getElementById('draftInfo');
     
     if (currentLeague.draft_time) {
@@ -1533,7 +1685,9 @@ function getWeekDateRange(weekNumber) {
         // Show league content (post-draft)
         async function showLeagueContent() {
             document.getElementById('leagueContent').style.display = 'block';
-            
+            showInviteCodeIn('postDraftInviteCode');
+            renderOwnerVisibilityControls('ownerVisibilityPost');
+
             // Set league info
             document.getElementById('leagueTitle').textContent = currentLeague.name;
             
