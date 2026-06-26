@@ -88,16 +88,22 @@
     }
 
     async function loadData(corpsName) {
-        const sc = await supabaseClient
-            .from('event_scores')
-            .select('brass_score,percussion_score,color_guard_score,general_effect_score,visual_score,music_score,total_score,event_id')
-            .eq('corps_name', corpsName);
-        const scores = sc.data || [];
+        // Pull from both live and archived tables so retired seasons' history (e.g. 2025,
+        // archived out of the live events tables) still shows for draft reference.
+        const scoreCols = 'brass_score,percussion_score,color_guard_score,general_effect_score,visual_score,music_score,total_score,event_id';
+        const [scLive, scArch] = await Promise.all([
+            supabaseClient.from('event_scores').select(scoreCols).eq('corps_name', corpsName),
+            supabaseClient.from('archived_event_scores').select(scoreCols).eq('corps_name', corpsName)
+        ]);
+        const scores = [...(scLive.data || []), ...(scArch.data || [])];
         const ids = [...new Set(scores.map(s => s.event_id).filter(Boolean))];
         let evById = {};
         if (ids.length) {
-            const ev = await supabaseClient.from('events').select('id,name,date,location').in('id', ids);
-            (ev.data || []).forEach(e => { evById[e.id] = e; });
+            const [evLive, evArch] = await Promise.all([
+                supabaseClient.from('events').select('id,name,date,location').in('id', ids),
+                supabaseClient.from('archived_events').select('id,name,date,location').in('id', ids)
+            ]);
+            [...(evLive.data || []), ...(evArch.data || [])].forEach(e => { evById[e.id] = e; });
         }
         const rows = scores.map(s => ({ s, e: evById[s.event_id] })).filter(r => r.e && r.e.date);
 

@@ -145,13 +145,74 @@ async function renderHeaderUser(user) {
     return profile || null;
 }
 
+// ── Season week config ────────────────────────────────────────────────────
+// Single source of truth for the season's week boundaries, mirrored from the
+// public.season_settings row (is_current). Replaces the 2025 dates that used to
+// be hardcoded across dashboard/profile/league-detail/global-draft. Call
+// loadSeasonConfig() (await) before using getCurrentWeek()/getWeekRange().
+let _seasonCfg = null, _seasonCfgPromise = null;
+async function loadSeasonConfig() {
+    if (_seasonCfg) return _seasonCfg;
+    if (!_seasonCfgPromise) {
+        _seasonCfgPromise = supabaseClient
+            .from('season_settings')
+            .select('season, week1_start, total_weeks')
+            .eq('is_current', true)
+            .maybeSingle()
+            .then(({ data }) => {
+                _seasonCfg = data || { season: null, week1_start: null, total_weeks: 6 };
+                return _seasonCfg;
+            })
+            .catch(() => { _seasonCfg = { season: null, week1_start: null, total_weeks: 6 }; return _seasonCfg; });
+    }
+    return _seasonCfgPromise;
+}
+const _DAY_MS = 86400000;
+// Calendar dates are handled in UTC throughout so they don't shift by the
+// viewer's timezone (and so getWeekRange().toISOString() yields the right day).
+function _utcDateMs(d) {
+    if (d instanceof Date) return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+    const p = String(d).slice(0, 10).split('-');
+    return Date.UTC(+p[0], (+p[1]) - 1, +p[2]);
+}
+function _seasonStartMs() {
+    if (!_seasonCfg || !_seasonCfg.week1_start) return null;
+    return _utcDateMs(_seasonCfg.week1_start);
+}
+// Week number (1-based) for a Date or 'YYYY-MM-DD' string, from the cached config.
+function weekNumberForDate(d) {
+    const start = _seasonStartMs();
+    if (start == null) return 1;
+    const day = _utcDateMs(d);
+    if (day < start) return 1;
+    if (day <= start + _DAY_MS) return 1;           // 2-day opening weekend = week 1
+    const wk2 = start + 2 * _DAY_MS;
+    const diffDays = Math.floor((day - wk2) / _DAY_MS);
+    return Math.min(Math.floor(diffDays / 7) + 2, (_seasonCfg.total_weeks || 6));
+}
+function getCurrentWeek() { return weekNumberForDate(new Date()); }
+// [start, end] Date range for a 1-based week number (null if no config loaded).
+function getWeekRange(week) {
+    const start = _seasonStartMs();
+    if (start == null) return null;
+    if (week <= 1) return { start: new Date(start), end: new Date(start + _DAY_MS) };
+    const s = start + 2 * _DAY_MS + (week - 2) * 7 * _DAY_MS;
+    return { start: new Date(s), end: new Date(s + 6 * _DAY_MS) };
+}
+// Warm the cache as soon as the module loads.
+loadSeasonConfig();
+
 // Export functions for use in other scripts
 window.fantasyMarching = {
     supabase: supabaseClient,
     getCurrentUser,
     getUserProfile,
     renderHeaderUser,
-    requireAuth
+    requireAuth,
+    loadSeasonConfig,
+    getCurrentWeek,
+    getWeekRange,
+    weekNumberForDate
 };
 window.requireAuth = requireAuth;
 

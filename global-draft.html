@@ -832,22 +832,9 @@ function removeFromTeam(caption, corpsName) {
   updateMyTeamDisplay();
   loadAvailableCorps();
 }
-function getCurrentWeekNumber() {
-    const today = new Date();
-    const leagueStart = new Date("2025-06-28");  // league kickoff
-
-    // if before league starts, always week 1
-    if (today < leagueStart) return 1;
-
-    // week 1 is 6/28–6/29
-    const week1End = new Date("2025-06-29");
-    if (today <= week1End) return 1;
-
-    // weeks after that, rolling 7-day windows starting on 6/30
-    const leagueWeek2Start = new Date("2025-06-30");
-    const diffDays = Math.floor((today - leagueWeek2Start) / (1000 * 60 * 60 * 24));
-    const week = Math.floor(diffDays / 7) + 2;
-    return week;
+async function getCurrentWeekNumber() {
+    await window.fantasyMarching.loadSeasonConfig();
+    return window.fantasyMarching.getCurrentWeek();
 }
 
 
@@ -870,7 +857,7 @@ async function submitMyGlobalTeam() {
       .from('global_league_teams')
       .upsert({
         user_id: currentUser.id,
-        join_week: getCurrentWeekNumber(), 
+        join_week: await getCurrentWeekNumber(),
         locked: true
       }, { onConflict: 'user_id' })
       .select()
