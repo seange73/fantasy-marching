@@ -759,7 +759,7 @@
                 <a href="/dashboard.html">Dashboard</a>
                 <a href="/predictions-dashboard.html">Predictions</a>
                 <a href="/league.html" class="active">League</a>
-                <a href="/information.html">Information</a>
+                <a href="/information.html">Help &amp; Info</a>
             </nav>
             <div class="header-right">
                 <div class="user-profile" onclick="toggleUserMenu()">
@@ -793,7 +793,7 @@
         <!-- Pre-Draft State -->
         <div id="preDraftContent" class="pre-draft-container" style="display: none;">
             <div class="pd-hero">
-                <div class="pd-eyebrow">Pre-Draft Lobby</div>
+                <div class="pd-eyebrow">Pre-Draft Lobby<button class="info-tip" data-info="draft-rules" aria-label="How the draft works"></button></div>
                 <div class="pd-title" id="leagueName">Loading league...</div>
                 <div class="pd-status"><span class="pd-dot"></span><span>Draft has not started</span></div>
                 <div id="draftInfo"></div>
@@ -828,7 +828,7 @@
         <!-- During Draft State -->
         <div id="duringDraftContent" style="display: none;">
             <div class="during-draft-card">
-                <div class="pd-eyebrow">Draft In Progress</div>
+                <div class="pd-eyebrow">Draft In Progress<button class="info-tip" data-info="draft-rules" aria-label="How the draft works"></button></div>
                 <h1>The draft is underway</h1>
                 <p>Picks are being made right now. Jump into the draft room to make yours.</p>
                 <button class="btn" onclick="goToDraft()" style="padding: 0.7rem 2rem;">
@@ -909,7 +909,7 @@
                 <!-- My Lineup Tab -->
                 <div id="lineup-content" class="tab-content">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
-                        <h2 class="section-title" style="margin:0;">Starting Lineup</h2>
+                        <h2 class="section-title" style="margin:0;">Starting Lineup<button class="info-tip" data-info="lineup-captions" aria-label="How your lineup works"></button></h2>
                         <button id="tradeOffersBtn" class="btn btn-secondary" onclick="openTradeInbox()" style="display:none; align-items:center; gap:0.45rem; padding:0.4rem 0.8rem; font-size:0.78rem;">
                             Trade Offers
                             <span id="tradeOffersBadge" style="display:none; background:var(--teal); color:var(--bg); font-weight:700; border-radius:999px; padding:0.05rem 0.45rem; font-size:0.72rem; min-width:1.1rem; text-align:center; line-height:1.4;">0</span>
@@ -922,7 +922,7 @@
 
                 <!-- Weekly Matchup Tab -->
                 <div id="matchup-content" class="tab-content hidden">
-                    <h2 class="section-title">Week <span id="currentWeek">1</span> Matchup</h2>
+                    <h2 class="section-title">Week <span id="currentWeek">1</span> Matchup<button class="info-tip" data-info="weekly-matchup" aria-label="How weekly matchups work"></button></h2>
                     <div id="matchupContainer">
                         <!-- Matchup content will be populated here -->
                     </div>
@@ -930,7 +930,7 @@
 
                 <!-- Standings Tab -->
                 <div id="standings-content" class="tab-content hidden">
-                    <h2 class="section-title">League Standings</h2>
+                    <h2 class="section-title">League Standings<button class="info-tip" data-info="league-scoring" aria-label="How corps are scored"></button></h2>
                     <div id="standingsContainer">
                         <!-- Standings will be populated here -->
                     </div>
@@ -938,7 +938,7 @@
 
                 <!-- Free Agents Tab -->
                 <div id="recruitment-content" class="tab-content hidden">
-                    <h2 class="section-title">Free Agents</h2>
+                    <h2 class="section-title">Free Agents<button class="info-tip" data-info="free-agents" aria-label="How free agents work"></button></h2>
                     <div id="freeAgentsContainer">
                         <!-- Free agents will be populated here -->
                     </div>
@@ -3583,7 +3583,7 @@ console.log(`Showing scores for finalizedWeek=${finalizedWeek} date range ${week
         // Trading is only offered when looking at someone else's lineup.
         const canTrade = !!(currentTeam && teamId !== currentTeam.id);
         modalMessage.innerHTML = `
-            ${canTrade ? '<div style="color:#a0a0a0; font-size:0.85rem; margin-top:0.5rem;">Tap <strong style="color:#4ecdc4;">Request Trade</strong> on a corps to offer one of yours in the same caption.</div>' : ''}
+            ${canTrade ? '<div style="color:#a0a0a0; font-size:0.85rem; margin-top:0.5rem;">Tap <strong style="color:#4ecdc4;">Request Trade</strong> on a corps to offer one of yours in the same caption.<button class="info-tip" data-info="trades" aria-label="About trading"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></button></div>' : ''}
             <div style="display: grid; gap: 1rem; margin-top: 1rem;">
                 ${['brass','percussion','guard','ge','visual','music'].map(caption => {
                     const captionRoster = roster.filter(r => r.caption === caption);

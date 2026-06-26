@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Information - Fantasy Marching</title>
+    <title>Help & Info - Fantasy Marching</title>
     <link rel="icon" href="/images/favicon.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/theme.css">
     <style>
         .container { max-width: 1000px; margin: 0 auto; padding: 2rem 1.75rem; }
-        .page-title { font-size: 1.6rem; font-weight: 700; color: var(--text); margin-bottom: 2rem; text-align: center; }
+        .page-title { font-size: 1.6rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; text-align: center; }
+        .page-sub { text-align: center; color: var(--text-2); font-size: 0.85rem; margin-bottom: 2rem; }
         .section {
             background: var(--s1);
             border: 1px solid var(--border);
@@ -25,32 +26,12 @@
             letter-spacing: 0.5px;
             margin-bottom: 1rem;
         }
-        .subsection-title {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text);
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-        }
         .content { line-height: 1.8; color: var(--text-2); font-size: 0.85rem; }
         .content p { margin-bottom: 0.75rem; }
+        .content p:last-child { margin-bottom: 0; }
         .content ul { margin-left: 1.5rem; margin-bottom: 0.75rem; }
         .content li { margin-bottom: 0.4rem; }
-        .note-box {
-            background: var(--teal-bg);
-            border: 1px solid var(--teal-dim);
-            border-radius: 4px;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-        .example-box {
-            background: var(--s2);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-        .example-box .icon { font-size: 1.25rem; margin-bottom: 0.4rem; }
+        .content strong { color: var(--text); font-weight: 600; }
         .credits { text-align: center; padding: 2rem 0; color: var(--text-2); line-height: 1.8; font-size: 0.82rem; }
         .credits h3 { color: var(--teal); margin-bottom: 0.75rem; font-size: 1rem; font-weight: 700; }
         /* information.html toggleUserMenu uses .active instead of .show */
@@ -71,7 +52,7 @@
                 <a href="/dashboard.html">Dashboard</a>
                 <a href="/predictions-dashboard.html">Predictions</a>
                 <a href="/league.html">League</a>
-                <a href="/information.html" class="active">Information</a>
+                <a href="/information.html" class="active">Help &amp; Info</a>
             </nav>
             <div class="header-right">
                 <div class="user-profile" onclick="toggleUserMenu()">
@@ -91,140 +72,27 @@
 
     <!-- Main Content -->
     <div class="container">
-        <h1 class="page-title">Information</h1>
-<!-- User Count Banner -->
-<div style="text-align: center; margin-bottom: 2rem;">
-    <div style="display: inline-block; background: rgba(78, 205, 196, 0.1); border: 1px solid rgba(78, 205, 196, 0.3); border-radius: 50px; padding: 0.75rem 2rem;">
-        <span style="color: #4ecdc4; font-weight: 600;">
-            <span style="font-size: 1.5rem;" id="userCount">0</span> registered users
-        </span>
-    </div>
-</div>
+        <h1 class="page-title">Help &amp; Info</h1>
+        <p class="page-sub">Each topic below also appears as a quick-tip <span style="color:var(--teal);">&#9432;</span> icon next to the feature it explains.</p>
+
+        <!-- User Count Banner -->
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="display: inline-block; background: var(--teal-bg); border: 1px solid var(--teal-dim); border-radius: 50px; padding: 0.75rem 2rem;">
+                <span style="color: var(--teal); font-weight: 600;">
+                    <span style="font-size: 1.5rem;" id="userCount">0</span> registered users
+                </span>
+            </div>
+        </div>
+
         <!-- Discord Community Section -->
         <section class="section" style="background: rgba(114, 137, 218, 0.1); border-color: rgba(114, 137, 218, 0.3);">
             <div class="content">
-                <p style="text-align: center; font-size: 1.1rem;">Join our discord to report bugs, make suggestions, and have fun with the community! <a href="https://discord.gg/bvnYVCrC7" style="color: #7289da; text-decoration: none; font-weight: 600;">https://discord.gg/bvnYVCrC7</a></p>
+                <p style="text-align: center; font-size: 1.1rem; margin:0;">Join our discord to report bugs, make suggestions, and have fun with the community! <a href="https://discord.gg/bvnYVCrC7" style="color: #7289da; text-decoration: none; font-weight: 600;">https://discord.gg/bvnYVCrC7</a></p>
             </div>
         </section>
 
-        <!-- Predictions Scoring System Section -->
-        <section class="section">
-            <h2 class="section-title">Predictions Scoring System</h2>
-            <div class="content">
-                <p>The scoring system gives each prediction two numbers: a <strong>total points</strong> score (used for leaderboard ranking) and an <strong>accuracy</strong> percentage.</p>
-
-                <h3 class="subsection-title">For Points:</h3>
-                <ul>
-                    <li>20 points for every correct placement, 10 points for being one place off and 5 points for being two places off</li>
-                    <li>5 points for every correct caption award prediction</li>
-                    <li>A smaller bonus for how close your predicted raw score is to each corps' actual score:
-                        <ul style="margin-top: 0.5rem;">
-                            <li>Within 0.5 points: +1</li>
-                            <li>Within 0.25 points: +2</li>
-                            <li>Within 0.1 points: +3</li>
-                        </ul>
-                    </li>
-                </ul>
-
-                <h3 class="subsection-title">For Accuracy:</h3>
-                <p>Your accuracy is based on the calls that take skill: <strong>placements and caption winners</strong>. Predict every placement and caption winner correctly and you'll read 100%, even if your raw score guesses aren't exact. The score-closeness bonus above adds to your point total but does not affect your accuracy, so being slightly off on the numbers won't drag your accuracy down.</p>
-            </div>
-        </section>
-
-        <!-- Starting a League Section -->
-        <section class="section">
-            <h2 class="section-title">Starting a League</h2>
-            <div class="content">
-                <p>To start playing Fantasy Marching League, head to the League Tab and select "Create a League". You can make it a public league so that others can join you, or you can create a password protected private league. To invite your friends, just give them the name of the league and the password to enter (if applicable).</p>
-                
-                <div class="note-box">
-                    <p><strong>Keep in mind you must have a group of two, four, six, eight, or ten people.</strong></p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Drafting Section -->
-        <section class="section">
-            <h2 class="section-title">Drafting</h2>
-            <div class="content">
-                <p>Upon the creation of a League, the League Manager can either start a draft immediately or schedule a drafting time for their League. This is a non-obligatory date and can be changed at any time.</p>
-                
-                <p>When a draft is started, every player will be assigned a random number. This number corresponds to the order in which players can draft their corps. The draft follows a "Snake Draft" pattern, in which the person assigned number one goes first, followed by the second, third, etc., until reaching the last person. The order will then reverse, starting from the last person to the first, reverse, and this will continue until everyone's lineup consists of eleven corps in various caption categories. When picking, you will have a set amount of time to choose a corps. Failure to make a selection before this time runs out will result in the automatic pick of the top corps in a random caption category that isn't yet full.</p>
-            </div>
-        </section>
-
-        <!-- Your Lineup Section -->
-        <section class="section">
-            <h2 class="section-title">Your Lineup</h2>
-            <div class="content">
-                <p>There are 6 caption categories in Fantasy Marching League, of which there are three major and three minor. The major captions are Brass, Percussion, and Color Guard, and the minor are General Effect (GE), Visual, and Music.</p>
-                
-                <p>For each major caption category you can have two corps in your active lineup and for each minor caption category you can have 1. This brings your active lineup to 9 corps across the various captions.</p>
-            </div>
-        </section>
-
-        <!-- Gameplay Section -->
-        <section class="section">
-            <h2 class="section-title">Gameplay</h2>
-            <div class="content">
-                <p>Every week, you will be matched against another player within your league. Corps in your active lineup will score points throughout the week, and whoever has more points at the end of the week, or after the competitions finish on Saturday night, wins the matchup. Benched corps may be swapped with corps in your active lineup throughout the week, given that at least one of the corps within the caption category of your active lineup hasn't competed thus far that week.</p>
-                
-                <p>At the end of the season, whoever has the greatest win to loss ratio is the winner of the league. In the event of a tie, the person who has the greatest total amount of points throughout the entire season is the winner.</p>
-            </div>
-        </section>
-
-        <!-- League Scoring System Section -->
-        <section class="section">
-            <h2 class="section-title">League Scoring System</h2>
-            <div class="content">
-                <p>As this is a week-based gameplay style, a corps performing multiple times in a week will be very common. In this case, to determine each corps' score for the week we will take the average of all of their scores throughout their competitions that week.</p>
-                
-                <p>Scores are extrapolated from the official DCI score sheets in the following manner for each caption category:</p>
-                <ul>
-                    <li><strong>Brass Score</strong> - The raw score from brass column under the "Music" tab.</li>
-                    <li><strong>Percussion Score</strong> - The raw score from percussion column under the "Percussion" tab.</li>
-                    <li><strong>Color Guard Score</strong> - The raw score from color guard column under the "Visual" tab.</li>
-                    <li><strong>General Effect Score</strong> - The totaled and averaged General Effect Score under the "General Effect" column.</li>
-                    <li><strong>Visual Score</strong> - The average of the proficiency and analysis scores under the "Visual" tab.</li>
-                    <li><strong>Music Score</strong> - The raw music score under the "Music - Analysis" tab (if there are multiple judges it will be the averaged score).</li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- Trading Section -->
-        <section class="section">
-            <h2 class="section-title">Trading</h2>
-            <div class="content">
-                <p>Trades can be requested through the trades tab. Click create a new trade and select the player you would like to trade with. To create a valid trade, you must select the same number of corps on both sides. The captions being traded must numerically correspond.</p>
-                
-                <div class="example-box">
-                    <div class="icon">➡️</div>
-                    <p><strong>For example,</strong> a valid trade could be the Blue Devils brass and Phantom Regiment colorguard for Mandarins brass and Boston Crusaders colorguard. There are the same quantity of corps and in corresponding caption categories.</p>
-                    
-                    <p style="margin-top: 1rem;">An invalid trade would be Santa Clara Vanguard percussion for Troopers visual (mismatched captions), or Santa Clara Vanguard percussion for Troopers visual and Crossmen percussion (invalid amounts).</p>
-                </div>
-                
-                <p>If it is no longer possible for a trade to be executed (as a player's lineup has changed), it will not go through if accepted, and can be rejected or revoked at any time, or become a valid pending trade again.</p>
-                
-                <p>A player can only 10 outgoing trades at one time.</p>
-            </div>
-        </section>
-
-        <!-- Free Agents Section -->
-        <section class="section">
-            <h2 class="section-title">Free Agents</h2>
-            <div class="content">
-                <p>Any corps not initially drafted will be left as free agents. To recruit a free agent, simply go to the Free Agents tab and choose a corps to recruit. Your ability to recruit free agents is limited to one recruitment per week, and you may only make recruitments on Mondays.</p>
-            </div>
-        </section>
-
-        <!-- Global League Section -->
-        <section class="section">
-            <h2 class="section-title">Global League</h2>
-            <div class="content">
-                <p>Players can choose their dream lineup of corps to fill in each caption of their Global League fantasy corps. Players will be ranked by weekly average and total score on the Global League leaderboard. Scoring is identical to the regular league system.</p>
-            </div>
-        </section>
+        <!-- Glossary: generated from window.INFO_TOPICS (single source of truth, shared with the in-page tips) -->
+        <div id="glossary"></div>
 
         <!-- Credits -->
         <div class="credits">
@@ -234,63 +102,67 @@
         </div>
     </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/info-content.js"></script>
 <script src="js/supabase.js"></script>
 <script>
     let currentUser = null;
     let isAdmin = false;
 
+    // Order the glossary the way a new player would learn the game.
+    const GLOSSARY_ORDER = [
+        'predictions-scoring', 'starting-league', 'draft-rules', 'lineup-captions',
+        'weekly-matchup', 'league-scoring', 'trades', 'free-agents', 'global-league'
+    ];
+
+    function renderGlossary() {
+        const topics = window.INFO_TOPICS || {};
+        const ids = GLOSSARY_ORDER.filter(id => topics[id]);
+        Object.keys(topics).forEach(id => { if (ids.indexOf(id) === -1) ids.push(id); });
+        document.getElementById('glossary').innerHTML = ids.map(id => `
+            <section class="section">
+                <h2 class="section-title">${topics[id].title}</h2>
+                <div class="content">${topics[id].html}</div>
+            </section>`).join('');
+    }
+
     // Initialize page
     async function initializePage() {
-        // Check authentication
         const { data: { user } } = await supabaseClient.auth.getUser();
-        
         if (!user) {
             window.location.href = '/';
             return;
         }
-        
         currentUser = user;
-        
-        // Load user profile
         await loadUserProfile();
     }
 
-    // Load user profile
     async function loadUserProfile() {
         const profile = await window.fantasyMarching.renderHeaderUser(currentUser);
         isAdmin = (profile && profile.is_admin) || false;
     }
 
-    // Toggle user menu
     function toggleUserMenu() {
-        const dropdown = document.getElementById('profileDropdown');
-        dropdown.classList.toggle('active');
+        document.getElementById('profileDropdown').classList.toggle('active');
     }
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
         const userProfile = document.querySelector('.user-profile');
         const dropdown = document.getElementById('profileDropdown');
-        
         if (!userProfile.contains(event.target)) {
             dropdown.classList.remove('active');
         }
     });
 
-    // Logout function
     async function logout() {
         const { error } = await supabaseClient.auth.signOut();
-        if (!error) {
-            window.location.href = '/';
-        }
+        if (!error) window.location.href = '/';
     }
-    // Load user count
+
     async function loadUserCount() {
         try {
             const { count, error } = await supabaseClient
                 .from('profiles')
                 .select('*', { count: 'exact', head: true });
-            
             if (!error && count !== null) {
                 document.getElementById('userCount').textContent = count.toLocaleString();
             }
@@ -299,10 +171,10 @@
         }
     }
 
-
-    // Initialize on page load
-    window.addEventListener('DOMContentLoaded', initializePage);
-	    // Load count when page loads
+    window.addEventListener('DOMContentLoaded', function () {
+        renderGlossary();
+        initializePage();
+    });
     loadUserCount();
 </script>
 

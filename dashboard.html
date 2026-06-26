@@ -280,7 +280,7 @@
                 <a href="/dashboard.html" class="active">Dashboard</a>
                 <a href="/predictions-dashboard.html">Predictions</a>
                 <a href="/league.html">League</a>
-                <a href="/information.html">Information</a>
+                <a href="/information.html">Help &amp; Info</a>
             </nav>
             <div class="header-right">
                 <div class="user-profile" onclick="toggleUserMenu()">
@@ -315,7 +315,7 @@
         </section>
         <!-- Global Predictions Leaderboard -->
         <div class="leaderboard-card">
-            <h3 class="leaderboard-title">Top Predictors</h3>
+            <h3 class="leaderboard-title">Top Predictors<button class="info-tip" data-info="predictions-scoring" aria-label="How predictions scoring works"></button></h3>
             <div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; padding: 0.75rem 1.25rem 0;">
                 <button class="leaderboard-toggle-btn active" id="scoreBtn" onclick="setLeaderboardMode('score')">Total Score</button>
                 <button class="leaderboard-toggle-btn" id="accuracyBtn" onclick="setLeaderboardMode('accuracy')">Average Accuracy</button>
@@ -330,7 +330,7 @@
 
         <!-- Global League Leaderboard -->
         <div class="leaderboard-card">
-            <h3 class="leaderboard-title">Global League</h3>
+            <h3 class="leaderboard-title">Global League<button class="info-tip" data-info="global-league" aria-label="About the Global League"></button></h3>
             <div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; padding: 0.75rem 1.25rem 0;">
                 <button class="leaderboard-toggle-btn active" id="leagueTotalBtn" onclick="setLeagueLeaderboardMode('total')">Total Score</button>
                 <button class="leaderboard-toggle-btn" id="leagueAvgBtn" onclick="setLeagueLeaderboardMode('average')">Weekly Average</button>

@@ -174,3 +174,12 @@ window.fantasyMarching = {
     s.defer = true;
     document.head.appendChild(s);
 })();
+
+// Load the contextual help system: the content registry (window.INFO_TOPICS) and
+// the popover component that renders it for any [data-info] / .info-tip trigger.
+['/js/info-content.js', '/js/info-tips.js'].forEach(function (src) {
+    const s = document.createElement('script');
+    s.src = src;
+    s.defer = true;
+    document.head.appendChild(s);
+});
