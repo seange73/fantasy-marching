@@ -122,7 +122,16 @@
         .arch-stat-value { font-size:1.35rem; font-weight:700; color:var(--text); font-family:var(--mono); }
         /* Glowy rank for top-3 finishers in the retired season */
         .rank-glow { color:#e7c14a; text-shadow:0 0 10px rgba(231,193,74,0.6), 0 0 20px rgba(231,193,74,0.35); }
-        @media (max-width:600px){ .arch-season-body{ gap:1.25rem; } .arch-stats{ gap:1.25rem; } }
+        /* Retired global-league roster (corps by caption) */
+        .arch-roster-toggle { margin-top:1.1rem; background:var(--s2); color:var(--text-2); border:1px solid var(--border); border-radius:6px; padding:0.4rem 0.85rem; font-family:var(--body); font-size:0.78rem; font-weight:600; cursor:pointer; }
+        .arch-roster-toggle:hover { color:var(--text); border-color:var(--teal-dim); }
+        .arch-roster { margin-top:0.85rem; border-top:1px solid var(--border); padding-top:0.85rem; }
+        .arch-roster-row { display:flex; gap:1rem; padding:0.3rem 0; align-items:baseline; }
+        .arch-roster-cap { flex:0 0 104px; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-3); font-family:var(--mono); }
+        .arch-roster-corps { display:flex; flex-wrap:wrap; gap:0.5rem 0.85rem; }
+        .arch-corps { color:var(--text); font-size:0.9rem; cursor:pointer; }
+        .arch-corps:hover { color:var(--teal); text-decoration:underline; }
+        @media (max-width:600px){ .arch-season-body{ gap:1.25rem; } .arch-stats{ gap:1.25rem; } .arch-roster-cap{ flex-basis:84px; } }
         .profile-bio { color: var(--text-2); font-size: 0.85rem; margin-top: 0.5rem; max-width: 320px; margin-left: auto; margin-right: auto; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
         .edit-profile-btn {
             margin-top: 0.85rem; background: var(--s3); color: var(--text); border: 1px solid var(--border);
@@ -975,6 +984,30 @@ async function saveProfile() {
             </div>`;
         }
 
+        // Render an archived global-league roster grouped by caption. Corps names carry
+        // data-corps-info so the shared corps-detail popup opens on click.
+        const ARCH_CAPTIONS = [
+            ['brass', 'Brass'], ['percussion', 'Percussion'], ['guard', 'Color Guard'],
+            ['ge', 'General Effect'], ['visual', 'Visual'], ['music', 'Music']
+        ];
+        function archiveRoster(roster) {
+            const byCap = {};
+            roster.forEach(r => { (byCap[r.caption] = byCap[r.caption] || []).push(r.corps_name); });
+            return ARCH_CAPTIONS.filter(([key]) => byCap[key]).map(([key, label]) => `
+                <div class="arch-roster-row">
+                    <span class="arch-roster-cap">${escapeHtml(label)}</span>
+                    <span class="arch-roster-corps">${byCap[key].map(n =>
+                        `<span class="arch-corps" data-corps-info="${escapeHtml(n)}">${escapeHtml(n)}</span>`).join('')}</span>
+                </div>`).join('');
+        }
+        function toggleArchiveRoster(id, btn, season) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const open = el.style.display !== 'none';
+            el.style.display = open ? 'none' : 'block';
+            btn.textContent = (open ? 'View ' : 'Hide ') + season + ' global roster';
+        }
+
         // Load the viewed user's retired-season history. These are frozen snapshots
         // taken when a season was retired, so they survive the live leaderboards being
         // cleared. The section stays hidden when the user has no recorded history.
@@ -1007,9 +1040,22 @@ async function saveProfile() {
                         ]));
                     }
                     if (!groups.length) return '';
+
+                    // The user's global-league roster (corps by caption), shown only for
+                    // players who had a global team that season.
+                    let rosterBlock = '';
+                    const roster = (r.global_weeks > 0 && Array.isArray(r.global_roster)) ? r.global_roster : [];
+                    if (roster.length) {
+                        const rid = 'archRoster_' + String(r.season).replace(/[^a-z0-9]/gi, '');
+                        rosterBlock = `
+                            <button type="button" class="arch-roster-toggle" onclick="toggleArchiveRoster('${rid}', this, '${escapeHtml(r.season)}')">View ${escapeHtml(r.season)} global roster</button>
+                            <div id="${rid}" class="arch-roster" style="display:none;">${archiveRoster(roster)}</div>`;
+                    }
+
                     return `<div class="arch-season">
                         <div class="arch-season-head"><span class="yr">${escapeHtml(r.season)}</span> Season<span class="arch-sub">Final standings</span></div>
                         <div class="arch-season-body">${groups.join('')}</div>
+                        ${rosterBlock}
                     </div>`;
                 }).join('');
 

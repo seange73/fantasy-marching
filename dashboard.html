@@ -342,7 +342,7 @@
                 <a href="/league-leaderboard.html" class="view-more-btn">View Full Leaderboard →</a>
             </div>
             <div style="text-align: center; padding: 0 1.25rem 1rem;">
-                <button class="btn" style="width: 100%; max-width: 200px;" onclick="viewGlobalTeamLineup()">View Your Lineup</button>
+                <button class="btn" id="globalTeamBtn" style="width: 100%; max-width: 240px; display: none;" onclick="viewGlobalTeamLineup()">View Your Lineup</button>
             </div>
         </div>
 
@@ -786,29 +786,19 @@ leagueLeaderboardMode === 'average'
             .eq('user_id', currentUser.id)
             .maybeSingle();
 
-        if (!globalTeam) {
-            const createButton = document.createElement('div');
-            createButton.innerHTML = `
-                <div style="text-align:center; margin-top:1rem;">
-                    <a href="/global-draft.html"
-                       style="
-                           display: inline-block;
-                           background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-                           color: white;
-                           font-weight: 600;
-                           padding: 0.75rem 1.5rem;
-                           border-radius: 12px;
-                           text-decoration: none;
-                           transition: all 0.3s ease;
-                       "
-                       onmouseover="this.style.opacity='0.9'"
-                       onmouseout="this.style.opacity='1'"
-                    >
-                        Create Your Global League Team
-                    </a>
-                </div>
-            `;
-            container.appendChild(createButton);
+        // Drive the single global-league button: players who already drafted a global
+        // team this season see "View Your Lineup"; everyone else gets "Create Your
+        // Global League" pointing at the draft. (The old oversized gradient button is gone.)
+        const globalTeamBtn = document.getElementById('globalTeamBtn');
+        if (globalTeamBtn) {
+            if (globalTeam) {
+                globalTeamBtn.textContent = 'View Your Lineup';
+                globalTeamBtn.onclick = viewGlobalTeamLineup;
+            } else {
+                globalTeamBtn.textContent = 'Create Your Global League';
+                globalTeamBtn.onclick = () => { window.location.href = '/global-draft.html'; };
+            }
+            globalTeamBtn.style.display = '';
         }
 
     } catch (error) {
