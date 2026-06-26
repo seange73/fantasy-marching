@@ -165,3 +165,12 @@ window.fantasyMarching = {
     s.defer = true;
     document.head.appendChild(s);
 })();
+
+// Load the shared friend direct-messages messenger on every page. It self-checks
+// auth and only renders when signed in, so it is a no-op on the login page.
+(function () {
+    const s = document.createElement('script');
+    s.src = '/js/direct-messages.js';
+    s.defer = true;
+    document.head.appendChild(s);
+})();
