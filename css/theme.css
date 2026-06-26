@@ -330,11 +330,13 @@ body {
         overflow-y: hidden;
         white-space: nowrap;
         flex-wrap: nowrap;
-        scrollbar-width: thin;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
     }
 
-    .nav::-webkit-scrollbar { height: 4px; }
-    .nav::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
+    /* Hide the nav scrollbar: it scrolls via touch, and a visible thumb under
+       the links reads like a stray underline on the wrong item. */
+    .nav::-webkit-scrollbar { display: none; }
 }
 
 /* Themed scrollbars, site-wide */

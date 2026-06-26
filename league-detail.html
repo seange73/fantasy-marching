@@ -567,6 +567,10 @@
             .mu-team, .mu-team.right { align-items: center; text-align: center; }
             .std-row { grid-template-columns: 1.5rem 1fr auto auto; gap: 0.5rem; padding: 0.6rem 0.75rem; }
             .std-pct { display: none; }
+            /* Lineup button has no room inline at this width; drop it onto its own
+               line indented under the team name instead of wrapping into the
+               narrow rank column (where it was clipped). */
+            .std-view { grid-column: 2 / -1; justify-self: start; margin-top: 0.15rem; }
         }
 
         .bench-section { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
@@ -2920,7 +2924,7 @@ function switchTab(tabName) {
     background: ${userInMatchup ? 'rgba(78, 205, 196, 0.05)' : 'rgba(255, 255, 255, 0.03)'};
     border-radius: 8px;
     border: 1px solid ${userInMatchup ? 'rgba(78, 205, 196, 0.2)' : 'rgba(255, 255, 255, 0.05)'};
-    min-width: 300px;
+    min-width: 0;
     max-width: 100%;
     overflow: hidden;
     word-break: break-word;

@@ -141,6 +141,22 @@ window.fantasyMarching = {
     document.head.appendChild(s);
 })();
 
+// On narrow screens the header nav scrolls horizontally; bring the active
+// page's link into view so it never sits scrolled off-screen.
+(function () {
+    function revealActiveNav() {
+        const active = document.querySelector('.nav a.active');
+        if (active && active.scrollIntoView) {
+            try { active.scrollIntoView({ inline: 'center', block: 'nearest' }); } catch (e) {}
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', revealActiveNav);
+    } else {
+        revealActiveNav();
+    }
+})();
+
 // Load the shared corps-detail popup (window.showCorpsDetail / fantasyMarching.showCorpsDetail).
 // Self-contained: injects its own styles + modal on first use.
 (function () {
