@@ -104,10 +104,25 @@
             .profile-top [style*="gap: 2rem"] { gap: 1.1rem !important; }
         }
 
-        /* Avatar image + golden aura (top-3 predictors) */
+        /* Avatar image */
         .profile-avatar-large img, .user-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
         .profile-avatar-large { overflow: hidden; }
+        /* Gold ring for the current season's live top-3 predictors */
         .aura-gold { border-color: #c9a227 !important; box-shadow: 0 0 0 2px #c9a227, 0 0 8px rgba(201,162,39,0.3); }
+        /* Retired-season history archive */
+        .arch-season { background:var(--s1); border:1px solid var(--border); border-radius:8px; padding:1.25rem 1.5rem; margin-bottom:1rem; }
+        .arch-season-head { font-family:var(--mono); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); margin-bottom:1rem; display:flex; align-items:center; gap:0.4rem; }
+        .arch-season-head .yr { color:var(--teal); font-weight:700; }
+        .arch-season-head .arch-sub { margin-left:auto; color:var(--text-3); font-size:0.7rem; text-transform:none; letter-spacing:0; }
+        .arch-season-body { display:flex; flex-wrap:wrap; gap:2rem; }
+        .arch-group { flex:1; min-width:230px; }
+        .arch-group-title { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-2); margin-bottom:0.75rem; font-weight:700; }
+        .arch-stats { display:flex; gap:1.75rem; }
+        .arch-stat-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-3); margin-bottom:0.25rem; }
+        .arch-stat-value { font-size:1.35rem; font-weight:700; color:var(--text); font-family:var(--mono); }
+        /* Glowy rank for top-3 finishers in the retired season */
+        .rank-glow { color:#e7c14a; text-shadow:0 0 10px rgba(231,193,74,0.6), 0 0 20px rgba(231,193,74,0.35); }
+        @media (max-width:600px){ .arch-season-body{ gap:1.25rem; } .arch-stats{ gap:1.25rem; } }
         .profile-bio { color: var(--text-2); font-size: 0.85rem; margin-top: 0.5rem; max-width: 320px; margin-left: auto; margin-right: auto; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
         .edit-profile-btn {
             margin-top: 0.85rem; background: var(--s3); color: var(--text); border: 1px solid var(--border);
@@ -225,6 +240,14 @@
                 </div>
             </div>
         </div>
+
+        <!-- Retired-season history (shown for any profile that has archived stats) -->
+        <section class="section" id="seasonArchiveSection" style="display:none;">
+            <div class="section-header">
+                <h2 class="section-title">Season History</h2>
+            </div>
+            <div id="seasonArchiveContent"></div>
+        </section>
 
         <!-- Social Section (own profile only) -->
         <section class="section" id="friendsSection" style="display:none;">
@@ -358,6 +381,7 @@ async function initializeProfile() {
     loadUserProfile(),
     loadPredictionStats(),
     loadGlobalLeagueStats(),
+    loadSeasonArchive(),
     loadUserLeagues()
   ]);
 }
@@ -879,7 +903,8 @@ async function saveProfile() {
                     const rank = (count || 0) + 1;
                     const accuracy = (stats.average_accuracy * 100).toFixed(1);
 
-                    // golden aura around the avatar for top-3 predictors
+                    // Gold ring on the avatar for the current season's live top-3 predictors.
+                    // (Retired seasons use the glowy rank number in Season History instead.)
                     if (rank <= 3) {
                         document.getElementById('profileAvatarLarge').classList.add('aura-gold');
                     }
@@ -935,6 +960,64 @@ async function saveProfile() {
                 document.getElementById('globalRank').textContent = 'Error';
                 document.getElementById('globalPoints').textContent = '-';
                 document.getElementById('globalAverage').textContent = '-';
+            }
+        }
+
+        // Render one stat group (Predictions / Global League) for an archived season.
+        function archiveGroup(title, items) {
+            return `<div class="arch-group">
+                <div class="arch-group-title">${escapeHtml(title)}</div>
+                <div class="arch-stats">${items.map(([label, value, glow]) => `
+                    <div class="arch-stat">
+                        <div class="arch-stat-label">${escapeHtml(label)}</div>
+                        <div class="arch-stat-value${glow ? ' rank-glow' : ''}">${escapeHtml(String(value))}</div>
+                    </div>`).join('')}</div>
+            </div>`;
+        }
+
+        // Load the viewed user's retired-season history. These are frozen snapshots
+        // taken when a season was retired, so they survive the live leaderboards being
+        // cleared. The section stays hidden when the user has no recorded history.
+        async function loadSeasonArchive() {
+            try {
+                const { data: rows } = await supabaseClient
+                    .from('season_archive_stats')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('season', { ascending: false });
+                if (!rows || !rows.length) return;
+
+                const fmt = n => Number(n || 0).toLocaleString();
+                const html = rows.map(r => {
+                    const groups = [];
+                    if (r.predictions_made > 0) {
+                        groups.push(archiveGroup('Predictions', [
+                            ['Rank', '#' + r.prediction_rank, r.prediction_rank <= 3],
+                            ['Points', fmt(r.prediction_points), false],
+                            ['Accuracy', (Number(r.prediction_accuracy) * 100).toFixed(1) + '%', false],
+                            ['Made', fmt(r.predictions_made), false],
+                        ]));
+                    }
+                    if (r.global_weeks > 0) {
+                        groups.push(archiveGroup('Global League', [
+                            ['Rank', '#' + r.global_rank, r.global_rank <= 3],
+                            ['Points', fmt(r.global_points), false],
+                            ['Avg', fmt(r.global_average), false],
+                            ['Weeks', fmt(r.global_weeks), false],
+                        ]));
+                    }
+                    if (!groups.length) return '';
+                    return `<div class="arch-season">
+                        <div class="arch-season-head"><span class="yr">${escapeHtml(r.season)}</span> Season<span class="arch-sub">Final standings</span></div>
+                        <div class="arch-season-body">${groups.join('')}</div>
+                    </div>`;
+                }).join('');
+
+                if (!html.trim()) return;
+                document.getElementById('seasonArchiveContent').innerHTML = html;
+                document.getElementById('seasonArchiveSection').style.display = '';
+            } catch (error) {
+                console.error('Error loading season archive:', error);
             }
         }
 // Add the showModal function
