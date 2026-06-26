@@ -527,7 +527,9 @@ async function saveScores() {
     const visual = parseFloat(document.getElementById(`visual_${corpsId}`).value) || 0;
     const music = parseFloat(document.getElementById(`music_${corpsId}`).value) || 0;
 
-    const total = brass + percussion + guard + ge + visual + music;
+    // Round to 3 decimals (DCI caption scores carry at most 3) so the stored total
+    // doesn't persist a floating-point artifact like 97.30000000000001.
+    const total = Math.round((brass + percussion + guard + ge + visual + music) * 1000) / 1000;
 
     scores.push({
       event_id: currentEventId,

@@ -399,7 +399,10 @@ function renderPredictionPage(prediction, result, event) {
         else if(index === 1) cls = "silver";
         else if(index === 2) cls = "bronze";
         const bp = corpsPts[corps];
-        const earned = bp ? ((bp.placement_points || 0) + (bp.score_points || 0)) : null;
+        // Round to 2 decimals: score_points carries a 2-decimal closeness bonus, and
+        // adding it to the integer placement points otherwise leaves float artifacts
+        // (e.g. 20 + 4.99 = 24.990000000000002).
+        const earned = bp ? Math.round(((bp.placement_points || 0) + (bp.score_points || 0)) * 100) / 100 : null;
         const badge = earned != null
             ? `<div class="corps-total" title="placement ${bp.placement_points || 0} + score ${bp.score_points || 0}" style="color:var(--teal);min-width:3.5rem;">+${earned} pts</div>`
             : '';
