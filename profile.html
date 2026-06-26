@@ -593,7 +593,7 @@ function renderFriendsList(term) {
 // Open the global messenger (js/direct-messages.js) to this friend's thread.
 function messageFriend(userId) {
   if (window.openDirectMessageThread) window.openDirectMessageThread(userId);
-  else toast('Messenger is still loading — try again in a moment', 'error');
+  else toast('Messenger is still loading, try again in a moment', 'error');
 }
 
 async function respondFriend(id, accept) {

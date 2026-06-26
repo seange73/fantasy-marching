@@ -281,6 +281,24 @@
         .vis-row { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; }
         .vis-hint { color: var(--text-3); font-size: 0.72rem; font-family: var(--body); }
 
+        /* Fused owner-controls panel: visibility + actions live in one card */
+        .owner-panel { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem 1.25rem; }
+        .owner-panel-title { font-weight: 700; color: var(--text); font-size: 0.9rem; }
+        .owner-panel-sub { font-size: 0.78rem; color: var(--text-2); margin-top: 0.2rem; }
+        .owner-section-title { font-family: var(--body); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin: 1.1rem 0 0.7rem; }
+        .owner-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.1rem; padding-top: 1.1rem; border-top: 1px solid var(--border); }
+        .owner-danger-btn { background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); color: #ff6b6b; }
+        .owner-danger-btn:hover { background: rgba(231, 76, 60, 0.18); }
+
+        /* Aesthetic selectable trade options (replaces native radio buttons) */
+        .trade-option { position: relative; display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 0.85rem; background: var(--s2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color 0.12s, background 0.12s; }
+        .trade-option:hover { border-color: var(--teal-dim); }
+        .trade-option input { position: absolute; opacity: 0; pointer-events: none; }
+        .trade-option-name { flex: 1; font-size: 0.85rem; color: var(--text); font-weight: 600; }
+        .trade-option-check { color: var(--teal); font-weight: 700; opacity: 0; transition: opacity 0.12s; }
+        .trade-option:has(input:checked) { border-color: var(--teal); background: var(--teal-bg); }
+        .trade-option:has(input:checked) .trade-option-check { opacity: 1; }
+
         .fm-select { appearance: none; -webkit-appearance: none; font-family: var(--body); font-size: 0.85rem; color: var(--text);
             background-color: var(--s3);
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234ECDC4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
@@ -865,36 +883,18 @@
                 </div>
             </div>
             
-<!-- Admin controls for league owner -->
+<!-- Owner controls: visibility, matchups, and delete fused into one panel -->
 <div id="ownerControls" style="display: none; margin-bottom: 2rem;">
-    <div style="
-        background: var(--s1);
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        padding: 1rem 1.25rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-    ">
-        <div>
-            <div style="font-weight: 700; color: var(--text); font-size: 0.85rem;">League Owner Controls</div>
-            <div style="font-size: 0.78rem; color: var(--text-2); margin-top: 0.2rem;">
-                Manage matchups and league settings
-            </div>
-        </div>
-        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+    <div class="owner-panel">
+        <div class="owner-panel-title">League Owner Controls</div>
+        <div class="owner-panel-sub">Manage your league's visibility, schedule, and membership.</div>
+        <!-- Visibility + invite code controls render here (no separate card) -->
+        <div id="ownerVisibilityPost"></div>
+        <div class="owner-actions">
             <button id="generateMatchupsButton" class="btn" onclick="generateMatchups()">Generate Season Matchups</button>
-            <button class="btn" style="
-                background: rgba(231, 76, 60, 0.12);
-                border: 1px solid rgba(231, 76, 60, 0.3);
-                color: #ff6b6b;
-            " onclick="deleteLeague()">Delete League</button>
+            <button class="btn owner-danger-btn" onclick="deleteLeague()">Delete League</button>
         </div>
     </div>
-    <!-- Owner-only: visibility + invite code controls -->
-    <div id="ownerVisibilityPost"></div>
 </div>
 
             <div class="tabs">
@@ -1403,13 +1403,12 @@ async function renderOwnerVisibilityControls(containerId) {
     if (isPrivate) await loadInviteCodeIfPrivate();
     const code = leagueInviteCode || '';
     el.style.display = '';
-    el.innerHTML = `
-        <div class="vis-card">
-            <div class="vis-card-title">League Visibility</div>
+    const fused = containerId === 'ownerVisibilityPost';   // inside the owner panel: no separate card
+    const inner = `
             <div class="vis-row">
                 <select id="visSelect_${containerId}" class="fm-select" onchange="onVisibilitySelectChange('${containerId}')">
-                    <option value="public" ${!isPrivate ? 'selected' : ''}>Public &mdash; listed, anyone can join</option>
-                    <option value="private" ${isPrivate ? 'selected' : ''}>Private &mdash; invite code only</option>
+                    <option value="public" ${!isPrivate ? 'selected' : ''}>Public, listed for anyone to join</option>
+                    <option value="private" ${isPrivate ? 'selected' : ''}>Private, invite code only</option>
                 </select>
                 <label id="visApprovalWrap_${containerId}" class="fm-toggle" style="display:${isPrivate ? 'none' : 'inline-flex'};">
                     <input type="checkbox" id="visApproval_${containerId}" ${currentLeague.requires_approval ? 'checked' : ''}>
@@ -1421,13 +1420,15 @@ async function renderOwnerVisibilityControls(containerId) {
             ${isPrivate ? `
             <div class="vis-row" style="margin-top:0.85rem;">
                 <span class="invite-code-label">Invite code</span>
-                <span class="invite-code">${escapeHtml(code || '—')}
+                <span class="invite-code">${escapeHtml(code || 'None')}
                     <button class="copy-btn" title="Copy invite code" onclick="copyLeagueCode('${jsStr(code)}')">&#10697;</button>
                 </span>
                 <button class="btn btn-secondary" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="regenerateCode('${containerId}')">Regenerate</button>
                 <span class="vis-hint">Rotating invalidates the old code.</span>
-            </div>` : ''}
-        </div>`;
+            </div>` : ''}`;
+    el.innerHTML = fused
+        ? `<div class="owner-section-title">Visibility</div>${inner}`
+        : `<div class="vis-card"><div class="vis-card-title">League Visibility</div>${inner}</div>`;
 }
 
 function onVisibilitySelectChange(containerId) {
@@ -3283,15 +3284,16 @@ async function requestTradeFor(toTeamId, getCorps, getCaption) {
     const m = document.getElementById('modalMessage');
     m.innerHTML = `
         <div style="margin-top:1rem;">
-            <div style="color:#a0a0a0; font-size:0.9rem; margin-bottom:1rem;">
-                You receive <strong style="color:#4ecdc4;">${escapeHtml(getCorps)}</strong> (${escapeHtml(formatCaption(getCaption))}).
-                Choose one of your ${escapeHtml(formatCaption(getCaption))} corps to give in return:
+            <div style="color:var(--text-2); font-size:0.85rem; margin-bottom:1rem; line-height:1.5;">
+                You receive <strong style="color:var(--teal);">${escapeHtml(getCorps)}</strong> (${escapeHtml(formatCaption(getCaption))}).
+                Choose one of your ${escapeHtml(formatCaption(getCaption))} corps to give in return.
             </div>
             <div style="display:grid; gap:0.5rem;">
                 ${candidates.map((r, i) => `
-                    <label style="display:flex; align-items:center; gap:0.6rem; padding:0.6rem 0.75rem; background:rgba(255,255,255,0.04); border-radius:10px; cursor:pointer;">
+                    <label class="trade-option">
                         <input type="radio" name="giveCorps" value="${escapeHtml(r.corps_name)}" ${i === 0 ? 'checked' : ''}>
-                        <span>${escapeHtml(r.corps_name)}</span>
+                        <span class="trade-option-name">${escapeHtml(r.corps_name)}</span>
+                        <span class="trade-option-check">&#10003;</span>
                     </label>
                 `).join('')}
             </div>
@@ -3341,7 +3343,7 @@ async function openTradeInbox(focusTradeId) {
 
 function renderTradeInbox(m, offers, focusTradeId) {
     if (!offers || offers.length === 0) {
-        m.innerHTML = '<div style="color:#a0a0a0; margin-top:1rem;">No pending trade offers.</div>';
+        m.innerHTML = '<div style="color:var(--text-2); margin-top:1rem;">No pending trade offers.</div>';
         return;
     }
     const incoming = offers.filter(o => o.direction === 'incoming');
@@ -3355,18 +3357,18 @@ function renderTradeInbox(m, offers, focusTradeId) {
         const when = window.relativeTime ? window.relativeTime(o.created_at) : '';
         const focus = focusTradeId && o.id === focusTradeId;
         return `
-            <div style="background:${focus ? 'rgba(78,205,196,0.12)' : 'rgba(255,255,255,0.04)'};
-                        border:1px solid ${focus ? 'rgba(78,205,196,0.4)' : 'rgba(255,255,255,0.08)'};
-                        border-radius:12px; padding:1rem; margin-bottom:0.75rem;">
+            <div style="background:${focus ? 'var(--teal-bg)' : 'var(--s2)'};
+                        border:1px solid ${focus ? 'var(--teal-dim)' : 'var(--border)'};
+                        border-radius:10px; padding:1rem; margin-bottom:0.75rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                    <div style="font-weight:600; color:#e0e0e0;">${isIncoming ? 'From' : 'To'} ${escapeHtml(o.partner_username || 'Unknown')}</div>
-                    <div style="color:#666; font-size:0.75rem;">${when}</div>
+                    <div style="font-weight:600; color:var(--text);">${isIncoming ? 'From' : 'To'} ${escapeHtml(o.partner_username || 'Unknown')}</div>
+                    <div style="color:var(--text-3); font-size:0.75rem;">${when}</div>
                 </div>
-                <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; color:#a0a0a0; font-size:0.9rem; margin-bottom:0.75rem;">
+                <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; color:var(--text-2); font-size:0.85rem; margin-bottom:0.85rem;">
                     <span>You give <strong style="color:#ff6b6b;">${escapeHtml(youGive)}</strong></span>
-                    <span style="color:#4ecdc4;">&#8644;</span>
-                    <span>You get <strong style="color:#4ecdc4;">${escapeHtml(youGet)}</strong></span>
-                    <span style="color:#666;">(${escapeHtml(formatCaption(o.give_caption))})</span>
+                    <span style="color:var(--teal);">&#8644;</span>
+                    <span>You get <strong style="color:var(--teal);">${escapeHtml(youGet)}</strong></span>
+                    <span style="color:var(--text-3);">(${escapeHtml(formatCaption(o.give_caption))})</span>
                 </div>
                 <div style="display:flex; gap:0.5rem;">
                     ${isIncoming
