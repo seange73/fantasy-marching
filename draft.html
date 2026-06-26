@@ -179,12 +179,7 @@
             max-height: 560px;
             overflow-y: auto;
             padding-right: 0.25rem;
-            scrollbar-width: thin;
-            scrollbar-color: var(--s3) transparent;
         }
-
-        .corps-grid::-webkit-scrollbar { width: 4px; }
-        .corps-grid::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
 
         .corps-card {
             background: var(--s2);
@@ -495,17 +490,14 @@
                     <span class="user-name" id="userName">Loading...</span>
                     <div class="profile-dropdown" id="profileDropdown">
                         <a href="/profile.html" class="dropdown-item">
-                            <span class="dropdown-icon">👤</span>
                             <span>Profile</span>
                         </a>
                         <div class="dropdown-divider"></div>
                         <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display:none;">
-                            <span class="dropdown-icon">🛡️</span>
                             <span>Admin Panel</span>
                         </a>
                         <div class="dropdown-divider" id="adminDivider" style="display:none;"></div>
                         <div class="dropdown-item" onclick="logout()">
-                            <span class="dropdown-icon">🚪</span>
                             <span>Logout</span>
                         </div>
                     </div>
@@ -1344,7 +1336,7 @@ function showDraftCompleteOverlay() {
     overlay.className = 'draft-complete-overlay';
     overlay.innerHTML = `
         <div class="draft-complete-message">
-            <h2>🎉 Draft Complete! 🎉</h2>
+            <h2>Draft Complete!</h2>
             <p>Great picks! Your team is ready.</p>
             <p style="color: #a0a0a0; font-size: 1rem;">Redirecting to league page...</p>
         </div>
@@ -1496,7 +1488,7 @@ const picksChannel = supabaseClient
             alert.className = `alert ${type} show`;
             
             // Set icon
-            icon.textContent = type === 'success' ? '✓' : '⚠';
+            icon.textContent = '';
             
             // Set message
             messageEl.textContent = message;

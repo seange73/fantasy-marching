@@ -336,3 +336,11 @@ body {
     .nav::-webkit-scrollbar { height: 4px; }
     .nav::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 2px; }
 }
+
+/* Themed scrollbars, site-wide */
+* { scrollbar-width: thin; scrollbar-color: var(--s3) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--teal-dim); background-clip: padding-box; }
+::-webkit-scrollbar-corner { background: transparent; }

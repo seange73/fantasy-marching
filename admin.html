@@ -110,7 +110,7 @@
         <h1>Event Management</h1>
         
         <div class="warning">
-            ⚠️ Admin Only - This page requires special permissions
+            Admin Only - This page requires special permissions
         </div>
 
         <div class="section">
@@ -285,11 +285,11 @@
                 <div class="event-item">
                     <div class="event-header">
                         <div class="event-info">
-                            <div class="event-name">${event.name}</div>
+                            <div class="event-name">${escapeHtml(event.name)}</div>
                             <div class="event-details">
-                                ${event.date}
-                                ${event.time ? `at ${event.time}` : ''} 
-                                • ${event.location || 'Location TBD'}
+                                ${escapeHtml(event.date)}
+                                ${event.time ? `at ${escapeHtml(event.time)}` : ''}
+                                • ${escapeHtml(event.location || 'Location TBD')}
                             </div>
                             <div class="event-corps">
                                 ${event.corps_list ? `${event.corps_list.length} corps attending` : 'No corps assigned'}
@@ -302,13 +302,13 @@
                         </div>
                     </div>
                     <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-                        <button class="btn btn-secondary" onclick="editScores('${event.id}', '${event.name.replace(/'/g, "\\'")}', '${corpsListStr}')">
+                        <button class="btn btn-secondary" onclick="editScores('${jsStr(event.id)}', '${jsStr(event.name)}', '${corpsListStr}')">
                             ${event.is_completed ? 'Edit' : 'Enter'} Scores
                         </button>
-                        <button class="btn btn-danger" onclick="deleteEvent('${event.id}', '${event.name.replace(/'/g, "\\'")}')">
+                        <button class="btn btn-danger" onclick="deleteEvent('${jsStr(event.id)}', '${jsStr(event.name)}')">
                             Delete Event
                         </button>
-						<button class="btn" onclick="openEditDateTime('${event.id}', '${event.name.replace(/'/g,"\\'")}', '${event.date}', '${event.time || ""}')">
+						<button class="btn" onclick="openEditDateTime('${jsStr(event.id)}', '${jsStr(event.name)}', '${jsStr(event.date)}', '${jsStr(event.time || '')}')">
     Change Date/Time
 </button>
 

@@ -271,76 +271,135 @@
             margin-bottom: 1.5rem;
         }
 
+        /* Lineup — one concept-style card per caption (restrained, teal-only accents) */
         .caption-section {
-            background: var(--s2);
-            border-radius: 6px;
-            padding: 1.25rem;
+            background: var(--s1);
             border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
         }
-
-        .caption-section.brass      { border-left: 3px solid #45b7d1; }
-        .caption-section.percussion { border-left: 3px solid #e74c3c; }
-        .caption-section.guard      { border-left: 3px solid #f39c12; }
-        .caption-section.ge         { border-left: 3px solid #27ae60; }
-        .caption-section.visual     { border-left: 3px solid #e91e63; }
-        .caption-section.music      { border-left: 3px solid #ff6b6b; }
+        .caption-section.brass, .caption-section.percussion, .caption-section.guard,
+        .caption-section.ge, .caption-section.visual, .caption-section.music { border-left: 1px solid var(--border); }
 
         .caption-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
+            align-items: baseline;
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
         }
 
         .caption-title {
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             font-weight: 700;
-            color: var(--teal);
+            color: var(--text);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.04em;
         }
 
         .caption-total {
-            font-size: 1rem;
-            font-weight: 800;
+            font-size: 0.85rem;
+            font-weight: 500;
             color: var(--teal);
             font-family: var(--mono);
         }
 
         .corps-card {
-            background: var(--s3);
-            border-radius: 4px;
-            padding: 0.7rem;
-            margin-bottom: 0.5rem;
+            padding: 0.6rem 1rem;
             cursor: pointer;
             position: relative;
-            border: 1px solid var(--border);
-            transition: background 0.1s, border-color 0.1s;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.1s;
         }
-
-        .corps-card:hover { background: var(--bg); border-color: var(--teal-dim); }
+        .corps-card:last-child { border-bottom: none; }
+        .corps-card:hover { background: var(--s2); }
         .corps-card.competed { opacity: 0.5; cursor: not-allowed; }
 
         .corps-card.competed::after {
             content: "COMPETED";
             position: absolute;
-            top: 5px;
-            right: 7px;
+            top: 0.6rem;
+            right: 0.7rem;
             background: var(--s3);
             color: var(--text-3);
             padding: 1px 5px;
             border-radius: 3px;
-            font-size: 0.6rem;
+            font-size: 0.58rem;
             font-weight: 700;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.04em;
             border: 1px solid var(--border);
         }
 
-        .corps-name { font-weight: 700; font-size: 0.85rem; margin-bottom: 0.25rem; color: var(--text); }
-        .corps-stats { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-2); }
-        .improvement { font-weight: 700; }
+        .corps-name { font-weight: 600; font-size: 0.8rem; margin-bottom: 0.2rem; color: var(--text); }
+        .corps-stats { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); font-family: var(--mono); }
+        .improvement { font-weight: 500; }
         .improvement.positive { color: var(--teal); }
         .improvement.negative { color: #ff6b6b; }
+
+        /* Total-score banner — concept teal panel, mono numeral (no gradient) */
+        .lineup-total {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 1rem;
+            background: var(--teal-bg);
+            border: 1px solid var(--teal-dim);
+            border-radius: 6px;
+            padding: 0.8rem 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        .lineup-total-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-2); font-weight: 600; }
+        .lineup-total-value { font-family: var(--mono); font-size: 1.8rem; font-weight: 500; color: var(--teal); line-height: 1; letter-spacing: -0.02em; }
+
+        /* Concept card shell (used by standings + matchup) */
+        .lc-card { background: var(--s1); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+        .lc-card-head { padding: 0.7rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: baseline; justify-content: space-between; }
+        .lc-card-title { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+        .lc-card-sub { font-size: 0.72rem; color: var(--text-3); }
+
+        /* Standings — concept rows */
+        .std-row { display: grid; grid-template-columns: 2rem 1fr auto auto auto auto; align-items: center; gap: 0.85rem; padding: 0.6rem 1.25rem; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+        .std-row:last-child { border-bottom: none; }
+        .std-row:hover { background: var(--s2); }
+        .std-row.you { background: var(--teal-bg); border-left: 2px solid var(--teal-dim); }
+        .std-pos { font-family: var(--mono); font-size: 0.72rem; color: var(--text-3); text-align: center; }
+        .std-pos.p1 { color: var(--teal); }
+        .std-pos.p2 { color: var(--text-2); }
+        .std-name { font-size: 0.82rem; font-weight: 600; color: var(--text); text-decoration: none; }
+        .std-name:hover { color: var(--teal); }
+        .std-you { font-size: 0.6rem; color: var(--teal); font-weight: 600; margin-left: 0.4rem; text-transform: uppercase; letter-spacing: 0.03em; }
+        .std-rec, .std-pct { font-family: var(--mono); font-size: 0.72rem; color: var(--text-2); }
+        .std-pts { font-family: var(--mono); font-size: 0.8rem; color: var(--teal); text-align: right; }
+        .std-view { padding: 0.3rem 0.7rem !important; font-size: 0.72rem !important; white-space: nowrap; }
+
+        /* Matchup — concept VS panel */
+        .mu-inner { padding: 1.5rem 1.75rem; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1.5rem; }
+        .mu-team { display: flex; flex-direction: column; min-width: 0; }
+        .mu-team.right { align-items: flex-end; text-align: right; }
+        .mu-eyebrow { font-size: 0.68rem; font-weight: 600; color: var(--teal); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.25rem; }
+        .mu-team.right .mu-eyebrow { color: var(--text-3); }
+        .mu-name { font-size: 1.35rem; font-weight: 700; color: var(--text); line-height: 1.15; word-break: break-word; }
+        .mu-score-block { text-align: center; }
+        .mu-scores { display: flex; align-items: baseline; gap: 0.5rem; justify-content: center; }
+        .mu-score { font-family: var(--mono); font-size: 2.1rem; font-weight: 500; color: var(--text-2); letter-spacing: -0.02em; line-height: 1; }
+        .mu-score.winning { color: var(--teal); }
+        .mu-sep { font-size: 1rem; color: var(--text-3); }
+        .mu-event { font-size: 0.7rem; color: var(--text-3); margin-top: 0.5rem; letter-spacing: 0.03em; }
+        .mu-view { margin-top: 0.85rem; padding: 0.3rem 0.7rem !important; font-size: 0.72rem !important; }
+
+        /* Status chip (concept) */
+        .chip { font-size: 0.62rem; font-weight: 600; padding: 0.15rem 0.45rem; border-radius: 3px; border: 1px solid; letter-spacing: 0.03em; text-transform: uppercase; }
+        .chip.on { color: var(--teal); border-color: var(--teal-dim); background: var(--teal-bg); }
+        .chip.off { color: var(--text-3); border-color: var(--border); background: transparent; }
+
+        @media (max-width: 600px) {
+            .mu-inner { grid-template-columns: 1fr; gap: 1rem; text-align: center; }
+            .mu-team, .mu-team.right { align-items: center; text-align: center; }
+            .std-row { grid-template-columns: 1.5rem 1fr auto auto; gap: 0.5rem; padding: 0.6rem 0.75rem; }
+            .std-pct { display: none; }
+        }
 
         .bench-section { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
         .bench-label { font-size: 0.68rem; color: var(--text-3); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -401,6 +460,7 @@
         .notification.info    { border-color: var(--border); }
 
         .notification-icon { font-size: 1rem; flex-shrink: 0; }
+        .notification-icon:empty { display: none; }
         .notification.success .notification-icon { color: var(--teal); }
         .notification.error   .notification-icon { color: #ff6b6b; }
         .notification.info    .notification-icon { color: var(--text-2); }
@@ -535,17 +595,14 @@
                     <span class="user-name" id="userName">Loading...</span>
                     <div class="profile-dropdown" id="profileDropdown">
                         <a href="/profile.html" class="dropdown-item">
-                            <span class="dropdown-icon">👤</span>
                             <span>Profile</span>
                         </a>
                         <div class="dropdown-divider"></div>
                         <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display:none;">
-                            <span class="dropdown-icon">🛡️</span>
                             <span>Admin Panel</span>
                         </a>
                         <div class="dropdown-divider" id="adminDivider" style="display:none;"></div>
                         <div class="dropdown-item" onclick="logout()">
-                            <span class="dropdown-icon">🚪</span>
                             <span>Logout</span>
                         </div>
                     </div>
@@ -657,31 +714,29 @@
 <!-- Admin controls for league owner -->
 <div id="ownerControls" style="display: none; margin-bottom: 2rem;">
     <div style="
-        background: rgba(255, 215, 0, 0.1);
-        border: 1px solid rgba(255, 215, 0, 0.3);
-        border-radius: 12px;
-        padding: 1rem;
+        background: var(--s1);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1rem 1.25rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
     ">
         <div>
-            <div style="font-weight: 600; color: #ffd700;">League Owner Controls</div>
-            <div style="font-size: 0.9rem; color: #a0a0a0; margin-top: 0.25rem;">
+            <div style="font-weight: 700; color: var(--text); font-size: 0.85rem;">League Owner Controls</div>
+            <div style="font-size: 0.78rem; color: var(--text-2); margin-top: 0.2rem;">
                 Manage matchups and league settings
             </div>
         </div>
-        <div style="display: flex; gap: 1rem;">
-<button id="generateMatchupsButton" class="btn" onclick="generateMatchups()">
-    Generate Season Matchups
-</button>
+        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+            <button id="generateMatchupsButton" class="btn" onclick="generateMatchups()">Generate Season Matchups</button>
             <button class="btn" style="
-                background: rgba(255, 59, 48, 0.2);
-                border: 1px solid rgba(255, 59, 48, 0.3);
+                background: rgba(231, 76, 60, 0.12);
+                border: 1px solid rgba(231, 76, 60, 0.3);
                 color: #ff6b6b;
-            " onclick="deleteLeague()">
-                Delete League
-            </button>
+            " onclick="deleteLeague()">Delete League</button>
         </div>
     </div>
     <!-- Owner-only: visibility + invite code controls -->
@@ -699,11 +754,11 @@
             <div class="content">
                 <!-- My Lineup Tab -->
                 <div id="lineup-content" class="tab-content">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
                         <h2 class="section-title" style="margin:0;">Starting Lineup</h2>
-                        <button id="tradeOffersBtn" class="btn btn-secondary" onclick="openTradeInbox()" style="display:none; align-items:center; gap:0.5rem;">
+                        <button id="tradeOffersBtn" class="btn btn-secondary" onclick="openTradeInbox()" style="display:none; align-items:center; gap:0.45rem; padding:0.4rem 0.8rem; font-size:0.78rem;">
                             Trade Offers
-                            <span id="tradeOffersBadge" style="display:none; background:#4ecdc4; color:#06231f; font-weight:700; border-radius:999px; padding:0.05rem 0.5rem; font-size:0.75rem;">0</span>
+                            <span id="tradeOffersBadge" style="display:none; background:var(--teal); color:var(--bg); font-weight:700; border-radius:999px; padding:0.05rem 0.45rem; font-size:0.72rem; min-width:1.1rem; text-align:center; line-height:1.4;">0</span>
                         </button>
                     </div>
                     <div class="lineup-grid" id="lineupGrid">
@@ -797,7 +852,7 @@ if (window.DEBUG_OVERRIDE_DATE) {
             notification.className = `notification ${type}`;
             notification.innerHTML = `
                 <div class="notification-icon">
-                    ${type === 'success' ? '✓' : type === 'error' ? '⚠' : 'ℹ'}
+                    
                 </div>
                 <div class="notification-content">
                     <div class="notification-title">${title}</div>
@@ -1316,7 +1371,7 @@ if (isOwner) {
                         font-weight: 600;
                     ">Set</button>
                 </div>
-                <span id="timerUpdateStatus" style="color: #4ecdc4; display: none;">✓ Updated</span>
+                <span id="timerUpdateStatus" style="color: #4ecdc4; display: none;">Updated</span>
             </div>
         </div>
         <div class="action-buttons">
@@ -1920,27 +1975,11 @@ function displayLineup(lineup, currentWeek=1) {
         grandTotal += captionTotal;
     });
     
-    // Add total score display at the top
+    // Total score banner (concept-style)
     const totalDisplay = `
-        <div style="
-            grid-column: 1 / -1;
-            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-            border-radius: 16px;
-            padding: 1.5rem;
-            text-align: center;
-            margin-bottom: 1rem;
-        ">
-            <div style="
-                font-size: 1.2rem;
-                font-weight: 600;
-                color: rgba(255, 255, 255, 0.9);
-                margin-bottom: 0.5rem;
-            			    ">Total Score - Week ${currentWeek}</div>
-            <div style="
-                font-size: 3rem;
-                font-weight: 800;
-                color: white;
-            ">${grandTotal.toFixed(3)}</div>
+        <div class="lineup-total">
+            <span class="lineup-total-label">Total Score &middot; Week ${currentWeek}</span>
+            <span class="lineup-total-value">${grandTotal.toFixed(3)}</span>
         </div>
     `;
     
@@ -2303,13 +2342,13 @@ function switchTab(tabName) {
             }).join('');
 
             return `
-                <div style="margin-top: 2rem;">
-                    <h3 style="font-size: 1.2rem; font-weight: 600; color: #4ecdc4; margin-bottom: 1rem;">Starting Lineups</h3>
+                <div style="margin-top: 1.75rem;">
+                    <h3 class="section-title" style="margin-bottom: 1rem;">Starting Lineups</h3>
                     <div class="lineup-compare">
                         <div class="lineup-row lineup-head">
-                            <div class="lineup-cell lineup-you" style="color: #4ecdc4;">${escapeHtml(userName)}</div>
+                            <div class="lineup-cell lineup-you" style="color: var(--teal);">${escapeHtml(userName)}</div>
                             <div class="lineup-cap"></div>
-                            <div class="lineup-cell lineup-opp" style="color: #e74c3c;">${escapeHtml(oppName)}</div>
+                            <div class="lineup-cell lineup-opp" style="color: var(--text-2);">${escapeHtml(oppName)}</div>
                         </div>
                         ${rows}
                     </div>
@@ -2430,103 +2469,33 @@ function switchTab(tabName) {
                 );
 
                 container.innerHTML = `
-                    <div class="main-matchup-display" style="
-                        display: grid;
-                        grid-template-columns: 1fr auto 1fr;
-                        gap: 2rem;
-                        align-items: center;
-                        padding: 2rem;
-                        background: rgba(255, 255, 255, 0.03);
-                        border-radius: 20px;
-                        border: 1px solid rgba(255, 255, 255, 0.1);
-                    ">
-                        <!-- User's Team -->
-                        <div style="text-align: center;">
-                          <div style="
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #4ecdc4;
-    margin-bottom: 1rem;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    padding: 0 0.5rem;
-">
-                                ${escapeHtml(userTeam.username || 'Unknown')}'s Team
-                                ${matchup.winner_id === userTeam.id ? '' : ''}
+                    <div class="lc-card">
+                        <div class="mu-inner">
+                            <div class="mu-team">
+                                <div class="mu-eyebrow">You</div>
+                                <div class="mu-name">${escapeHtml(userTeam.username || 'You')}</div>
                             </div>
-                            <div style="
-                                font-size: 3rem;
-                                font-weight: 800;
-                                background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 100%);
-                                -webkit-background-clip: text;
-                                -webkit-text-fill-color: transparent;
-                                background-clip: text;
-                            ">
-                                ${userScore !== null && userScore !== undefined ? parseFloat(userScore).toFixed(2) : '--'}
+                            <div class="mu-score-block">
+                                <div class="mu-scores">
+                                    <span class="mu-score ${hasScores && userScore > opponentScore ? 'winning' : ''}">${userScore !== null && userScore !== undefined ? parseFloat(userScore).toFixed(2) : '—'}</span>
+                                    <span class="mu-sep">–</span>
+                                    <span class="mu-score ${hasScores && opponentScore > userScore ? 'winning' : ''}">${opponentScore !== null && opponentScore !== undefined ? parseFloat(opponentScore).toFixed(2) : '—'}</span>
+                                </div>
+                                <div class="mu-event">Week ${week}${isTiedScore ? ' &middot; Tiebreaker' : ''}</div>
                             </div>
-                        </div>
-                        
-                        <!-- VS -->
-                        <div style="text-align: center;">
-                            <div style="
-                                font-size: 2rem;
-                                font-weight: 700;
-                                color: #666;
-                            ">VS</div>
-                            ${isTiedScore ? `
-                                <div style="
-                                    margin-top: 0.5rem;
-                                    font-size: 0.85rem;
-                                    color: #ffd700;
-                                    font-weight: 600;
-                                ">Tiebreaker!</div>
-                            ` : ''}
-                        </div>
-                        
-                        <!-- Opponent's Team -->
-                        <div style="text-align: center;">
-<div style="
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #e74c3c;
-    margin-bottom: 1rem;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    padding: 0 0.5rem;
-">
-                                ${escapeHtml(opponentTeam.username || 'Unknown')}'s Team
-                                ${matchup.winner_id === opponentTeam.id ? '' : ''}
+                            <div class="mu-team right">
+                                <div class="mu-eyebrow">Opponent</div>
+                                <div class="mu-name">${escapeHtml(opponentTeam.username || 'Opponent')}</div>
+                                ${hasScores ? `<button class="btn btn-secondary mu-view" onclick="viewTeamLineup('${opponentTeamId}')">View Lineup</button>` : ''}
                             </div>
-                            <div style="
-                                font-size: 3rem;
-                                font-weight: 800;
-                                color: #e74c3c;
-                            ">
-                                ${opponentScore !== null && opponentScore !== undefined ? parseFloat(opponentScore).toFixed(2) : '--'}
-                            </div>
-${hasScores ? `
-<button class="btn btn-secondary" style="
-    margin-top: 1rem;
-    width: calc(100% - 1rem);
-    max-width: 200px;
-    word-break: break-word;
-    margin-left: 0.5rem;
-    margin-right: 0.5rem;
-" onclick="viewTeamLineup('${opponentTeamId}')">View Lineup</button>
-` : ''}
                         </div>
                     </div>
                     
                     ${lineupCompareHTML}
 
                     <!-- Week's competitions -->
-                    <div style="margin-top: 2rem;">
-                        <h3 style="
-                            font-size: 1.2rem;
-                            font-weight: 600;
-                            color: #4ecdc4;
-                            margin-bottom: 1rem;
-                        ">This Week's Competitions</h3>
+                    <div style="margin-top: 1.75rem;">
+                        <h3 class="section-title" style="margin-bottom: 1rem;">This Week's Competitions</h3>
                         <div id="weekCompetitions">
                             Loading competitions...
                         </div>
@@ -2666,68 +2635,31 @@ ${hasScores ? `
                 });
                 
                 container.innerHTML = `
-                    <div style="display: grid; gap: 0.5rem; margin-bottom: 3rem;">
-                        ${standings.map((team, index) => `
-                            <div style="
-                                display: grid;
-                                grid-template-columns: 40px 1fr auto auto auto auto;
-                                gap: 1rem;
-                                align-items: center;
-                                padding: 1rem 1.5rem;
-                                background: ${team.id === currentTeam?.id ? 'rgba(78, 205, 196, 0.1)' : 'rgba(255, 255, 255, 0.05)'};
-                                border-radius: 12px;
-                                border: 1px solid ${team.id === currentTeam?.id ? 'rgba(78, 205, 196, 0.3)' : 'rgba(255, 255, 255, 0.1)'};
-                                transition: all 0.3s ease;
-                            " class="standing-row" data-mobile-compact="true">
-                                <span style="
-                                    font-size: 1.5rem;
-                                    font-weight: 800;
-                                    color: ${index === 0 ? '#ffd700' : index < 3 ? '#4ecdc4' : '#666'};
-                                    text-align: center;
-                                ">${index + 1}</span>
-<a 
-  href="/profile.html?userId=${team.user_id}" 
-  style="font-weight: 600; color: #4ecdc4; text-decoration: none;">
-    ${escapeHtml(team.username)}'s Team${team.id === currentTeam?.id ? ' (You)' : ''}
-</a>
+                    <div class="lc-card" style="margin-bottom: 2rem;">
+                        <div class="lc-card-head">
+                            <span class="lc-card-title">League Standings</span>
+                            <span class="lc-card-sub">${standings.length} ${standings.length === 1 ? 'team' : 'teams'}</span>
+                        </div>
+                        <div>
+                            ${standings.map((team, index) => `
+                                <div class="std-row ${team.id === currentTeam?.id ? 'you' : ''}">
+                                    <div class="std-pos ${index === 0 ? 'p1' : index === 1 ? 'p2' : ''}">${index + 1}</div>
+                                    <div>
+                                        <a class="std-name" href="/profile.html?userId=${team.user_id}">${escapeHtml(team.username)}'s Team</a>
+                                        ${team.id === currentTeam?.id ? '<span class="std-you">You</span>' : ''}
+                                    </div>
+                                    <div class="std-rec">${team.wins}-${team.losses}${team.ties > 0 ? `-${team.ties}` : ''}</div>
+                                    <div class="std-pct">${(team.winPct * 100).toFixed(0)}%</div>
+                                    <div class="std-pts">${team.avgScore.toFixed(1)}</div>
+                                    ${team.id === currentTeam?.id ? '<span></span>' : `<button class="btn btn-secondary std-view" onclick="viewTeamLineup('${team.id}')">Lineup</button>`}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
 
-                                <span style="color: #a0a0a0;">
-                                    ${team.wins}-${team.losses}${team.ties > 0 ? `-${team.ties}` : ''}
-                                </span>
-                                <span style="color: #a0a0a0;">${(team.winPct * 100).toFixed(0)}%</span>
-                                <span style="color: #4ecdc4; font-weight: 600;">${team.avgScore.toFixed(1)}</span>
-                                ${team.id === currentTeam?.id ? '<span></span>' : `<button class="btn btn-secondary" style="padding:0.4rem 0.75rem; font-size:0.8rem; white-space:nowrap;" onclick="viewTeamLineup('${team.id}')">View Lineup</button>`}
-                            </div>
-                        `).join('')}
-                    </div>
-                    
-                    <h3 style="
-                        font-size: 1.4rem;
-                        font-weight: 700;
-                        color: #4ecdc4;
-                        margin-bottom: 1.5rem;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                    ">Season Schedule</h3>
-                    
-                    <div id="seasonSchedule">
-                        Loading schedule...
-                    </div>
+                    <h3 class="section-title" style="margin-bottom: 1rem;">Season Schedule</h3>
+                    <div id="seasonSchedule">Loading schedule...</div>
                 `;
-                
-                // Add hover effect
-                document.querySelectorAll('.standing-row').forEach(row => {
-                    row.addEventListener('mouseenter', function() {
-                        if (!this.style.background.includes('78, 205, 196')) {
-                            this.style.background = 'rgba(255, 255, 255, 0.08)';
-                        }
-                    });
-                    row.addEventListener('mouseleave', function() {
-                        if (!this.style.background.includes('78, 205, 196')) {
-                            this.style.background = 'rgba(255, 255, 255, 0.05)';
-                        }
-                    });
-                });
                 
                 // Load season schedule
                 await loadSeasonSchedule();
@@ -2811,7 +2743,6 @@ ${hasScores ? `
                         ">
                             Week ${week}
                             ${week == currentWeek ? ' (Current Week)' : ''}
-                            ${week < currentWeek ? ' ✓' : ''}
                         </h4>
 						<div class="matchup-scroll-container">
                         <div style="
@@ -3015,33 +2946,17 @@ async function loadFreeAgents() {
         
         if (existingTransaction) {
             container.innerHTML = `
-                <div style="text-align: center; padding: 3rem;">
-                    <div style="
-                        background: rgba(78, 205, 196, 0.1);
-                        border: 1px solid rgba(78, 205, 196, 0.3);
-                        border-radius: 12px;
-                        padding: 2rem;
-                        max-width: 600px;
-                        margin: 0 auto;
-                    ">
-                        <h3 style="color: #4ecdc4; margin-bottom: 1rem;">Transaction Complete</h3>
-                        <p style="color: #e0e0e0; font-size: 1.1rem;">
-                            You've already made your free agent transaction for Week ${currentWeek}
+                <div style="max-width: 560px; margin: 2rem auto 0;">
+                    <div style="background: var(--teal-bg); border: 1px solid var(--teal-dim); border-radius: 6px; padding: 1.5rem;">
+                        <h3 class="section-title" style="margin-bottom: 0.75rem;">Transaction Complete</h3>
+                        <p style="color: var(--text-2); font-size: 0.85rem;">
+                            You've already made your free agent transaction for Week ${currentWeek}.
                         </p>
-                        <div style="
-                            margin-top: 1.5rem;
-                            padding: 1rem;
-                            background: rgba(255, 255, 255, 0.05);
-                            border-radius: 8px;
-                        ">
-                            <p style="color: #a0a0a0; margin-bottom: 0.5rem;">Dropped:</p>
-                            <p style="color: #ff6b6b; font-weight: 600;">
-                                ${existingTransaction.dropped_corps} - ${formatCaption(existingTransaction.dropped_caption)}
-                            </p>
-                            <p style="color: #a0a0a0; margin: 1rem 0 0.5rem;">Added:</p>
-                            <p style="color: #4ecdc4; font-weight: 600;">
-                                ${existingTransaction.added_corps} - ${formatCaption(existingTransaction.added_caption)}
-                            </p>
+                        <div style="margin-top: 1.25rem; padding: 1rem; background: var(--s1); border: 1px solid var(--border); border-radius: 6px;">
+                            <p style="color: var(--text-2); margin-bottom: 0.3rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em;">Dropped</p>
+                            <p style="color: #ff6b6b; font-weight: 600; font-size: 0.85rem;">${escapeHtml(existingTransaction.dropped_corps)} &mdash; ${formatCaption(existingTransaction.dropped_caption)}</p>
+                            <p style="color: var(--text-2); margin: 0.9rem 0 0.3rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em;">Added</p>
+                            <p style="color: var(--teal); font-weight: 600; font-size: 0.85rem;">${escapeHtml(existingTransaction.added_corps)} &mdash; ${formatCaption(existingTransaction.added_caption)}</p>
                         </div>
                     </div>
                 </div>
@@ -3074,137 +2989,98 @@ async function loadFreeAgents() {
         });
         const isSunday = new Date().getDay() === 1;
         container.innerHTML = `
-            <div style="
-                background: rgba(255, 215, 0, 0.1);
-                border: 1px solid rgba(255, 215, 0, 0.3);
-                border-radius: 12px;
-                padding: 1rem;
-                margin-bottom: 2rem;
-                text-align: center;
-            ">
-<p style="color: #ffd700; font-weight: 600;">
-    Free Agent Window ${isSunday ? 'Open' : 'Closed'} - Week ${currentWeek}
-</p>
-<p style="color: #e0e0e0; font-size: 0.9rem; margin-top: 0.5rem;">
-    ${
-        isSunday
-            ? existingTransaction
-                ? 'You have already made your one roster change for this week'
-                : 'You can make one roster change today'
-            : 'Transactions available on Mondays only'
-    }
-</p>
+            <div style="background: var(--teal-bg); border: 1px solid var(--teal-dim); border-radius: 6px; padding: 0.8rem 1.1rem; margin-bottom: 1.5rem;">
+                <p style="color: var(--text); font-weight: 600; font-size: 0.85rem;">Free Agent Window ${isSunday ? 'Open' : 'Closed'} &middot; Week ${currentWeek}</p>
+                <p style="color: var(--text-2); font-size: 0.78rem; margin-top: 0.3rem;">
+                    ${
+                        isSunday
+                            ? existingTransaction
+                                ? 'You have already made your one roster change for this week'
+                                : 'You can make one roster change today'
+                            : 'Transactions available on Mondays only'
+                    }
+                </p>
             </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <!-- Your Roster -->
                 <div>
-                    <h3 style="
-                        font-size: 1.2rem;
-                        font-weight: 600;
-                        color: #4ecdc4;
-                        margin-bottom: 1rem;
-                    ">Your Roster</h3>
-                    <div style="display: grid; gap: 0.5rem;">
+                    <h3 class="section-title" style="margin-bottom: 1rem;">Your Roster</h3>
+                    <div style="display: grid; gap: 0.4rem;">
                         ${roster?.map(r => `
-                            <div style="
-                                padding: 0.75rem;
-                                background: rgba(255, 255, 255, 0.03);
-                                border-radius: 8px;
-                                border: 1px solid rgba(255, 255, 255, 0.1);
-                                cursor: pointer;
-                                transition: all 0.2s ease;
-                            " 
-                            class="roster-item"
-                            onclick="selectForDrop('${r.corps_name}', '${r.caption}')">
-                                <div style="font-weight: 600; color: white;">
-                                    ${r.corps_name}
-                                </div>
-                                <div style="font-size: 0.85rem; color: #a0a0a0;">
-                                    ${formatCaption(r.caption)}
-                                </div>
+                            <div class="roster-item" onclick="selectForDrop('${jsStr(r.corps_name)}', '${jsStr(r.caption)}')">
+                                <div style="font-weight: 600; color: var(--text); font-size: 0.82rem;">${escapeHtml(r.corps_name)}</div>
+                                <div style="font-size: 0.72rem; color: var(--text-2);">${formatCaption(r.caption)}</div>
                             </div>
-                        `).join('') || '<p style="color: #666;">No roster loaded</p>'}
+                        `).join('') || '<p style="color: var(--text-3); font-size: 0.82rem;">No roster loaded</p>'}
                     </div>
                 </div>
-                
+
                 <!-- Available Free Agents -->
                 <div>
-                    <h3 style="
-                        font-size: 1.2rem;
-                        font-weight: 600;
-                        color: #4ecdc4;
-                        margin-bottom: 1rem;
-                    ">Available Free Agents</h3>
+                    <h3 class="section-title" style="margin-bottom: 1rem;">Available Free Agents</h3>
                     <div id="freeAgentsList" style="
                         max-height: 600px;
                         overflow-y: auto;
                         padding-right: 0.5rem;
                     ">
-                        <p style="color: #666; text-align: center;">
+                        <p style="color: var(--text-3); text-align: center; font-size: 0.82rem;">
                             Select a corps from your roster to see available replacements
                         </p>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Transaction Preview -->
             <div id="transactionPreview" style="
-                margin-top: 2rem;
-                padding: 1.5rem;
-                background: rgba(255, 255, 255, 0.05);
-                border-radius: 12px;
-                border: 1px solid rgba(255, 255, 255, 0.1);
+                margin-top: 1.5rem;
+                padding: 1.25rem;
+                background: var(--s1);
+                border: 1px solid var(--border);
+                border-radius: 6px;
                 display: none;
             ">
-                <h4 style="color: #4ecdc4; margin-bottom: 1rem;">Transaction Preview</h4>
+                <h4 class="section-title" style="margin-bottom: 1rem;">Transaction Preview</h4>
                 <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; align-items: center;">
                     <div style="text-align: center;">
-                        <p style="color: #a0a0a0; margin-bottom: 0.5rem;">Dropping</p>
-                        <p id="droppingCorps" style="color: #ff6b6b; font-weight: 600;">-</p>
+                        <p style="color: var(--text-2); margin-bottom: 0.4rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em;">Dropping</p>
+                        <p id="droppingCorps" style="color: #ff6b6b; font-weight: 600; font-size: 0.85rem;">-</p>
                     </div>
-                    <div style="font-size: 1.5rem; color: #666;">→</div>
+                    <div style="font-size: 1.2rem; color: var(--text-3);">→</div>
                     <div style="text-align: center;">
-                        <p style="color: #a0a0a0; margin-bottom: 0.5rem;">Adding</p>
-                        <p id="addingCorps" style="color: #4ecdc4; font-weight: 600;">-</p>
+                        <p style="color: var(--text-2); margin-bottom: 0.4rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em;">Adding</p>
+                        <p id="addingCorps" style="color: var(--teal); font-weight: 600; font-size: 0.85rem;">-</p>
                     </div>
                 </div>
-                <button class="btn" style="width: 100%; margin-top: 1.5rem;" onclick="confirmTransaction()">
-                    Confirm Transaction
-                </button>
+                <button class="btn" style="width: 100%; margin-top: 1.25rem;" onclick="confirmTransaction()">Confirm Transaction</button>
             </div>
             <!-- Transaction History -->
-            <div style="margin-top: 3rem;">
-                <h3 style="
-                    font-size: 1.2rem;
-                    font-weight: 600;
-                    color: #4ecdc4;
-                    margin-bottom: 1rem;
-                ">Transaction History</h3>
+            <div style="margin-top: 2rem;">
+                <h3 class="section-title" style="margin-bottom: 1rem;">Transaction History</h3>
                 <div id="transactionHistory">
                     Loading transactions...
                 </div>
             </div>
         `;
-        
-        // Add styles for roster items
+
+        // Base + interaction styles for roster / free-agent rows (concept tokens)
         const style = document.createElement('style');
         style.textContent = `
-            .roster-item:hover {
-                background: rgba(255, 255, 255, 0.08) !important;
-                border-color: rgba(78, 205, 196, 0.3) !important;
+            .roster-item, .free-agent-item {
+                padding: 0.55rem 0.75rem;
+                background: var(--s2);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background 0.1s, border-color 0.1s;
             }
-            .roster-item.selected {
-                background: rgba(78, 205, 196, 0.1) !important;
-                border-color: rgba(78, 205, 196, 0.5) !important;
+            .roster-item:hover, .free-agent-item:hover {
+                background: var(--s3) !important;
+                border-color: var(--teal-dim) !important;
             }
-            .free-agent-item:hover {
-                background: rgba(255, 255, 255, 0.08) !important;
-                border-color: rgba(78, 205, 196, 0.3) !important;
-            }
-            .free-agent-item.selected {
-                background: rgba(78, 205, 196, 0.1) !important;
-                border-color: rgba(78, 205, 196, 0.5) !important;
+            .roster-item.selected, .free-agent-item.selected {
+                background: var(--teal-bg) !important;
+                border-color: var(--teal-dim) !important;
             }
         `;
         document.head.appendChild(style);
@@ -3403,28 +3279,23 @@ const weekEnd = weekRange.end;
                 
                 container.innerHTML = events.map(event => `
                     <div style="
-                        padding: 1rem;
-                        background: rgba(255, 255, 255, 0.03);
-                        border-radius: 12px;
-                        margin-bottom: 0.75rem;
+                        padding: 0.85rem 1rem;
+                        background: var(--s1);
+                        border: 1px solid var(--border);
+                        border-radius: 6px;
+                        margin-bottom: 0.6rem;
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
+                        gap: 1rem;
                     ">
-                        <div>
-                            <div style="font-weight: 600; color: white;">${escapeHtml(event.name)}</div>
-                            <div style="font-size: 0.9rem; color: #a0a0a0;">
-                                ${event.date} • ${event.location || 'TBD'}
+                        <div style="min-width: 0;">
+                            <div style="font-weight: 600; color: var(--text); font-size: 0.85rem;">${escapeHtml(event.name)}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-2); margin-top: 0.15rem;">
+                                ${escapeHtml(event.date)} &middot; ${escapeHtml(event.location || 'TBD')}
                             </div>
                         </div>
-                        <div style="
-                            padding: 0.25rem 0.75rem;
-                            background: ${event.is_completed ? 'rgba(78, 205, 196, 0.2)' : 'rgba(255, 215, 0, 0.2)'};
-                            color: ${event.is_completed ? '#4ecdc4' : '#ffd700'};
-                            border-radius: 20px;
-                            font-size: 0.85rem;
-                            font-weight: 600;
-                        ">
+                        <div class="chip ${event.is_completed ? 'on' : 'off'}" style="flex-shrink: 0;">
                             ${event.is_completed ? 'Completed' : 'Upcoming'}
                         </div>
                     </div>
@@ -3569,35 +3440,33 @@ console.log(`Showing scores for finalizedWeek=${finalizedWeek} date range ${week
                     });
 
                     return `
-                        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 1rem; border-left: 3px solid ${getCaptionColor(caption)};">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                                <div style="font-weight:600; color:${getCaptionColor(caption)}; text-transform:capitalize;">
-                                    ${caption === 'guard' ? 'Color Guard' : caption === 'ge' ? 'General Effect' : caption}
+                        <div style="background: var(--s2); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                                <div style="font-weight:700; color:var(--text); text-transform:uppercase; font-size:0.68rem; letter-spacing:0.04em;">
+                                    ${caption === 'guard' ? 'Color Guard' : caption === 'ge' ? 'General Effect' : formatCaption(caption)}
                                 </div>
-                                <div style="font-weight:700; color:#4ecdc4;">
+                                <div style="font-weight:500; color:var(--teal); font-family:var(--mono); font-size:0.85rem;">
                                     ${captionTotal > 0 ? captionTotal.toFixed(2) : '0.00'}
                                 </div>
                             </div>
                             ${rosterWithScores.map(r => `
-                                <div style="padding:0.5rem 0; color:#e0e0e0; display:flex; justify-content:space-between; align-items:center; gap:0.75rem;">
+                                <div style="padding:0.4rem 0; color:var(--text); display:flex; justify-content:space-between; align-items:center; gap:0.75rem; font-size:0.82rem;">
                                     <span class="corps-link" data-corps-info="${escapeHtml(r.corps_name)}" style="cursor:pointer;">${escapeHtml(r.corps_name)}</span>
                                     <span style="display:flex; align-items:center; gap:0.75rem; flex-shrink:0;">
-                                        <span style="color:${r.avgScore>0?'#4ecdc4':'#666'};">
+                                        <span style="color:${r.avgScore>0?'var(--teal)':'var(--text-3)'}; font-family:var(--mono); font-size:0.78rem;">
                                             ${r.avgScore>0 ? r.avgScore.toFixed(3) : 'No score'}
                                         </span>
-                                        ${canTrade ? `<button class="btn btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.75rem; white-space:nowrap;" onclick="requestTradeFor('${jsStr(teamId)}', '${jsStr(r.corps_name)}', '${jsStr(r.caption)}')">Request Trade</button>` : ''}
+                                        ${canTrade ? `<button class="btn btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.72rem; white-space:nowrap;" onclick="requestTradeFor('${jsStr(teamId)}', '${jsStr(r.corps_name)}', '${jsStr(r.caption)}')">Request Trade</button>` : ''}
                                     </span>
                                 </div>
-                            `).join('') || '<div style="color:#666;">No selection</div>'}
+                            `).join('') || '<div style="color:var(--text-3); font-size:0.82rem;">No selection</div>'}
                         </div>
                     `;
                 }).join('')}
             </div>
-            <div style="margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg,#4ecdc4 0%,#45b7d1 100%); border-radius:12px; text-align:center;">
-                <div style="color: rgba(255,255,255,0.9); font-size:0.9rem;">Total Score</div>
-                <div style="color:white; font-size:2rem; font-weight:800;">
-                    ${totalScore.toFixed(3)}
-                </div>
+            <div class="lineup-total" style="margin-top: 1.25rem;">
+                <span class="lineup-total-label">Total Score</span>
+                <span class="lineup-total-value">${totalScore.toFixed(3)}</span>
             </div>
         `;
 
@@ -3929,24 +3798,11 @@ async function updateAllMatchupScoresForWeek(weekNumber) {
                 }
                 
                 container.innerHTML = `
-                    <div style="display: grid; gap: 0.5rem;">
+                    <div style="display: grid; gap: 0.4rem;">
                         ${availableCorps.map(corps => `
-                            <div style="
-                                padding: 0.75rem;
-                                background: rgba(255, 255, 255, 0.03);
-                                border-radius: 8px;
-                                border: 1px solid rgba(255, 255, 255, 0.1);
-                                cursor: pointer;
-                                transition: all 0.2s ease;
-                            " 
-                            class="free-agent-item"
-                            onclick="selectForAdd('${corps}', '${caption}')">
-                                <div style="font-weight: 600; color: white;">
-                                    ${corps}
-                                </div>
-                                <div style="font-size: 0.85rem; color: #a0a0a0;">
-                                    ${formatCaption(caption)}
-                                </div>
+                            <div class="free-agent-item" onclick="selectForAdd('${jsStr(corps)}', '${jsStr(caption)}')">
+                                <div style="font-weight: 600; color: var(--text); font-size: 0.82rem;">${escapeHtml(corps)}</div>
+                                <div style="font-size: 0.72rem; color: var(--text-2);">${formatCaption(caption)}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -4030,16 +3886,16 @@ async function updateAllMatchupScoresForWeek(weekNumber) {
         }
 document.addEventListener('DOMContentLoaded', () => {
   (async () => {
-    // 1️⃣ wait for your league/team context to be ready
+    // wait for your league/team context to be ready
     await initializePage();
 
-    // 2️⃣ back‑fill everyone's scores and wait for it to finish
+    // back-fill everyone's scores and wait for it to finish
     const currentWeek = await getCurrentWeekFromDB();
     await updateAllMatchupScoresForWeek(currentWeek);
 
-    // 3️⃣ now that the DB is up-to-date, render your matchups
+    // now that the DB is up-to-date, render your matchups
     await checkIfMatchupsExist();
-  })(); // ← immediately run it
+  })();
 });
 
         

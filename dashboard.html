@@ -288,17 +288,14 @@
                     <span class="user-name" id="userName"></span>
                     <div class="profile-dropdown" id="profileDropdown">
                         <a href="/profile.html" class="dropdown-item">
-                            <span class="dropdown-icon">👤</span>
                             <span>Profile</span>
                         </a>
                         <div class="dropdown-divider"></div>
                         <a href="/admin.html" class="dropdown-item admin" id="adminLink" style="display: none;">
-                            <span class="dropdown-icon">🛡️</span>
                             <span>Admin Panel</span>
                         </a>
                         <div class="dropdown-divider" id="adminDivider" style="display: none;"></div>
                         <div class="dropdown-item" onclick="logout()">
-                            <span class="dropdown-icon">🚪</span>
                             <span>Logout</span>
                         </div>
                     </div>
@@ -547,7 +544,7 @@ async function loadReminders() {
                 const username = usernameMap[request.user_id] || 'Unknown';
 				console.log('Request user_id:', request.user_id, 'Username:', username);
 reminders.push({
-    icon: '👥',
+    icon: '',
     title: 'League Join Request',
     text: `${escapeHtml(username)} wants to join ${escapeHtml(leagueMap[request.league_id] || '')}`,
     action: 'Review Request',
@@ -605,7 +602,7 @@ if (upcomingEvents && upcomingEvents.length > 0) {
             }
 
             reminders.push({
-                icon: '🎯',
+                icon: '',
                 title: 'Predictions Due Soon',
                 text: `${escapeHtml(event.name)} predictions close in ${timeLeft}`,
                 action: 'Make Predictions',
@@ -626,7 +623,7 @@ if (upcomingEvents && upcomingEvents.length > 0) {
 
     if (completedEvents && completedEvents.length > 0) {
         reminders.push({
-            icon: '📊',
+            icon: '',
             title: 'Results Available',
             text: `Check how your predictions did for ${escapeHtml(completedEvents[0].name)}`,
             action: 'View Results',
