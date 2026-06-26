@@ -45,29 +45,34 @@ window.jsStr = jsStr;
 window.avatarHtml = avatarHtml;
 window.relativeTime = relativeTime;
 
-// Auth state listener
+// Same-site relative return path only (guards against open-redirect via ?next=).
+function safeNext(value, fallback) {
+    if (value && value.startsWith('/') && !value.startsWith('//')) return value;
+    return fallback || '/dashboard.html';
+}
+
+// Auth state listener. The app is browse-first: logged-out visitors can view the
+// public pages, so we no longer force them to the login screen here. We only bounce
+// OFF the login page once a session exists.
 supabaseClient.auth.onAuthStateChange((event, session) => {
-    console.log('Auth event:', event);
-    
-    // Get current page
-    const currentPage = window.location.pathname;
-    const isAuthPage = currentPage === '/' || currentPage === '/index.html' || currentPage === '';
-    const isDashboard = currentPage === '/dashboard.html';
-    
-    if (event === 'SIGNED_IN' && session) {
-        // User signed in
-        if (isAuthPage) {
-            // Redirect to dashboard if on auth page
-            window.location.href = '/dashboard.html';
-        }
-    } else if (event === 'SIGNED_OUT' || !session) {
-        // User signed out or no session
-        if (isDashboard) {
-            // Redirect to auth page if on dashboard
-            window.location.href = '/';
-        }
+    const path = window.location.pathname;
+    const isLoginPage = path === '/login.html';
+    if (event === 'SIGNED_IN' && session && isLoginPage) {
+        const next = new URLSearchParams(window.location.search).get('next');
+        window.location.href = safeNext(next, '/dashboard.html');
     }
 });
+
+// Gate an action behind auth. Call from a write handler; if the user is signed out
+// it sends them to the login page and returns false (so the caller can bail).
+// Comes back to where they were via ?next=.
+async function requireAuth(next) {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (user) return true;
+    const dest = next || (window.location.pathname + window.location.search);
+    window.location.href = '/login.html?next=' + encodeURIComponent(dest);
+    return false;
+}
 
 // Helper function to get current user
 async function getCurrentUser() {
@@ -129,8 +134,43 @@ window.fantasyMarching = {
     supabase: supabaseClient,
     getCurrentUser,
     getUserProfile,
-    renderHeaderUser
+    renderHeaderUser,
+    requireAuth
 };
+window.requireAuth = requireAuth;
+
+// On a public page, a signed-out visitor gets a "Log In" button in the header in
+// place of the user menu. Centralized here so individual pages don't each have to
+// add it (mirrors how the notification bell injects itself when signed in).
+(function () {
+    async function renderLoggedOutHeader() {
+        try {
+            if (!window.supabaseClient) return;
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) return;                              // signed in: page renders its own user block
+            const hr = document.querySelector('.header-right');
+            if (!hr || hr.querySelector('.login-cta')) return;
+            const profile = hr.querySelector('.user-profile');
+            if (profile) profile.style.display = 'none';   // hide the empty avatar/name menu
+            if (!document.getElementById('loginCtaStyle')) {
+                const st = document.createElement('style');
+                st.id = 'loginCtaStyle';
+                st.textContent =
+                    '.login-cta{display:inline-flex;align-items:center;gap:0.4rem;background:var(--teal);color:var(--bg);' +
+                    'font-family:var(--body);font-weight:700;font-size:0.82rem;padding:0.45rem 1rem;border-radius:6px;' +
+                    'text-decoration:none;white-space:nowrap;}.login-cta:hover{opacity:0.9;}';
+                document.head.appendChild(st);
+            }
+            const a = document.createElement('a');
+            a.className = 'login-cta';
+            a.href = '/login.html?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+            a.textContent = 'Log In';
+            hr.appendChild(a);
+        } catch (e) { /* no-op on the login page etc. */ }
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderLoggedOutHeader);
+    else renderLoggedOutHeader();
+})();
 
 // Load the shared notification bell on every page. It self-checks auth and only
 // renders when signed in, so it is a no-op on the login page.
