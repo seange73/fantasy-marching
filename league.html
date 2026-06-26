@@ -514,27 +514,30 @@
 
         // Initialize page
 async function initializePage() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) {
-        window.location.href = '/';
-        return;
+    // Public: signed-out visitors can browse public leagues; joining/creating is gated.
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const user = (session && session.user) || null;
+    currentUser = user || null;
+
+    if (currentUser) {
+        await loadUserProfile();
+        await loadMyLeagues();      // populates myLeagues before filtering available
     }
-    currentUser = user;
-
-    await loadUserProfile();
-
-    // force loadMyLeagues to complete and populate myLeagues
-    await loadMyLeagues();
-
-    // only now load available leagues
     await loadAvailableLeagues();
-
     applyFirstRunVisibility();
 }
 
 // First time (no leagues) => show only the two-option chooser. Otherwise show
 // My Leagues + the Join/Create section.
 function applyFirstRunVisibility() {
+    // Signed out: skip the first-run chooser and just show the public browse +
+    // join/create section (the join/create actions themselves are gated).
+    if (!currentUser) {
+        document.getElementById('firstRun').style.display = 'none';
+        document.getElementById('myLeaguesSection').style.display = 'none';
+        document.getElementById('joinCreateSection').style.display = 'block';
+        return;
+    }
     const hasLeagues = myLeagues.length > 0;
     document.getElementById('firstRun').style.display = hasLeagues ? 'none' : 'block';
     document.getElementById('myLeaguesSection').style.display = hasLeagues ? 'block' : 'none';
@@ -989,6 +992,7 @@ availableLeagues = leaguesWithProfiles.filter(l => {
 
         // Join a private league by its code (instant). Server validates ban/full/draft/cap.
         async function joinByCode() {
+            if (!(await requireAuth())) return;
             const input = document.getElementById('joinCode');
             const code = (input.value || '').trim().toUpperCase();
             if (!code) { showAlert('Enter a league code', 'error'); return; }
@@ -1007,6 +1011,7 @@ availableLeagues = leaguesWithProfiles.filter(l => {
 
         // Join (or request to join) a listed public league via the server RPC.
         async function joinPublic(leagueId) {
+            if (!(await requireAuth())) return;
             try {
                 const { data, error } = await supabaseClient.rpc('join_public_league', { p_league_id: leagueId });
                 if (error) { showAlert(error.message || 'Could not join', 'error'); return; }
@@ -1030,6 +1035,7 @@ availableLeagues = leaguesWithProfiles.filter(l => {
         // Create a new league
         async function createLeague(e) {
             e.preventDefault();
+            if (!(await requireAuth())) return;
 
             const name = document.getElementById('leagueName').value.trim();
             const isPublic = document.getElementById('leagueVisibility').value === 'public';

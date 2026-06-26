@@ -338,19 +338,19 @@ async function initializeProfile() {
   const urlParams = new URLSearchParams(window.location.search);
   userIdFromUrl = urlParams.get("userId");
 
-  // always get the signed-in user first
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) {
-    window.location.href = "/";
-    return;
-  }
-  signedInUser = user;
+  // Public: anyone can view a profile via ?userId=. Viewing "your own" profile
+  // (no userId) still requires an account.
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  const user = (session && session.user) || null;
+  signedInUser = user || null;
 
-  // then decide whose profile is being viewed
   if (userIdFromUrl) {
-    currentUser = { id: userIdFromUrl }; // viewing someone else
+    currentUser = { id: userIdFromUrl };   // viewing someone else (works signed out)
+  } else if (signedInUser) {
+    currentUser = signedInUser;            // viewing your own profile
   } else {
-    currentUser = user; // viewing your own profile
+    window.location.href = '/login.html?next=' + encodeURIComponent('/profile.html');
+    return;
   }
 
   // Load everything
@@ -373,18 +373,21 @@ async function loadUserProfile() {
   if (profile) {
     const username = profile.username || "Unknown";
     const initial = (username[0] || "?").toUpperCase();
-    const isOwnProfile = !userIdFromUrl || userIdFromUrl === signedInUser.id;
+    const isOwnProfile = !!signedInUser && (!userIdFromUrl || userIdFromUrl === signedInUser.id);
 
-    // header always reflects the signed-in user
-    const { data: signedInProfile } = await supabaseClient
-      .from("profiles")
-      .select("username, avatar_url")
-      .eq("id", signedInUser.id)
-      .single();
-    const signedInName = signedInProfile?.username || signedInUser.email?.split("@")[0] || "User";
-    const signedInInitial = (signedInName[0] || "?").toUpperCase();
-    document.getElementById("userName").textContent = signedInName;
-    renderAvatar(document.getElementById("userAvatar"), signedInProfile?.avatar_url, signedInInitial);
+    // Header reflects the signed-in user. When signed out, the shared Log In button
+    // takes this slot instead, so skip it.
+    if (signedInUser) {
+      const { data: signedInProfile } = await supabaseClient
+        .from("profiles")
+        .select("username, avatar_url")
+        .eq("id", signedInUser.id)
+        .single();
+      const signedInName = signedInProfile?.username || signedInUser.email?.split("@")[0] || "User";
+      const signedInInitial = (signedInName[0] || "?").toUpperCase();
+      document.getElementById("userName").textContent = signedInName;
+      renderAvatar(document.getElementById("userAvatar"), signedInProfile?.avatar_url, signedInInitial);
+    }
 
     // viewed profile
     document.getElementById("profileUsername").textContent = username;
@@ -406,7 +409,7 @@ async function loadUserProfile() {
       document.getElementById("editProfileBtn").style.display = "inline-block";
       document.getElementById("friendsSection").style.display = "block";
       loadFriendsData();
-    } else {
+    } else if (signedInUser) {
       // viewing someone else -> button reflects the current relationship
       setupAddFriendButton(currentUser.id);
     }

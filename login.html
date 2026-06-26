@@ -303,6 +303,9 @@
             }
         }
 
+        // Open the Register tab directly when linked with ?tab=register.
+        if (new URLSearchParams(window.location.search).get('tab') === 'register') switchTab('register');
+
         // If already signed in, skip the form and go where they were headed.
         (async () => {
             const { data: { user } } = await supabaseClient.auth.getUser();

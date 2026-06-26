@@ -5,22 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fantasy Marching</title>
     <link rel="icon" href="/images/favicon.png" type="image/png">
-    <link rel="stylesheet" href="/css/theme.css">
-    <!-- Root router. Loading supabase.js also processes any auth tokens in the URL
-         hash (email confirmation / password flows) before we decide where to go. -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase.js"></script>
+    <!-- Browse-first: the root always lands on the dashboard (the public home).
+         Any auth tokens in the URL hash (email confirmation / password flows) are
+         forwarded so the dashboard's Supabase client can process them. -->
     <script>
-        (async () => {
-            try {
-                const { data: { user } } = await supabaseClient.auth.getUser();
-                // Browse-first will send signed-out visitors to the dashboard once it is
-                // a public home (Stage 2); for now the login page is the entry point.
-                window.location.replace(user ? '/dashboard.html' : ('/login.html' + (location.hash || '')));
-            } catch (e) {
-                window.location.replace('/login.html');
-            }
-        })();
+        window.location.replace('/dashboard.html' + (location.search || '') + (location.hash || ''));
     </script>
 </head>
 <body></body>

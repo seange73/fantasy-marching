@@ -791,10 +791,11 @@
         // Initialize page
         async function initializePage() {
             // Check authentication
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const user = (session && session.user) || null;
             
             if (!user) {
-                window.location.href = '/';
+                window.location.href = '/login.html?next=' + encodeURIComponent(location.pathname + location.search);
                 return;
             }
             

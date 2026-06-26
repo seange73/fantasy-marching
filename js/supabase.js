@@ -67,8 +67,11 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 // it sends them to the login page and returns false (so the caller can bail).
 // Comes back to where they were via ?next=.
 async function requireAuth(next) {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (user) return true;
+    // getSession() is a reliable local read; getUser() does a network round-trip
+    // and concurrent getUser() calls (page init + header) can race to inconsistent
+    // results, so use the session for the logged-in check.
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session && session.user) return true;
     const dest = next || (window.location.pathname + window.location.search);
     window.location.href = '/login.html?next=' + encodeURIComponent(dest);
     return false;
@@ -146,8 +149,8 @@ window.requireAuth = requireAuth;
     async function renderLoggedOutHeader() {
         try {
             if (!window.supabaseClient) return;
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (user) return;                              // signed in: page renders its own user block
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.user) return;           // signed in: page renders its own user block
             const hr = document.querySelector('.header-right');
             if (!hr || hr.querySelector('.login-cta')) return;
             const profile = hr.querySelector('.user-profile');

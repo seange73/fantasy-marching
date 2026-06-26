@@ -265,13 +265,11 @@
 	let leagueLeaderboardMode = 'points';
 
     async function initializePage() {
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) {
-        window.location.href = "/";
-        return;
-      }
-      currentUser = user;
-      await loadUserProfile();
+      // Public page: signed-out visitors can view the global league leaderboard.
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      const user = (session && session.user) || null;
+      currentUser = user || null;
+      if (currentUser) await loadUserProfile();
       await loadLeaderboard();
     }
 
@@ -313,7 +311,7 @@
 
         const container = document.getElementById("leaderboardContent");
 container.innerHTML = stats.map((player, index) => {
-  const isCurrentUser = player.user_id === currentUser.id;
+  const isCurrentUser = currentUser && player.user_id === currentUser.id;
   const globalRank = offset + index + 1;
   return `
     <div class="leaderboard-entry ${isCurrentUser ? 'highlight' : ''}">

@@ -127,13 +127,12 @@
 
     // Initialize page
     async function initializePage() {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        if (!user) {
-            window.location.href = '/';
-            return;
-        }
-        currentUser = user;
-        await loadUserProfile();
+        // Public page: the glossary renders for everyone; only the header user block
+        // needs a signed-in user.
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const user = (session && session.user) || null;
+        currentUser = user || null;
+        if (currentUser) await loadUserProfile();
     }
 
     async function loadUserProfile() {

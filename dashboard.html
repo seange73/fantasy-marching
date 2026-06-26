@@ -363,26 +363,49 @@
         let currentUser = null;
         let isAdmin = false;
 
-        // Initialize dashboard
+        // Initialize dashboard. The dashboard is the public home: signed-out visitors
+        // can browse the leaderboards; the personal sections become sign-up prompts.
         async function initDashboard() {
-            // Check authentication
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const user = (session && session.user) || null;
+            currentUser = user || null;
 
-            if (!user) {
-                window.location.href = '/';
-                return;
+            if (currentUser) {
+                await loadUserProfile();   // renders the header user block
+                loadReminders();
+                loadUserLeagues();
+            } else {
+                renderLoggedOutDashboard();
             }
 
-            currentUser = user;
-
-            // Load user profile and check admin status
-            await loadUserProfile();
-
-            // Load all dashboard data
-            loadReminders();
+            // Public leaderboards load for everyone.
             loadPredictionsLeaderboard();
             loadLeagueLeaderboard();
-            loadUserLeagues();
+        }
+
+        // Swap the personal sections for sign-up prompts when signed out.
+        function renderLoggedOutDashboard() {
+            const rem = document.querySelector('.reminders-section');
+            if (rem) rem.innerHTML = `
+                <div style="background:var(--s1); border:1px solid var(--border); border-radius:8px; padding:2.5rem 1.5rem; text-align:center;">
+                    <h2 style="font-size:1.5rem; font-weight:800; color:var(--text); margin-bottom:0.5rem;">Welcome to Fantasy Marching</h2>
+                    <p style="color:var(--text-2); font-size:0.9rem; max-width:48ch; margin:0 auto 1.5rem; line-height:1.6;">Browse the season leaderboards below, or create an account to make predictions, draft a lineup, and go head to head in leagues.</p>
+                    <div style="display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap;">
+                        <a class="btn" href="/login.html?next=%2Fdashboard.html" style="text-decoration:none; padding:0.6rem 1.5rem;">Log In</a>
+                        <a class="btn btn-secondary" href="/login.html?tab=register&next=%2Fdashboard.html" style="text-decoration:none; padding:0.6rem 1.5rem;">Sign Up</a>
+                    </div>
+                </div>`;
+            // The "View Your Lineup" button is personal; hide it for guests.
+            const lineupBtn = document.querySelector('button[onclick="viewGlobalTeamLineup()"]');
+            if (lineupBtn && lineupBtn.parentElement) lineupBtn.parentElement.style.display = 'none';
+            // Replace "Your Leagues" with a browse/sign-up prompt.
+            const leaguesSec = document.querySelector('.leagues-section');
+            if (leaguesSec) leaguesSec.innerHTML = `
+                <h2 class="section-title">Leagues</h2>
+                <div class="leagues-container" style="text-align:center; padding:2rem 1.5rem;">
+                    <p style="color:var(--text-2); font-size:0.9rem; margin-bottom:1.25rem;">Browse public leagues, or log in to create one and draft your lineup.</p>
+                    <a class="btn" href="/league.html" style="text-decoration:none; padding:0.6rem 1.5rem;">Browse Leagues</a>
+                </div>`;
         }
         // Load user profile
         async function loadUserProfile() {
@@ -755,7 +778,8 @@ leagueLeaderboardMode === 'average'
             container.innerHTML = `<div style="text-align:center; color:#666;">No leaderboard data yet.</div>`;
         }
 
-        // Check if this user has a global league team
+        // Check if this user has a global league team (signed-in only).
+        if (!currentUser) return;
         const { data: globalTeam } = await supabaseClient
             .from('global_league_teams')
             .select('id')

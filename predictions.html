@@ -289,21 +289,14 @@
             return params.get('eventId');
         }
 
-        // Initialize page
+        // Initialize page. Public: signed-out visitors can view the event and the
+        // prediction form; submitting is gated.
         async function initializePage() {
-            // Check authentication
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            
-            if (!user) {
-                window.location.href = '/';
-                return;
-            }
-            
-            currentUser = user;
-            
-            // Load user profile
-            await loadUserProfile();
-            
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const user = (session && session.user) || null;
+            currentUser = user || null;
+            if (currentUser) await loadUserProfile();
+
             // Load event data
             const eventId = getEventIdFromUrl();
             if (!eventId) {
@@ -382,14 +375,14 @@ if (eventInLocal < luxon.DateTime.local() && !event.is_completed) {
             document.getElementById('eventDate').textContent = eventInLocal.toLocaleString(luxon.DateTime.DATETIME_MED);
             document.getElementById('eventLocation').textContent = event.location || 'Location TBD';
             
-            // Check for existing prediction
-            const { data: prediction } = await supabaseClient
+            // Check for the viewer's existing prediction (signed-in only).
+            const { data: prediction } = currentUser ? await supabaseClient
                 .from('predictions')
                 .select('*')
                 .eq('user_id', currentUser.id)
                 .eq('event_id', eventId)
-                .single();
-            
+                .single() : { data: null };
+
             if (prediction) {
                 existingPrediction = prediction;
                 document.getElementById('submitBtn').textContent = 'Update Predictions';
@@ -562,6 +555,9 @@ if (eventInLocal < luxon.DateTime.local() && !event.is_completed) {
 
         // Submit predictions to Supabase
         async function submitPredictions() {
+            // Gate: signed-out visitors are sent to log in, then back here.
+            if (!(await requireAuth())) return;
+
             // Validate that at least one score is entered
             const hasScores = Object.values(predictions).some(score => score > 0);
             

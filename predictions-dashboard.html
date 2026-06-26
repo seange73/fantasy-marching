@@ -176,22 +176,13 @@ function formatEventDateTime(event) {
 }
 
 
-        // Initialize dashboard
+        // Initialize dashboard. Public page: signed-out visitors can browse events;
+        // making a prediction is gated when they open one.
         async function initPredictionsDashboard() {
-            // Check authentication
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            
-            if (!user) {
-                window.location.href = '/';
-                return;
-            }
-            
-            currentUser = user;
-            
-            // Load user profile and check admin status
-            await loadUserProfile();
-            
-            // Load events and predictions
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const user = (session && session.user) || null;
+            currentUser = user || null;
+            if (currentUser) await loadUserProfile();
             await loadEvents();
         }
 
@@ -238,18 +229,18 @@ function formatEventDateTime(event) {
             
             allEvents = events || [];
             
-            // Load user's predictions
-// Load user's predictions
-const { data: predictions, error: predictionsError } = await supabaseClient
-    .from('predictions')
-    .select('id, event_id')
-    .eq('user_id', currentUser.id);
-
-if (!predictionsError && predictions) {
-    predictions.forEach(pred => {
-        userPredictions[pred.event_id] = pred.id;   // store the prediction id
-    });
-}
+            // Load the viewer's own predictions (signed-in only).
+            if (currentUser) {
+                const { data: predictions, error: predictionsError } = await supabaseClient
+                    .from('predictions')
+                    .select('id, event_id')
+                    .eq('user_id', currentUser.id);
+                if (!predictionsError && predictions) {
+                    predictions.forEach(pred => {
+                        userPredictions[pred.event_id] = pred.id;   // store the prediction id
+                    });
+                }
+            }
             
             // Display events
             displayEvents();
