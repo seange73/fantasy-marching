@@ -756,7 +756,7 @@ if (missing.length > 0) {
 
 async function loadCaptionRankings() {
     const { data: rankings, error } = await supabaseClient
-        .from('caption_rankings_2024')
+        .from('caption_rankings_2025')
         .select('*');
     
     if (error) {
@@ -786,7 +786,7 @@ async function loadAvailableCorps() {
     const selected = picks.includes(corps);
     const disabled = captionFull && !selected;   // caption full -> can't add more
     const rank = captionRankings[currentCaption]?.[corps];
-    const rankHtml = rank ? `Rank #${escapeHtml(rank)}` : 'Unranked';
+    const rankHtml = rank ? `2025 Rank #${escapeHtml(rank)}` : 'Unranked';
 
     const cls = ['corps-card', selected ? 'selected' : '', disabled ? 'disabled' : ''].filter(Boolean).join(' ');
     return `

@@ -1274,7 +1274,7 @@ function hideTimer() {
 
 async function loadCaptionRankings() {
     const { data: rankings, error } = await supabaseClient
-        .from('caption_rankings_2024')
+        .from('caption_rankings_2025')
         .select('*');
     
     if (error) {
@@ -1317,7 +1317,7 @@ container.innerHTML = ALL_CORPS.map(corps => {
     const isDraftedForThisCaption = draftedInCaption.has(corps);
     const rankVal = captionRankings[currentCaption]?.[corps];
     const rankHtml = rankVal
-        ? `2024 Rank <b>#${escapeHtml(String(rankVal))}</b>`
+        ? `2025 Rank <b>#${escapeHtml(String(rankVal))}</b>`
         : `<b>Unranked</b>`;
 
     let action;
