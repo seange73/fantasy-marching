@@ -53,10 +53,103 @@ function relativeTime(iso) {
     const y = Math.floor(d / 365); return y + (y === 1 ? ' year ago' : ' years ago');
 }
 
+// Current DCI World Class roster, verified against DCI's corps directory for the
+// 2026 season. Keep every event, draft pool, score import, and stats view scoped
+// to this list.
+const DCI_WORLD_CLASS_CORPS = [
+    'Blue Devils',
+    'Blue Knights',
+    'Blue Stars',
+    'Bluecoats',
+    'Boston Crusaders',
+    'Carolina Crown',
+    'Colts',
+    'Crossmen',
+    'Genesis',
+    'Madison Scouts',
+    'Mandarins',
+    'Music City',
+    'Pacific Crest',
+    'Phantom Regiment',
+    'Santa Clara Vanguard',
+    'Seattle Cascades',
+    'Spartans',
+    'Spirit of Atlanta',
+    'The Academy',
+    'The Cavaliers',
+    'Troopers'
+];
+
+function normalizeCorpsName(name) {
+    return String(name || '').toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+const _worldClassByNorm = new Map(DCI_WORLD_CLASS_CORPS.map(name => [normalizeCorpsName(name), name]));
+const _worldClassAliases = new Map([
+    ['cavaliers', 'The Cavaliers'],
+    ['academy', 'The Academy'],
+    ['scv', 'Santa Clara Vanguard'],
+    ['santa clara vanguard cadets', null],
+    ['vanguard cadets', null]
+]);
+
+function canonicalWorldClassCorpsName(name) {
+    const norm = normalizeCorpsName(name);
+    if (_worldClassByNorm.has(norm)) return _worldClassByNorm.get(norm);
+    if (_worldClassAliases.has(norm)) return _worldClassAliases.get(norm);
+    return null;
+}
+
+function isWorldClassCorps(name) {
+    return !!canonicalWorldClassCorpsName(name);
+}
+
+function filterWorldClassCorps(list) {
+    const seen = new Set();
+    const out = [];
+    (Array.isArray(list) ? list : []).forEach(name => {
+        const canonical = canonicalWorldClassCorpsName(name);
+        if (!canonical || seen.has(canonical)) return;
+        seen.add(canonical);
+        out.push(canonical);
+    });
+    return out;
+}
+
+function filterWorldClassScoreRows(rows, nameKey) {
+    return (Array.isArray(rows) ? rows : []).filter(row => isWorldClassCorps(row && row[nameKey || 'corps_name']));
+}
+
+function filterWorldClassScoreMap(scoreMap) {
+    const out = {};
+    Object.entries(scoreMap || {}).forEach(([name, value]) => {
+        const canonical = canonicalWorldClassCorpsName(name);
+        if (canonical) out[canonical] = value;
+    });
+    return out;
+}
+
+function isScoredCompetitionEvent(event) {
+    if (!event) return false;
+    const corps = filterWorldClassCorps(event.corps_list || []);
+    if (!corps.length) return false;
+    if (!event.is_completed) return true;
+    const scores = filterWorldClassScoreRows(event.final_scores || [], 'corps_name');
+    return scores.some(s => Number(s.score) > 0 || Number(s.total_score) > 0);
+}
+
 window.escapeHtml = escapeHtml;
 window.jsStr = jsStr;
 window.avatarHtml = avatarHtml;
 window.relativeTime = relativeTime;
+window.DCI_WORLD_CLASS_CORPS = DCI_WORLD_CLASS_CORPS;
+window.normalizeCorpsName = normalizeCorpsName;
+window.canonicalWorldClassCorpsName = canonicalWorldClassCorpsName;
+window.isWorldClassCorps = isWorldClassCorps;
+window.filterWorldClassCorps = filterWorldClassCorps;
+window.filterWorldClassScoreRows = filterWorldClassScoreRows;
+window.filterWorldClassScoreMap = filterWorldClassScoreMap;
+window.isScoredCompetitionEvent = isScoredCompetitionEvent;
 
 // Same-site relative return path only (guards against open-redirect via ?next=).
 function safeNext(value, fallback) {
@@ -212,7 +305,15 @@ window.fantasyMarching = {
     loadSeasonConfig,
     getCurrentWeek,
     getWeekRange,
-    weekNumberForDate
+    weekNumberForDate,
+    DCI_WORLD_CLASS_CORPS,
+    normalizeCorpsName,
+    canonicalWorldClassCorpsName,
+    isWorldClassCorps,
+    filterWorldClassCorps,
+    filterWorldClassScoreRows,
+    filterWorldClassScoreMap,
+    isScoredCompetitionEvent
 };
 window.requireAuth = requireAuth;
 

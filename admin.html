@@ -200,13 +200,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script>
-        const allCorps = [
-            "Blue Devils", "Carolina Crown", "Bluecoats", "Boston Crusaders", 
-            "The Cavaliers", "Phantom Regiment", "Santa Clara Vanguard",
-            "Blue Knights", "Mandarins", "Crossmen", "Blue Stars",
-            "Madison Scouts", "Pacific Crest", "The Academy", "Spirit of Atlanta",
-            "Colts", "Troopers", "Genesis", "Music City", "Seattle Cascades", "Spartans"
-        ];
+        const allCorps = window.DCI_WORLD_CLASS_CORPS || [];
 
         let currentEventId = null;
         let currentEventCorps = [];
@@ -327,7 +321,7 @@
             const date = document.getElementById('eventDate').value;
             const time = document.getElementById('eventTime').value;
             const location = document.getElementById('eventLocation').value;
-            const corpsList = getSelectedCorps();
+            const corpsList = filterWorldClassCorps(getSelectedCorps());
             // determine timezone
 const parts = location.split(',');
 const stateAbbr = parts[parts.length - 1].trim().toUpperCase();
@@ -389,7 +383,7 @@ const { data, error } = await supabaseClient
             
             try {
                 // Parse the corps list
-                currentEventCorps = corpsListJson && corpsListJson !== '[]' ? JSON.parse(corpsListJson) : [];
+                currentEventCorps = filterWorldClassCorps(corpsListJson && corpsListJson !== '[]' ? JSON.parse(corpsListJson) : []);
                 
                 if (currentEventCorps.length === 0) {
                     alert('No corps assigned to this event');
@@ -404,7 +398,7 @@ const { data, error } = await supabaseClient
                 
                 const scoresMap = {};
                 if (existingScores) {
-                    existingScores.forEach(score => {
+                    filterWorldClassScoreRows(existingScores, 'corps_name').forEach(score => {
                         scoresMap[score.corps_name] = score;
                     });
                 }
@@ -530,7 +524,10 @@ async function saveScores() {
 
     // Round to 3 decimals (DCI caption scores carry at most 3) so the stored total
     // doesn't persist a floating-point artifact like 97.30000000000001.
-    const total = Math.round((brass + percussion + guard + ge + visual + music) * 1000) / 1000;
+    // Total is GE + Visual + Music only (the three major captions). Guard is
+    // already folded into Visual, and Brass + Percussion into Music, so adding
+    // them again would double-count (e.g. 77.55 -> 124.45).
+    const total = Math.round((ge + visual + music) * 1000) / 1000;
 
     scores.push({
       event_id: currentEventId,
@@ -785,9 +782,11 @@ function pasteScoresIntoFields() {
     const raw = document.getElementById('pasteScoresJson').value;
     const data = JSON.parse(raw);
 
-    data.forEach(item => {
+    filterWorldClassScoreRows(data, 'corps').forEach(item => {
       const id = item.corps.replace(/\s+/g, '_');
-      document.getElementById(`brass_${id}`).value = item.brassScore;
+      const brass = document.getElementById(`brass_${id}`);
+      if (!brass) return;
+      brass.value = item.brassScore;
       document.getElementById(`percussion_${id}`).value = item.percussionScore;
       document.getElementById(`guard_${id}`).value = item.guardScore;
       document.getElementById(`ge_${id}`).value = item.geScore;

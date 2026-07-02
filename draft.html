@@ -752,15 +752,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script>
-        // Corps list without The Cadets
-        const ALL_CORPS = [
-            'Blue Devils', 'Blue Knights', 'Blue Stars', 'Bluecoats', 
-            'Boston Crusaders', 'Carolina Crown', 'Colts', 'Crossmen', 
-            'Genesis', 'Madison Scouts', 'Mandarins', 'Music City', 
-            'Pacific Crest', 'Phantom Regiment', 'Santa Clara Vanguard', 
-            'Seattle Cascades', 'Spartans', 'Spirit of Atlanta', 'The Academy',
-            'The Cavaliers', 'Troopers'
-        ];
+        const ALL_CORPS = window.DCI_WORLD_CLASS_CORPS || [];
 
         let currentUser = null;
         let leagueId = null;
